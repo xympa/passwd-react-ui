@@ -1,0 +1,31 @@
+{
+    "extends": [
+        "airbnb",
+        "eslint:recommended",
+        "plugin:react/recommended"
+    ],
+    "parser": "babel-eslint",
+    "env": {
+        "jest": true,
+        "browser": true
+    },
+    "rules": {
+        "no-use-before-define": "off",
+        "react/jsx-filename-extension": "off",
+        "react/forbid-prop-types": "off",
+        "comma-dangle": "off",
+        "react/jsx-indent" : "off",
+        "react/require-default-props" : "off",
+        "react/jsx-indent-props" : "off"
+    },
+    "plugins": [
+        "react"
+    ],
+    "globals": {
+        "fetch": false
+    },
+    "ecmaFeatures": {
+        "jsx": true,
+        "modules": true
+    }
+}
