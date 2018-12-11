@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { REST_BASE } from '../constants/rest'
-import { FETCHED_FOLDER_CONTENTS, FETCHED_FOLDER_PATH } from './actionTypes'
+import { FETCHED_FOLDER_CONTENTS, FETCHED_FOLDER_PATH, OPEN_FOLDER, FINISHED_FETCHING_FOLDER, FETCHED_FOLDER_INFO } from './actionTypes'
 
-export const fetchFolderContents = (folderId) => (dispatch, getState) => {
+export const fetchFolderContents = () => (dispatch, getState) => {
 
     const { username, sessionKey } = getState().authentication;
     const search = getState().search.value;
@@ -15,7 +15,7 @@ export const fetchFolderContents = (folderId) => (dispatch, getState) => {
             params: {
                 authusername: username,
                 sessionkey: sessionKey,
-                folderId: folderId,
+                folderId: getState().folder.openId,
                 search: search
             }
         })
@@ -26,7 +26,7 @@ export const fetchFolderContents = (folderId) => (dispatch, getState) => {
         .catch(() => { })
 };
 
-export const fetchFolderPath = (folderId) => (dispatch, getState) => {
+export const fetchFolderPath = () => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
 
     var url = `${REST_BASE}folder/getPath/`;
@@ -37,11 +37,40 @@ export const fetchFolderPath = (folderId) => (dispatch, getState) => {
             params: {
                 authusername: username,
                 sessionkey: sessionKey,
-                folderId: folderId,
+                folderId: getState().folder.openId,
             }
         })
         .then(response => {
             dispatch(updateFolderPath(response.data));
+        })
+        .catch(() => { })
+};
+
+export const fetchFolderInfo = () => (dispatch, getState) => {
+
+    if (getState().folder.openId == null) {
+        return dispatch(updateFolderInfo({
+            folderInfo: {
+                idFolders: null
+            },
+            permissions: []
+        }))
+    }
+    const { username, sessionKey } = getState().authentication;
+
+    var url = `${REST_BASE}folder/`;
+    return axios(
+        {
+            url: url,
+            method: 'get',
+            params: {
+                authusername: username,
+                sessionkey: sessionKey,
+                folderId: getState().folder.openId,
+            }
+        })
+        .then(response => {
+            dispatch(updateFolderInfo(response.data));
         })
         .catch(() => { })
 };
@@ -56,7 +85,33 @@ const updateFolderPath = path => ({
     payload: path
 });
 
+export const setOpenfolder = id => ({
+    type: OPEN_FOLDER,
+    payload: id
+})
+
+export const finshFetchingFolder = () => ({
+    type: FINISHED_FETCHING_FOLDER,
+})
+
+export const updateFolderInfo = info => ({
+    type: FETCHED_FOLDER_INFO,
+    payload: info
+})
+
+export const goToParent = () => (dispatch, getState) => {
+    const { folderInfo, openId } = getState().folder;
+
+    if (openId != null)
+        dispatch(openFolder(folderInfo.parent))
+}
+
 export const openFolder = folderId => dispatch => {
-    dispatch(fetchFolderContents(folderId))
-    dispatch(fetchFolderPath(folderId));
+    dispatch(setOpenfolder(folderId))
+
+    Promise
+        .all([dispatch(fetchFolderContents()), dispatch(fetchFolderPath()), dispatch(fetchFolderInfo())])
+        .then(() => {
+            dispatch(finshFetchingFolder());
+        });
 }

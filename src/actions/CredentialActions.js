@@ -1,9 +1,8 @@
 import axios from 'axios'
 import { REST_BASE } from '../constants/rest'
-import { CLOSED_CREDENTIAL, FETCHED_CREDENTIAL, OPENED_CREDENTIAL, CREDENTIAL_TOGGLE_EDIT_MODE, CREDENTIAL_SET_FETCHING, UPDATING_CREDENTIAL } from './actionTypes'
+import { CLOSED_CREDENTIAL, FETCHED_CREDENTIAL, OPENED_CREDENTIAL, CREDENTIAL_TOGGLE_EDIT_MODE, CREDENTIAL_SET_FETCHING } from './actionTypes'
 import { networkDecode, networkEncode } from '../EnsoSharedBridge';
 import { fetchFolderContents } from './FolderActions'
-import { dispatch } from 'rxjs/internal/observable/pairs';
 
 export const fetchCredential = (id) => (dispatch, getState) => {
 
@@ -86,7 +85,7 @@ export const requestCredentialUpdate = credential => (dispatch, getState) => {
                 url: credential.url
             }
         })
-        .then(response => {
+        .then(() => {
     
         })
         .catch(() => { })
@@ -119,7 +118,7 @@ export const requestCredentialDeletion = () => (dispatch, getState) => {
                 credentialId: idCredentials
             }
         })
-        .then(response => {
+        .then(() => {
 
         })
         .catch(() => { })

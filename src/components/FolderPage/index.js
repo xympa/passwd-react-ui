@@ -2,14 +2,14 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { IconButton, Zoom, Fab } from '@material-ui/core';
+import { IconButton, Zoom, Fab, CircularProgress } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home'
 import UpArrowIcon from '@material-ui/icons/ArrowUpward'
 import SettingsIcon from '@material-ui/icons/Settings'
 import AddIcon from '@material-ui/icons/Add'
 import { withStyles } from '@material-ui/core/styles'
 import { List } from 'react-virtualized';
-import { openFolder, fetchFolderContents } from '../../actions/FolderActions'
+import { openFolder, fetchFolderContents, goToParent } from '../../actions/FolderActions'
 import { replaceSearchAction, removeSearchAction } from '../../actions/SearchActions'
 import FolderListItem from '../FolderListItem';
 import CredentialListItem from '../CredentialListItem'
@@ -39,7 +39,9 @@ export class FolderPage extends Component {
         fetchFolderContents: PropTypes.func.isRequired,
         removeSearchAction: PropTypes.func.isRequired,
         classes: PropTypes.object.isRequired,
-        contents: PropTypes.arrayOf(PropTypes.object)
+        contents: PropTypes.arrayOf(PropTypes.object),
+        goToParent: PropTypes.func.isRequired,
+        isFetching: PropTypes.bool.isRequired,
     }
 
     constructor(props) {
@@ -47,12 +49,11 @@ export class FolderPage extends Component {
 
         this.state = {
             width: window.innerWidth, height: window.innerHeight,
-
         }
 
-        this._credentialModal = undefined;
-
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
+        this._upButtonHandle = this._upButtonHandle.bind(this)
+        this._homeButtonHandle = this._homeButtonHandle.bind(this)
     }
 
     componentDidMount() {
@@ -74,19 +75,29 @@ export class FolderPage extends Component {
         this.setState({ width: window.innerWidth, height: window.innerHeight });
     }
 
+    _homeButtonHandle() {
+        const { openFolder } = this.props;
+        openFolder(null)
+    }
+
+    _upButtonHandle() {
+        const { goToParent } = this.props;
+        goToParent()
+    }
+
     render() {
 
-        const { classes, contents } = this.props;
+        const { classes, contents, isFetching } = this.props;
         const { width, height } = this.state;
 
         return (
             <div>
                 <div style={{ flexDirection: "column", flex: 1 }}>
                     <div style={{ display: "flex", height: 64, paddingLeft: 64, paddingRight: 64, borderBottom: "1px solid #e0e0e0" }}>
-                        <IconButton style={{ flex: 0 }}>
+                        <IconButton style={{ flex: 0 }} onClick={this._homeButtonHandle}>
                             <HomeIcon style={{ fontSize: "2rem" }} color="secondary" />
                         </IconButton>
-                        <IconButton style={{ flex: 0 }}>
+                        <IconButton style={{ flex: 0 }} onClick={this._upButtonHandle}>
                             <UpArrowIcon style={{ fontSize: "2rem" }} color="secondary" />
                         </IconButton>
                         <FolderBreadcrumbs />
@@ -94,32 +105,36 @@ export class FolderPage extends Component {
                             <SettingsIcon style={{ fontSize: "2rem" }} color="secondary" />
                         </IconButton>
                     </div>
-                    <List
-                        rowCount={contents.length}
-                        rowHeight={96}
-                        height={height - 138}
-                        width={width}
-                        rowRenderer={({ index, style }) => {
-                            const content = contents[index];
+                    {
+                        isFetching ?
+                            <CircularProgress /> : (
+                                <List
+                                    rowCount={contents.length}
+                                    rowHeight={96}
+                                    height={height - 138}
+                                    width={width}
+                                    rowRenderer={({ index, style }) => {
+                                        const content = contents[index];
 
-                            if (content.idFolders)
-                                return (
-                                    <FolderListItem
-                                        style={{ paddingLeft: 64, paddingRight: 64, ...style }}
-                                        key={"folder-" + content.idFolders}
-                                        folder={content}
-                                    />
-                                )
-                            else
-                                return (
-                                    <CredentialListItem
-                                        style={{ paddingLeft: 64, paddingRight: 64, ...style }}
-                                        key={"credential-" + content.idCredentials}
-                                        credential={content}
-                                    />
-                                )
-                        }}
-                    />
+                                        if (content.idFolders)
+                                            return (
+                                                <FolderListItem
+                                                    style={{ paddingLeft: 64, paddingRight: 64, ...style }}
+                                                    key={"folder-" + content.idFolders}
+                                                    folder={content}
+                                                />
+                                            )
+                                        else
+                                            return (
+                                                <CredentialListItem
+                                                    style={{ paddingLeft: 64, paddingRight: 64, ...style }}
+                                                    key={"credential-" + content.idCredentials}
+                                                    credential={content}
+                                                />
+                                            )
+                                    }}
+                                />
+                            )}
                 </div>
                 <Zoom
                     in
@@ -135,14 +150,18 @@ export class FolderPage extends Component {
 }
 
 const mapStateToProps = (state) => ({
-    contents: [...state.folder.contents.credentials, ...state.folder.contents.folders]
+    contents: [...state.folder.contents.credentials, ...state.folder.contents.folders],
+    openFolder: state.folder.openId,
+    isFetching: state.folder.isFetching,
+    folderInfo: state.folder.info
 })
 
 const mapDispatchToProps = {
     openFolder,
     removeSearchAction,
     replaceSearchAction,
-    fetchFolderContents
+    fetchFolderContents,
+    goToParent
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(FolderPage))

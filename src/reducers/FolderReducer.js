@@ -4,25 +4,42 @@ const INITIAL_STATE = {
     contents: {
         credentials: [],
         folders: [],
-        openFolder: null
     },
-    path: []
+    path: [],
+    openId: null,
+    folderInfo: null,
+    permissions: [],
+    isFetching: false
 };
 
 const FolderReducer = (state = INITIAL_STATE, action) => {
     switch (action.type) {
         case types.FETCHED_FOLDER_CONTENTS:
-            console.log("fetched folders")
             return {
                 ...state,
                 contents: action.payload,
             };
         case types.FETCHED_FOLDER_PATH:
-            console.log("fetched folder path")
             return {
                 ...state,
                 path: action.payload,
             };
+        case types.OPEN_FOLDER:
+            return {
+                ...state,
+                openId: action.payload,
+                isFetching: true
+            }
+        case types.FETCHED_FOLDER_INFO:
+            return {
+                ...state,
+                ...action.payload
+            }
+        case types.FINISHED_FETCHING_FOLDER:
+            return {
+                ...state,
+                isFetching: false
+            }
         default:
             return state;
     }
