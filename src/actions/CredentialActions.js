@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { REST_BASE } from '../constants/rest'
-import { CLOSED_CREDENTIAL, FETCHED_CREDENTIAL, OPENED_CREDENTIAL, CREDENTIAL_TOGGLE_EDIT_MODE, CREDENTIAL_SET_FETCHING } from './actionTypes'
+import { CLOSED_CREDENTIAL, FETCHED_CREDENTIAL, OPENED_CREDENTIAL, CREDENTIAL_TOGGLE_EDIT_MODE, CREDENTIAL_SET_FETCHING, CREDENTIAL_BEGIN_CREATION } from './actionTypes'
 import { networkDecode, networkEncode } from '../EnsoSharedBridge';
 import { fetchFolderContents } from './FolderActions'
 
@@ -41,6 +41,7 @@ const setOpenCredential = (id) => ({
 export const openCredential = id => dispatch => {
     dispatch(setOpenCredential(id))
     dispatch(fetchCredential(id))
+
 }
 
 export const closeCredential = () => dispatch => {
@@ -59,6 +60,12 @@ export const setFetching = (bool) => dispatch => {
     dispatch({
         type: CREDENTIAL_SET_FETCHING,
         payload: bool
+    })
+}
+
+export const beginCredentialCreation = () => dispatch => {
+    dispatch({
+        type: CREDENTIAL_BEGIN_CREATION
     })
 }
 
@@ -85,10 +92,6 @@ export const requestCredentialUpdate = credential => (dispatch, getState) => {
                 url: credential.url
             }
         })
-        .then(() => {
-    
-        })
-        .catch(() => { })
 }
 
 export const updateCredential = credential => (dispatch, getState) => {
@@ -118,15 +121,51 @@ export const requestCredentialDeletion = () => (dispatch, getState) => {
                 credentialId: idCredentials
             }
         })
-        .then(() => {
-
-        })
-        .catch(() => { })
 }
 
 export const deleteCredential = () => dispatch => {
     dispatch(requestCredentialDeletion()).then(() => {
         dispatch(closeCredential());
+        dispatch(fetchFolderContents())
+    })
+}
+
+export const requestCredentialInsertion = credential => (dispatch, getState) => {
+    console.log(getState())
+
+
+    const { username, sessionKey } = getState().authentication;
+    const belongsToFolder = getState().folder.folderInfo.idFolders
+
+    if(belongsToFolder === null)
+        return Promise.reject("Attempted to create a credential in root");
+
+    var url = `${REST_BASE}credential/`;
+    return axios(
+        {
+            url: url,
+            method: 'post',
+            params: {
+                authusername: username,
+                sessionkey: sessionKey,
+
+                //Credential params
+                belongsTo: belongsToFolder,
+                title: credential.title,
+                username: credential.username,
+                description: credential.description,
+                password: networkEncode(credential.password),
+                url: credential.url
+            }
+        })
+}
+
+export const insertCredential = credential => (dispatch, getState) => {
+    dispatch({ type: CREDENTIAL_SET_FETCHING, payload: true });
+
+    dispatch(requestCredentialInsertion(credential))
+    .then((response) => {
+        dispatch(openCredential(response.data))
         dispatch(fetchFolderContents())
     })
 }

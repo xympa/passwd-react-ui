@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { REST_BASE } from '../constants/rest'
-import { FETCHED_FOLDER_CONTENTS, FETCHED_FOLDER_PATH, OPEN_FOLDER, FINISHED_FETCHING_FOLDER, FETCHED_FOLDER_INFO } from './actionTypes'
+import { FETCHED_FOLDER_CONTENTS, FETCHED_FOLDER_PATH, OPEN_FOLDER, FINISHED_FETCHING_FOLDER, FETCHED_FOLDER_INFO, STARTED_FETCHING_FOLDER } from './actionTypes'
 
 export const fetchFolderContents = () => (dispatch, getState) => {
 
@@ -8,6 +8,7 @@ export const fetchFolderContents = () => (dispatch, getState) => {
     const search = getState().search.value;
 
     var url = `${REST_BASE}folders/`;
+
     return axios(
         {
             url: url,
@@ -20,8 +21,15 @@ export const fetchFolderContents = () => (dispatch, getState) => {
             }
         })
         .then(response => {
-            if (response.data.search === getState().search.value)
-                dispatch(updateFolderContents(response.data));
+
+            return new Promise(resolve => {
+                if (response.data.search === getState().search.value) {
+                    dispatch(updateFolderContents(response.data));
+                    resolve(true)
+                } else {
+                    resolve(false)
+                }
+            })
         })
         .catch(() => { })
 };
@@ -99,11 +107,24 @@ export const updateFolderInfo = info => ({
     payload: info
 })
 
+export const startFetchingFolder = () => ({
+    type: STARTED_FETCHING_FOLDER
+})
+
 export const goToParent = () => (dispatch, getState) => {
     const { folderInfo, openId } = getState().folder;
 
     if (openId != null)
         dispatch(openFolder(folderInfo.parent))
+}
+
+export const updateContents = () => dispatch => {
+    dispatch(startFetchingFolder())
+
+    dispatch(fetchFolderContents()).then(didUpdateContents => {
+        if(didUpdateContents)
+            dispatch(finshFetchingFolder())
+    })
 }
 
 export const openFolder = folderId => dispatch => {

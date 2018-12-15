@@ -2,18 +2,19 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { IconButton, Zoom, Fab, CircularProgress } from '@material-ui/core';
+import { IconButton, Zoom, Fab, Fade } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home'
 import UpArrowIcon from '@material-ui/icons/ArrowUpward'
 import SettingsIcon from '@material-ui/icons/Settings'
 import AddIcon from '@material-ui/icons/Add'
 import { withStyles } from '@material-ui/core/styles'
 import { List } from 'react-virtualized';
-import { openFolder, fetchFolderContents, goToParent } from '../../actions/FolderActions'
+import { openFolder, fetchFolderContents, goToParent, updateContents } from '../../actions/FolderActions'
 import { replaceSearchAction, removeSearchAction } from '../../actions/SearchActions'
 import FolderListItem from '../FolderListItem';
 import CredentialListItem from '../CredentialListItem'
-import FolderBreadcrumbs from '../FolderBreadcrumbs';
+import FolderBreadcrumbs from '../FolderBreadcrumbs'
+import { openCredential, beginCredentialCreation } from '../../actions/CredentialActions'
 
 const styles = theme => ({
     center: {
@@ -36,12 +37,14 @@ export class FolderPage extends Component {
     static propTypes = {
         openFolder: PropTypes.func,
         replaceSearchAction: PropTypes.func.isRequired,
-        fetchFolderContents: PropTypes.func.isRequired,
+        updateContents: PropTypes.func.isRequired,
         removeSearchAction: PropTypes.func.isRequired,
         classes: PropTypes.object.isRequired,
         contents: PropTypes.arrayOf(PropTypes.object),
         goToParent: PropTypes.func.isRequired,
         isFetching: PropTypes.bool.isRequired,
+        openFolderId: PropTypes.any,
+        beginCredentialCreation: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -57,11 +60,11 @@ export class FolderPage extends Component {
     }
 
     componentDidMount() {
-        const { replaceSearchAction, fetchFolderContents, openFolder } = this.props;
+        const { replaceSearchAction, updateContents, openFolder } = this.props;
 
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
-        replaceSearchAction(fetchFolderContents);
+        replaceSearchAction(updateContents);
         openFolder(null);
     }
 
@@ -87,60 +90,58 @@ export class FolderPage extends Component {
 
     render() {
 
-        const { classes, contents, isFetching } = this.props;
+        const { classes, contents, isFetching , openFolderId, beginCredentialCreation} = this.props;
         const { width, height } = this.state;
 
         return (
             <div>
                 <div style={{ flexDirection: "column", flex: 1 }}>
                     <div style={{ display: "flex", height: 64, paddingLeft: 64, paddingRight: 64, borderBottom: "1px solid #e0e0e0" }}>
-                        <IconButton style={{ flex: 0 }} onClick={this._homeButtonHandle}>
-                            <HomeIcon style={{ fontSize: "2rem" }} color="secondary" />
+                        <IconButton disabled={openFolderId === null} color="secondary" style={{ flex: 0 }} onClick={this._homeButtonHandle}>
+                            <HomeIcon style={{ fontSize: "2rem" }} />
                         </IconButton>
-                        <IconButton style={{ flex: 0 }} onClick={this._upButtonHandle}>
-                            <UpArrowIcon style={{ fontSize: "2rem" }} color="secondary" />
+                        <IconButton disabled={openFolderId === null} color="secondary" style={{ flex: 0 }} onClick={this._upButtonHandle}>
+                            <UpArrowIcon style={{ fontSize: "2rem" }}  />
                         </IconButton>
                         <FolderBreadcrumbs />
                         <IconButton style={{ flex: 0 }}>
                             <SettingsIcon style={{ fontSize: "2rem" }} color="secondary" />
                         </IconButton>
                     </div>
-                    {
-                        isFetching ?
-                            <CircularProgress /> : (
-                                <List
-                                    rowCount={contents.length}
-                                    rowHeight={96}
-                                    height={height - 138}
-                                    width={width}
-                                    rowRenderer={({ index, style }) => {
-                                        const content = contents[index];
+                    <Fade in={!isFetching}>
+                        <List
+                            rowCount={contents.length}
+                            rowHeight={96}
+                            height={height - 138}
+                            width={width}
+                            rowRenderer={({ index, style }) => {
+                                const content = contents[index];
 
-                                        if (content.idFolders)
-                                            return (
-                                                <FolderListItem
-                                                    style={{ paddingLeft: 64, paddingRight: 64, ...style }}
-                                                    key={"folder-" + content.idFolders}
-                                                    folder={content}
-                                                />
-                                            )
-                                        else
-                                            return (
-                                                <CredentialListItem
-                                                    style={{ paddingLeft: 64, paddingRight: 64, ...style }}
-                                                    key={"credential-" + content.idCredentials}
-                                                    credential={content}
-                                                />
-                                            )
-                                    }}
-                                />
-                            )}
+                                if (content.idFolders)
+                                    return (
+                                        <FolderListItem
+                                            style={{ paddingLeft: 64, paddingRight: 64, ...style }}
+                                            key={"folder-" + content.idFolders}
+                                            folder={content}
+                                        />
+                                    )
+                                else
+                                    return (
+                                        <CredentialListItem
+                                            style={{ paddingLeft: 64, paddingRight: 64, ...style }}
+                                            key={"credential-" + content.idCredentials}
+                                            credential={content}
+                                        />
+                                    )
+                            }}
+                        />
+                    </Fade>
                 </div>
                 <Zoom
                     in
                     unmountOnExit
                 >
-                    <Fab className={classes.fab} color="primary">
+                    <Fab className={classes.fab} color="primary" onClick={() => {beginCredentialCreation()}}>
                         <AddIcon />
                     </Fab>
                 </Zoom>
@@ -151,7 +152,7 @@ export class FolderPage extends Component {
 
 const mapStateToProps = (state) => ({
     contents: [...state.folder.contents.credentials, ...state.folder.contents.folders],
-    openFolder: state.folder.openId,
+    openFolderId: state.folder.openId,
     isFetching: state.folder.isFetching,
     folderInfo: state.folder.info
 })
@@ -161,7 +162,9 @@ const mapDispatchToProps = {
     removeSearchAction,
     replaceSearchAction,
     fetchFolderContents,
-    goToParent
+    goToParent,
+    updateContents,
+    beginCredentialCreation
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(FolderPage))

@@ -3,6 +3,8 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Button } from '@material-ui/core';
 import RightArrowIcon from '@material-ui/icons/ArrowRight'
+import SearchIcon from '@material-ui/icons/Search';
+
 import { withStyles } from '@material-ui/core/styles'
 
 
@@ -11,7 +13,7 @@ const styles = () => ({
         flex: 1,
         display: "flex"
     },
-    breadcrumb:{
+    breadcrumb: {
         alignItems: "center",
         display: "flex"
     }
@@ -23,12 +25,13 @@ export class FolderBreadcrumbs extends Component {
             parent: PropTypes.number,
             name: PropTypes.string.isRequired
         })).isRequired,
-        classes: PropTypes.object.isRequired
+        classes: PropTypes.object.isRequired,
+        search: PropTypes.string.isRequired,
     }
 
     render() {
 
-        const { classes, path } = this.props;
+        const { classes, path, search } = this.props;
 
         return (
             <div className={classes.root}>
@@ -43,13 +46,22 @@ export class FolderBreadcrumbs extends Component {
                             </div>)
                     })
                 })()}
+                {
+                    search.trim() != "" && (
+                        <Button disabled>
+                            <SearchIcon />
+                            {`Looking for: "${search}"`}
+                        </Button>
+                    )
+                }
             </div>
         )
     }
 }
 
 const mapStateToProps = (state) => ({
-    path: state.folder.path
+    path: state.folder.path,
+    search: state.search.value
 })
 
 const mapDispatchToProps = {

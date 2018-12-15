@@ -4,7 +4,8 @@ const INITIAL_STATE = {
     openCredential: null,
     data: null,
     fetchingCredential: false,
-    isEditing: false
+    isEditing: false,
+    isCreating: false
 };
 
 const CredentialReducer = (state = INITIAL_STATE, action) => {
@@ -15,36 +16,40 @@ const CredentialReducer = (state = INITIAL_STATE, action) => {
                 ...state,
                 data: action.payload,
                 fetchingCredential: false,
-                isEditing: false
+                isEditing: false,
+                isCreating: false
             };
-            case types.OPENED_CREDENTIAL:
-            console.log("open credential");
+        case types.OPENED_CREDENTIAL:
+            console.log("open credential", action.payload);
             return {
                 ...state,
                 openCredential: action.payload,
                 fetchingCredential: true,
-                isEditing: false
+                isEditing: false,
+                isCreating: false
             };
-            case types.CREDENTIAL_TOGGLE_EDIT_MODE:
+        case types.CREDENTIAL_TOGGLE_EDIT_MODE:
             console.log("toggle mdoe");
             return {
                 ...state,
                 isEditing: !state.isEditing
             };
-            case types.CREDENTIAL_SET_FETCHING:
+        case types.CREDENTIAL_SET_FETCHING:
             console.log("set fetching ", action.payload);
             return {
                 ...state,
                 fetchingCredential: action.payload
             };
-            case types.CLOSED_CREDENTIAL:
-            console.log("closed credential");
+        case types.CREDENTIAL_BEGIN_CREATION:
+            console.log("begin creating credential");
             return {
-                ...state,
-                openCredential: null,
-                data: null,
-                fetchingCredential: false
+                ...INITIAL_STATE,
+                isCreating: true,
+                isEditing: true
             };
+        case types.CLOSED_CREDENTIAL:
+            console.log("closed credential");
+            return INITIAL_STATE;
         default:
             return state;
     }

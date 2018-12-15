@@ -1,10 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { logout } from '../../actions/AuthenticationActions'
-import { changeSearch } from '../../actions/SearchActions'
 import _ from 'lodash'
-
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
@@ -19,6 +16,9 @@ import AccountCircle from '@material-ui/icons/AccountCircle';
 import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
+
+import { logout } from '../../actions/AuthenticationActions'
+import { changeSearch } from '../../actions/SearchActions'
 
 const styles = theme => ({
     root: {
@@ -93,7 +93,11 @@ const styles = theme => ({
 
 export class Header extends Component {
     static propTypes = {
-        username: PropTypes.string
+        username: PropTypes.string,
+        changeSearch: PropTypes.func.isRequired,
+        search: PropTypes.string.isRequired,
+        classes: PropTypes.object.isRequired,
+        logout: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -102,21 +106,10 @@ export class Header extends Component {
         this.state = {
             anchorEl: null,
             mobileMoreAnchorEl: null,
-            search: ""
         };
 
         this._searchChanged = _.debounce(this._searchChanged.bind(this), 30);
         this.handleSearchChange = this.handleSearchChange.bind(this)
-    }
-
-    handleSearchChange(event){
-        event.persist();
-        this._searchChanged(event);
-    }
-
-    _searchChanged(event) {
-        this.setState({ search: event.target.value })
-        this.props.changeSearch(event.target.value);
     }
 
     handleProfileMenuOpen = event => {
@@ -136,9 +129,20 @@ export class Header extends Component {
         this.setState({ mobileMoreAnchorEl: null });
     };
 
+    handleSearchChange(event) {
+        event.persist();
+        this._searchChanged(event);
+    }
+
+
+    _searchChanged(event) {
+        const { changeSearch } = this.props;
+        changeSearch(event.target.value);
+    }
+
     render() {
         const { anchorEl, mobileMoreAnchorEl } = this.state;
-        const { classes } = this.props;
+        const { classes, logout, search, username } = this.props;
         const isMenuOpen = Boolean(anchorEl);
         const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
@@ -150,7 +154,7 @@ export class Header extends Component {
                 open={isMenuOpen}
                 onClose={this.handleMenuClose}
             >
-                <MenuItem onClick={this.props.logout}>Logout</MenuItem>
+                <MenuItem onClick={logout}>Logout</MenuItem>
                 <MenuItem onClick={this.handleMenuClose}>My account</MenuItem>
             </Menu>
         );
@@ -199,7 +203,7 @@ export class Header extends Component {
                             </div>
                             <InputBase
                                 placeholder="Procurar ..."
-                                value={this.props.search}
+                                value={search}
                                 onChange={this.handleSearchChange}
                                 classes={{
                                     root: classes.inputRoot,
@@ -222,6 +226,7 @@ export class Header extends Component {
                             >
                                 <AccountCircle />
                             </IconButton>
+                            <p>{username}</p>
                         </div>
                         <div className={classes.sectionMobile}>
                             <IconButton aria-haspopup="true" onClick={this.handleMobileMenuOpen} color="inherit">
@@ -241,4 +246,8 @@ const mapDispatchToProps = {
     changeSearch
 }
 
-export default connect(undefined, mapDispatchToProps)(withStyles(styles)(Header))
+const mapStateToProps = state => ({
+    username: state.authentication.username
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Header))

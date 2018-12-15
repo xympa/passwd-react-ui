@@ -40,6 +40,11 @@ const FolderReducer = (state = INITIAL_STATE, action) => {
                 ...state,
                 isFetching: false
             }
+        case types.STARTED_FETCHING_FOLDER:
+            return {
+                ...state,
+                isFetching: true
+            }
         default:
             return state;
     }

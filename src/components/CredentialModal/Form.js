@@ -40,6 +40,7 @@ export class Form extends Component {
         enqueueSnackbar: PropTypes.func.isRequired,
         isEditing: PropTypes.bool.isRequired,
         onFormChanged: PropTypes.func.isRequired,
+        forCreation: PropTypes.bool.isRequired,
     }
 
     constructor(props) {
@@ -71,24 +72,38 @@ export class Form extends Component {
 
     componentDidUpdate(prevProps, prevState) {
         const { fields } = this.state;
-        const { credential } = this.props;
+        const { credential, forCreation } = this.props;
 
-        if (prevProps.credential != credential && credential != null)
-            this.setState({ fields: this._fieldsFromCredential(credential) });
+        if ((prevProps.credential !== credential && credential !== null) || forCreation !== prevProps.forCreation) {
+            const newFields = this._fieldsFromCredential(credential)
+            // eslint-disable-next-line react/no-did-update-set-state
+            this.setState({ fields: newFields });
+            this._onFormChanged(newFields);
+        }
 
-        if (prevState.fields != fields)
+        if (prevState.fields !== fields)
             this._onFormChanged(fields)
     }
 
-    _fieldsFromCredential = (credential) => (
-        {
+    _fieldsFromCredential = (credential) => {
+
+        if (credential == null)
+            credential = {
+                description: "",
+                username: "",
+                title: "",
+                url: "",
+                password: ""
+            }
+
+        return {
             description: this._handleChange('description', credential.description)(),
             password: this._handleChange('password', credential.password)(),
             username: this._handleChange('username', credential.username)(),
             title: this._handleChange('title', credential.title)(),
             url: this._handleChange('url', credential.url)(),
         }
-    )
+    }
 
     _handleChange = (name, rawValue) => event => {
         let value;
@@ -259,7 +274,7 @@ export class Form extends Component {
                         value={fields.url.value}
                         type="text"
                         onChange={this._handleChange('url')}
-                        endAdornment={fields.url.valid && (
+                        endAdornment={fields.url.valid && !Validator.isEmpty(fields.url.sanitizedValue) && (
                             <InputAdornment position="end">
                                 <IconButton aria-label="Copy open credential url">
                                     <OpenIcon color="primary" />
@@ -289,21 +304,16 @@ export class Form extends Component {
 }
 
 Form.defaultProps = {
-    credential: {
-        description: "",
-        username: "",
-        title: "",
-        url: "",
-        password: ""
-    }
+
 }
 
 const mapStateToProps = (state) => ({
     isEditing: state.credential.isEditing,
-    credential: state.credential.data
+    credential: state.credential.data,
+    forCreation: state.credential.isCreating
 })
 
 const mapDispatchToProps = {
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(Form)))
+export default withStyles(styles)(withSnackbar(connect(mapStateToProps, mapDispatchToProps)(Form)))
