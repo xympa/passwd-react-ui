@@ -40,21 +40,18 @@ export class Form extends Component {
         enqueueSnackbar: PropTypes.func.isRequired,
         isEditing: PropTypes.bool.isRequired,
         onFormChanged: PropTypes.func.isRequired,
-        forCreation: PropTypes.bool.isRequired,
     }
 
     constructor(props) {
         super(props)
 
         this._onFormChanged = _.debounce(props.onFormChanged, 100);
-
-
-
         this._handleChange = this._handleChange.bind(this);
         this._handleClickShowPassword = this._handleClickShowPassword.bind(this);
         this._handlePasswordGenerationChange = this._handlePasswordGenerationChange.bind(this)
         this._generatePassword = this._generatePassword.bind(this)
         this._fieldsFromCredential = this._fieldsFromCredential.bind(this)
+        this.updateFormToMatchStore = this.updateFormToMatchStore.bind(this)
 
         this.state = {
             fields: this._fieldsFromCredential(props.credential),
@@ -70,16 +67,18 @@ export class Form extends Component {
         };
     }
 
+
+
+    componentDidMount() {
+        this.updateFormToMatchStore();
+    }
+
     componentDidUpdate(prevProps, prevState) {
         const { fields } = this.state;
-        const { credential, forCreation } = this.props;
+        const { isEditing } = this.props;
 
-        if ((prevProps.credential !== credential && credential !== null) || forCreation !== prevProps.forCreation) {
-            const newFields = this._fieldsFromCredential(credential)
-            // eslint-disable-next-line react/no-did-update-set-state
-            this.setState({ fields: newFields });
-            this._onFormChanged(newFields);
-        }
+        if(prevProps.isEditing && !isEditing)
+            this.updateFormToMatchStore()
 
         if (prevState.fields !== fields)
             this._onFormChanged(fields)
@@ -176,6 +175,13 @@ export class Form extends Component {
                 password: this._handleChange('password', PasswordGenerator.generate(prevState.passwordGenerationOptions))()
             }
         }));
+    }
+
+    updateFormToMatchStore(){
+        const { credential} = this.props;
+        const newFields = this._fieldsFromCredential(credential)
+        this.setState({ fields: newFields });
+        this._onFormChanged(newFields);
     }
 
     render() {
@@ -301,10 +307,6 @@ export class Form extends Component {
             </div>
         )
     }
-}
-
-Form.defaultProps = {
-
 }
 
 const mapStateToProps = (state) => ({

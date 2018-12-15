@@ -54,7 +54,7 @@ export class CredentialModal extends Component {
         const { updateCredential, enqueueSnackbar } = this.props;
         const { form } = this.state;
 
-        const valid = Object.keys(form).filter(field => !form[field]    .valid).length === 0
+        const valid = Object.keys(form).filter(field => !form[field].valid).length === 0
 
         if (valid)
             updateCredential({
