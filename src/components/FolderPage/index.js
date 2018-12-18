@@ -101,15 +101,15 @@ export class FolderPage extends Component {
             <div>
                 <div style={{ flexDirection: "column", flex: 1 }}>
                     <div style={{ display: "flex", height: 64, paddingLeft: 64, paddingRight: 64, borderBottom: "1px solid #e0e0e0" }}>
-                        <IconButton disabled={openFolderId === null} color="secondary" style={{ flex: 0 }} onClick={this._homeButtonHandle}>
-                            <HomeIcon style={{ fontSize: "2rem" }} />
-                        </IconButton>
-                        <IconButton disabled={openFolderId === null} color="secondary" style={{ flex: 0 }} onClick={this._upButtonHandle}>
-                            <UpArrowIcon style={{ fontSize: "2rem" }}  />
+                        <IconButton disabled={openFolderId === null} color="secondary" style={{ width: 64 }} onClick={this._homeButtonHandle}>
+                            <HomeIcon style={{ fontSize: 32 }} />
+                        </IconButton>   
+                        <IconButton disabled={openFolderId === null} color="secondary" style={{ width: 64 }} onClick={this._upButtonHandle}>
+                            <UpArrowIcon style={{ fontSize: 32 }}  />
                         </IconButton>
                         <FolderBreadcrumbs />
-                        <IconButton style={{ flex: 0 }}>
-                            <SettingsIcon style={{ fontSize: "2rem" }} color="secondary" />
+                        <IconButton style={{ width: 64 }}>
+                            <SettingsIcon style={{ fontSize: 32 }} color="secondary" />
                         </IconButton>
                     </div>
                     <Fade in={!isFetching}>
