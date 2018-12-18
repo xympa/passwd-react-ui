@@ -67,17 +67,16 @@ export class Form extends Component {
         };
     }
 
-
-
     componentDidMount() {
         this.updateFormToMatchStore();
     }
 
     componentDidUpdate(prevProps, prevState) {
         const { fields } = this.state;
-        const { isEditing } = this.props;
+        const { isEditing, credential } = this.props;
 
-        if(prevProps.isEditing && !isEditing)
+
+        if((prevProps.isEditing && !isEditing) || prevProps.credential !== credential)
             this.updateFormToMatchStore()
 
         if (prevState.fields !== fields)

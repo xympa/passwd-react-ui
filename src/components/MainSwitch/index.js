@@ -4,6 +4,8 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { withStyles } from '@material-ui/core/styles'
+
+
 import LoginPage from '../LoginPage'
 import { checkAuthValidity } from '../../actions/AuthenticationActions'
 import Header from '../Header'
@@ -35,7 +37,7 @@ export class MainSwitch extends Component {
 
     render() {
 
-        const {classes, isLoggedIn} = this.props;
+        const { classes, isLoggedIn } = this.props;
 
         if (!isLoggedIn)
             return (

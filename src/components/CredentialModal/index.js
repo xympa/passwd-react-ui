@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles'
 import { withSnackbar } from 'notistack';
 import CredentialForm from './Form'
 import ModalHeader from './Header'
-import { updateCredential, deleteCredential, insertCredential } from '../../actions/CredentialActions'
+import { updateCredential, deleteCredential, insertCredential, setFetching } from '../../actions/CredentialActions'
 
 
 const styles = () => ({
@@ -27,6 +27,7 @@ export class CredentialModal extends Component {
         insertCredential: PropTypes.func.isRequired,
         isCreating: PropTypes.bool.isRequired,
         enqueueSnackbar: PropTypes.func.isRequired,
+        setFetching: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -51,7 +52,7 @@ export class CredentialModal extends Component {
     }
 
     submitFormForUpdate() {
-        const { updateCredential, enqueueSnackbar } = this.props;
+        const { updateCredential, enqueueSnackbar, setFetching } = this.props;
         const { form } = this.state;
 
         const valid = Object.keys(form).filter(field => !form[field].valid).length === 0
@@ -64,13 +65,22 @@ export class CredentialModal extends Component {
                 password: form.password.sanitizedValue,
                 url: form.url.sanitizedValue,
             })
+                .catch((error) => {
+                    enqueueSnackbar(error.message, {
+                        variant: "error"
+                    })
+                    setFetching(false)
+
+                })
         else {
-            enqueueSnackbar('Some fields look invalid please check the form again')
+            enqueueSnackbar('Some fields look invalid please check the form again', {
+                variant: "error"
+            })
         }
     }
 
     submitFormForInsert() {
-        const { insertCredential, enqueueSnackbar } = this.props;
+        const { insertCredential, enqueueSnackbar, setFetching } = this.props;
         const { form } = this.state;
 
         const valid = Object.keys(form).filter(field => !form[field].valid).length === 0
@@ -83,14 +93,33 @@ export class CredentialModal extends Component {
                 password: form.password.sanitizedValue,
                 url: form.url.sanitizedValue,
             })
+                .catch((error) => {
+                    enqueueSnackbar(error.message, {
+                        variant: "error"
+                    })
+                    setFetching(false)
+                })
         else {
-            enqueueSnackbar('Some fields look invalid please check the form again')
+            enqueueSnackbar('Some fields look invalid please check the form again', {
+                variant: "error"
+            })
         }
+    }
+
+    attemptDelete() {
+        const { deleteCredential, enqueueSnackbar, setFetching } = this.props;
+        deleteCredential()
+            .catch((error) => {
+                enqueueSnackbar(error.message, {
+                    variant: "error"
+                })
+                setFetching(false)
+            })
     }
 
     render() {
         const { isShowing } = this.state;
-        const { isFetching, isEditing, deleteCredential, isCreating } = this.props;
+        const { isFetching, isEditing, isCreating } = this.props;
 
         return (
             <Dialog open={isShowing} maxWidth="lg" TransitionComponent={Zoom}>
@@ -99,12 +128,12 @@ export class CredentialModal extends Component {
                 </DialogTitle>
                 <DialogContent>
                     {isFetching && <CircularProgress />}
-                    {!isFetching && <CredentialForm onFormChanged={(form) => { console.log("my form ", form); this.setState({ form: form }); }} />}
+                    <div style={isFetching ? { display: "none" } : {}}><CredentialForm onFormChanged={(form) => { this.setState({ form: form }); }} /></div>
                 </DialogContent>
                 {!isCreating ? (
                     <Fade in={isEditing}>
                         <DialogActions>
-                            <Button variant="contained" onClick={deleteCredential}>
+                            <Button variant="contained" onClick={this.attemptDelete}>
                                 Delete
                             </Button>
                             <div style={{ flex: 1 }} />
@@ -137,7 +166,8 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
     updateCredential,
     deleteCredential,
-    insertCredential
+    insertCredential,
+    setFetching
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(CredentialModal)))

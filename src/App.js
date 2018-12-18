@@ -9,11 +9,10 @@ import { createStore, applyMiddleware } from "redux";
 import thunk from 'redux-thunk';
 import { Provider } from "react-redux";
 import reducers from './reducers';
-import { SnackbarProvider } from 'notistack';
+import { SnackbarProvider, withSnackbar } from 'notistack';
 import MainSwitch from './components/MainSwitch';
 import { BrowserRouter } from 'react-router-dom';
-import autoMergeLevel1 from 'redux-persist/es/stateReconciler/autoMergeLevel1';
-import hardSet from 'redux-persist/es/stateReconciler/hardSet';
+import axios from 'axios'
 
 
 const theme = createMuiTheme({
@@ -79,10 +78,48 @@ export const persistor = persistStore(store);
 
 document.body.style.margin = 0;
 
+axios.interceptors.response.use(function (response) {
+    // Do something with response data
+    return response;
+}, (error) => {
+    // Do something with response error
+
+    if (error.response) {
+        switch (error.response.status) {
+            case 401:
+                error.message = "A sua sessão não é válida!"
+                break;
+            case 403:
+                error.message = "Não tem permissões para executar essa ação!"
+                break;
+            case 404:
+                error.message = "O recurso pedido não foi encontrado pelo servidor..."
+                break;
+            case 406:
+                error.message = "O servidor declarou que os dados recebidos não era aceitáveis, talvez exista um erro com o formulário enviado."
+                break;
+            case 500:
+                error.message = "O servidor encontrou um erro interno :("
+                break;
+            default:
+                error.message = "Ocorreu um erro de servidor desconhecido... Código: " + error.response.status;
+                break;
+        }
+    }
+    else if (error.request) {
+        // The request was made but no response was received
+        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+        // http.ClientRequest in node.js
+        error.message = "O servidor terminou a ligação de forma inesperada sem oferecer qualquer resposta..."
+    }
+
+    return Promise.reject(error);
+});
+
 class App extends Component {
     render() {
         return (
-            <MuiThemeProvider theme={theme}>
+            <MuiThemeProvider theme={theme} >
                 <SnackbarProvider maxSnack={3}>
                     <Provider store={store}>
                         <PersistGate loading={(<div>LoadingState</div>)} persistor={persistor}>
@@ -96,7 +133,5 @@ class App extends Component {
         );
     }
 }
-
-
 
 export default App;

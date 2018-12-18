@@ -4,6 +4,28 @@ import { CLOSED_CREDENTIAL, FETCHED_CREDENTIAL, OPENED_CREDENTIAL, CREDENTIAL_TO
 import { networkDecode, networkEncode } from '../EnsoSharedBridge';
 import { fetchFolderContents } from './FolderActions'
 
+const parse406Error = (error) => {
+    switch (error.response && error.response.status === 406 && error.response.data) {
+        case 1:
+            error.message = "O url é inválido";
+            break;
+        case 2:
+            error.message = "O titulo é inválido";
+            break;
+        case 3:
+            error.message = "Já existe uma credencial com esse titulo";
+            break;
+        case 4:
+            error.message = "A password é obrigatória";
+            break;
+        case 5:
+            error.message = "O servidor não reconhece a pasta onde está a tentar criar a credencial";
+            break;
+    }
+
+    return Promise.reject(error);
+}
+
 export const fetchCredential = (id) => (dispatch, getState) => {
 
     const { username, sessionKey } = getState().authentication;
@@ -22,7 +44,7 @@ export const fetchCredential = (id) => (dispatch, getState) => {
         .then(response => {
             dispatch(setOpenCredentialInfo(response.data));
         })
-        .catch(() => { })
+        .catch(parse406Error)
 };
 
 const setOpenCredentialInfo = info => ({
@@ -40,7 +62,7 @@ const setOpenCredential = (id) => ({
 
 export const openCredential = id => dispatch => {
     dispatch(setOpenCredential(id))
-    dispatch(fetchCredential(id))
+    return dispatch(fetchCredential(id))
 
 }
 
@@ -69,7 +91,7 @@ export const beginCredentialCreation = () => dispatch => {
     })
 }
 
-export const requestCredentialUpdate = credential => (dispatch, getState) => {
+const requestCredentialUpdate = credential => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
     const { idCredentials, belongsToFolder, } = getState().credential.data
 
@@ -92,14 +114,18 @@ export const requestCredentialUpdate = credential => (dispatch, getState) => {
                 url: credential.url
             }
         })
+        .catch(parse406Error)
+
 }
 
 export const updateCredential = credential => (dispatch, getState) => {
     dispatch({ type: CREDENTIAL_SET_FETCHING, payload: true });
 
-    dispatch(requestCredentialUpdate(credential)).then(() => {
-        dispatch(fetchCredential(getState().credential.data.idCredentials))
-        dispatch(fetchFolderContents())
+    return dispatch(requestCredentialUpdate(credential)).then(() => {
+        return Promise.all([
+            dispatch(fetchCredential(getState().credential.data.idCredentials)),
+            dispatch(fetchFolderContents())
+        ])
     })
 }
 
@@ -121,23 +147,22 @@ export const requestCredentialDeletion = () => (dispatch, getState) => {
                 credentialId: idCredentials
             }
         })
+        .catch(parse406Error)
+
 }
 
 export const deleteCredential = () => dispatch => {
-    dispatch(requestCredentialDeletion()).then(() => {
+    return dispatch(requestCredentialDeletion()).then(() => {
         dispatch(closeCredential());
-        dispatch(fetchFolderContents())
+        return dispatch(fetchFolderContents())
     })
 }
 
 export const requestCredentialInsertion = credential => (dispatch, getState) => {
-    console.log(getState())
-
-
     const { username, sessionKey } = getState().authentication;
     const belongsToFolder = getState().folder.folderInfo.idFolders
 
-    if(belongsToFolder === null)
+    if (belongsToFolder === null)
         return Promise.reject("Attempted to create a credential in root");
 
     var url = `${REST_BASE}credential/`;
@@ -158,14 +183,18 @@ export const requestCredentialInsertion = credential => (dispatch, getState) => 
                 url: credential.url
             }
         })
+        .catch(parse406Error)
+
 }
 
-export const insertCredential = credential => (dispatch, getState) => {
+export const insertCredential = credential => dispatch => {
     dispatch({ type: CREDENTIAL_SET_FETCHING, payload: true });
 
-    dispatch(requestCredentialInsertion(credential))
-    .then((response) => {
-        dispatch(openCredential(response.data))
-        dispatch(fetchFolderContents())
-    })
+    return dispatch(requestCredentialInsertion(credential))
+        .then((response) => {
+            return Promise.all([
+                dispatch(openCredential(response.data)),
+                dispatch(fetchFolderContents())
+            ])
+        })
 }
