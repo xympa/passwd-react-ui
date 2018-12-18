@@ -116,22 +116,19 @@ axios.interceptors.response.use(function (response) {
     return Promise.reject(error);
 });
 
-class App extends Component {
-    render() {
-        return (
-            <MuiThemeProvider theme={theme} >
-                <SnackbarProvider maxSnack={3}>
-                    <Provider store={store}>
-                        <PersistGate loading={(<div>LoadingState</div>)} persistor={persistor}>
-                            <BrowserRouter>
-                                <MainSwitch />
-                            </BrowserRouter>
-                        </PersistGate>
-                    </Provider>
-                </SnackbarProvider>
-            </MuiThemeProvider >
-        );
-    }
-}
+const App = () => (
+    <MuiThemeProvider theme={theme}>
+        <SnackbarProvider maxSnack={3}>
+            <Provider store={store}>
+                <PersistGate loading={(<div>LoadingState</div>)} persistor={persistor}>
+                    <BrowserRouter>
+                        <MainSwitch />
+                    </BrowserRouter>
+                </PersistGate>
+            </Provider>
+        </SnackbarProvider>
+    </MuiThemeProvider>
+)
 
-export default App;
+
+export default App

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { networkDecode, networkEncode } from '../EnsoSharedBridge';
 import { REST_BASE } from '../constants/rest'
 import { FETCHED_FOLDER_CONTENTS, FETCHED_FOLDER_PATH, OPEN_FOLDER, FINISHED_FETCHING_FOLDER, FETCHED_FOLDER_INFO, STARTED_FETCHING_FOLDER } from './actionTypes'
 
@@ -24,7 +25,10 @@ export const fetchFolderContents = () => (dispatch, getState) => {
 
             return new Promise(resolve => {
                 if (response.data.search === getState().search.value) {
-                    dispatch(updateFolderContents(response.data));
+                    dispatch(updateFolderContents({
+                        ...response.data,
+                        credentials: response.data.credentials.map(cred => ({...cred, password: networkDecode(cred.password)}))
+                    }));
                     resolve(true)
                 } else {
                     resolve(false)

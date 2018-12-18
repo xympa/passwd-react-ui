@@ -1,11 +1,17 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { ListItem, Avatar, ListItemText, Typography, Chip } from '@material-ui/core';
+import { ListItem, Avatar, ListItemText, Typography, Chip, Button, Fade } from '@material-ui/core';
 import LockIcon from '@material-ui/icons/Lock'
 import GroupIcon from '@material-ui/icons/Group'
 import { withStyles } from '@material-ui/core/styles'
+import { CopyToClipboard } from 'react-copy-to-clipboard'
+import CopyIcon from '@material-ui/icons/FileCopyOutlined'
+import OpenIcon from '@material-ui/icons/OpenInNew'
+import { withSnackbar } from 'notistack'
+import Validator from 'validator'
 import { openCredential } from '../../actions/CredentialActions'
+
 
 const styles = theme => ({
     avatar: {
@@ -26,33 +32,99 @@ const styles = theme => ({
     }
 });
 
-const CredentialListItem = (props) => {
-    const { classes, credential, style, openCredential } = props;
+class CredentialListItem extends React.PureComponent {
+
+    static propTypes = {
+        classes: PropTypes.object.isRequired,
+        credential: PropTypes.object.isRequired,
+        style: PropTypes.object,
+        openCredential: PropTypes.func.isRequired,
+        enqueueSnackbar: PropTypes.func.isRequired,
+    }
+
+    constructor(props) {
+        super(props)
+
+        this.state = {
+            hovered: false
+        }
+    }
 
 
-    return (
-        <ListItem style={{ ...style }} button onClick={() => { openCredential(credential.idCredentials) }}>
-            <Avatar className={classes.avatar}>
-                <LockIcon style={{ height: 32, width: 32 }} />
-            </Avatar>
-            <ListItemText
-                style={{ flex: 1 }}
-                primary={<Typography>{credential.title}</Typography>}
-                secondary={<Typography variant="caption" noWrap>{credential.description}</Typography>}
-            />
-            <div style={{ display: "flex", flex: 1, justifyContent: "flex-end" }}>
-                <Chip className={classes.margin} avatar={<Avatar><GroupIcon color="primary" /></Avatar>} label={"Criada por " + credential.createdById} />
-            </div>
-        </ListItem>
-    )
+    render() {
+        const { classes, credential, style, openCredential, enqueueSnackbar } = this.props;
+        const { hovered } = this.state;
+
+        return (
+            <ListItem
+                style={{ ...style }}
+                button
+                onClick={() => { openCredential(credential.idCredentials) }}
+                onMouseEnter={() => { this.setState({ hovered: true }) }}
+                onMouseLeave={() => { this.setState({ hovered: false }) }}
+            >
+                <Avatar className={classes.avatar}>
+                    <LockIcon style={{ height: 32, width: 32 }} />
+                </Avatar>
+                <ListItemText
+                    style={{ flex: 1 }}
+                    primary={<Typography>{credential.title}</Typography>}
+                    secondary={<Typography variant="caption" noWrap>{credential.description}</Typography>}
+                />
+                <div style={{ display: "flex", flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
+                    <Fade in={hovered}>
+                        <div style={{ display: "flex", marginRight: 50 }}>
+                            <CopyToClipboard
+                                text={credential.username}
+                                onCopy={() => { enqueueSnackbar("Username copied") }}
+                            >
+                                <Button color="secondary" onClick={(event) => { event.stopPropagation() }}>
+                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                        <CopyIcon />
+                                        <Typography variant="caption" color="secondary">
+                                            Copy
+                                        </Typography>
+                                        <Typography variant="caption" color="secondary">
+                                            Username
+                                        </Typography>
+                                    </div>
+                                </Button>
+                            </CopyToClipboard>
+                            <CopyToClipboard
+                                text={credential.password}
+                                onCopy={() => { enqueueSnackbar("Password copied") }}
+                            >
+                                <Button onClick={(event) => { event.stopPropagation() }}>
+                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                        <CopyIcon />
+                                        <Typography variant="caption">
+                                            Copy
+                                        </Typography>
+                                        <Typography variant="caption">
+                                            Password
+                                        </Typography>
+                                    </div>
+                                </Button>
+                            </CopyToClipboard>
+                            <Button disabled={!Validator.isURL(credential.url)} style={{ marginRight: 20 }} color="secondary" onClick={(event) => {event.stopPropagation(); window.open(credential.url, '_blank')}}>
+                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                    <OpenIcon />
+                                    <Typography variant="caption" color="secondary" style={!Validator.isURL(credential.url) ? { color: "rgba(0, 0, 0, 0.26)"} : {}}>
+                                        Open
+                                    </Typography>
+                                    <Typography variant="caption" color="secondary" style={!Validator.isURL(credential.url) ? { color: "rgba(0, 0, 0, 0.26)"} : {}}>
+                                        Url
+                                    </Typography>
+                                </div>
+                            </Button>
+                        </div>
+                    </Fade>
+                    <Chip className={classes.margin} avatar={<Avatar><GroupIcon color="primary" /></Avatar>} label={"Criada por " + credential.createdById} />
+                </div>
+            </ListItem>
+        )
+    }
 }
-
-CredentialListItem.propTypes = {
-    classes: PropTypes.object.isRequired,
-    credential: PropTypes.object.isRequired,
-    style: PropTypes.object,
-    openCredential: PropTypes.func.isRequired
-};
 
 const mapStateToProps = () => ({
 
@@ -62,4 +134,4 @@ const mapDispatchToProps = {
     openCredential
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(CredentialListItem))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(CredentialListItem)))

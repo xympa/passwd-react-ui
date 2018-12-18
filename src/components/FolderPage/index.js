@@ -90,8 +90,12 @@ export class FolderPage extends Component {
 
     render() {
 
+
         const { classes, contents, isFetching , openFolderId, beginCredentialCreation} = this.props;
         const { width, height } = this.state;
+
+        console.log(contents)
+
 
         return (
             <div>
@@ -138,7 +142,7 @@ export class FolderPage extends Component {
                     </Fade>
                 </div>
                 <Zoom
-                    in
+                    in={openFolderId !== null}
                     unmountOnExit
                 >
                     <Fab className={classes.fab} color="primary" onClick={() => {beginCredentialCreation()}}>
