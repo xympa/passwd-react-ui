@@ -18,7 +18,7 @@ const styles = theme => ({
 })
 
 const Header = (props) => {
-    const { closeCredential, isEditing, classes, toggleEditMode, isCreating, openId, composeMessage } = props;
+    const { closeModal, isEditing, classes, toggleEditMode, isCreating } = props;
 
     return (
         <div style={{ display: "flex", flex: 0, flexWrap: "nowrap" }}>
@@ -27,17 +27,14 @@ const Header = (props) => {
                     <IconButton aria-label="Delete" className={classes.margin} onClick={toggleEditMode}>
                         {isEditing ? <LockIcon color="secondary" /> : <OpenLockIcon color="secondary" />}
                     </IconButton>
-                    <IconButton aria-label="Delete" className={classes.margin} onClick={() => { composeMessage(openId) }}>
-                        <ShareIcon color="secondary" />
-                    </IconButton>
                 </div>
             ) : (
                     <div style={{ display: "flex", alignItems: "center" }}>
-                        <Typography variant="h5">Insert the details of the new credential</Typography>
+                        <Typography variant="h5">Insert the details of the new user</Typography>
                     </div>
                 )}
             <div style={{ flex: 1 }} />
-            <IconButton aria-label="Delete" className={classes.margin} onClick={closeCredential}>
+            <IconButton aria-label="Delete" className={classes.margin} onClick={closeModal}>
                 <CloseIcon color="secondary" />
             </IconButton>
         </div>
@@ -46,27 +43,9 @@ const Header = (props) => {
 
 Header.propTypes = {
     isEditing: PropTypes.bool.isRequired,
-    closeCredential: PropTypes.func.isRequired,
+    closeModal: PropTypes.func.isRequired,
     classes: PropTypes.object.isRequired,
     toggleEditMode: PropTypes.func.isRequired,
     isCreating: PropTypes.bool.isRequired,
-    openId: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.string
-    ]),
-    composeMessage: PropTypes.func.isRequired,
 }
-
-const mapStateToProps = (state) => ({
-    isEditing: state.credential.isEditing,
-    isCreating: state.credential.isCreating,
-    openId: state.credential.openCredential,
-})
-
-const mapDispatchToProps = {
-    closeCredential,
-    toggleEditMode,
-    composeMessage
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Header))
+export default withStyles(styles)(Header)

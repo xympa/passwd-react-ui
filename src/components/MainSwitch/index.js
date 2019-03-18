@@ -2,8 +2,9 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { Switch, Route, Redirect } from 'react-router-dom'
+import { Switch, Route, withRouter, matchPath } from 'react-router-dom'
 import { withStyles } from '@material-ui/core/styles'
+import { CssBaseline, Drawer, } from '@material-ui/core'
 
 
 import LoginPage from '../LoginPage'
@@ -11,11 +12,50 @@ import { checkAuthValidity } from '../../actions/AuthenticationActions'
 import Header from '../Header'
 import CredentialModal from '../CredentialModal'
 import FolderPage from '../FolderPage'
+import FolderAdministrationModal from '../FolderAdministrationModal';
+import DrawerContent from './DrawerContent';
+import InboxView from '../InboxView'
+import OutboxView from '../OutboxView'
+import { openFolder } from '../../actions/FolderActions'
+import MessageModal from '../MessageModal/MessageModal'
+import FolderAdminView from '../FolderAdminView';
+import LogsPage from '../LogsPage';
+import UserPage from '../UserPage';
 
-const styles = () => ({
+const drawerWidth = 240;
+
+const styles = theme => ({
+
     root: {
-        backgroundImage: `url(${require('../../assets/pattern_bg.png')})`,
-        minHeight: "calc(100vh - 64px)"
+        minHeight: "calc(100vh - 64px)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end"
+    },
+    drawer: {
+        [theme.breakpoints.up('sm')]: {
+            width: drawerWidth,
+            flexShrink: 0,
+        },
+    },
+    appBar: {
+        marginLeft: drawerWidth,
+        [theme.breakpoints.up('sm')]: {
+            width: `calc(100% - ${drawerWidth}px)`,
+        },
+    },
+    menuButton: {
+        marginRight: 20,
+        [theme.breakpoints.up('sm')]: {
+            display: 'none',
+        },
+    },
+    toolbar: theme.mixins.toolbar,
+    drawerPaper: {
+        width: drawerWidth,
+        height: `calc(100vh - 64px)`,
+        transform: "translateY(64px) !important",
+        overflowX: "hidden"
     }
 });
 
@@ -28,38 +68,91 @@ export class MainSwitch extends Component {
         classes: PropTypes.object.isRequired
     }
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            mobileOpen: true
+        }
+        this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
+        this.toggleMobileDrawer = this.toggleMobileDrawer.bind(this)
+    }
+
     componentDidMount() {
 
-        const { checkAuthValidity, sessionKey, username } = this.props;
+        const { checkAuthValidity, sessionKey, username, openFolder } = this.props;
 
-        checkAuthValidity(username, sessionKey);
+        checkAuthValidity(username, sessionKey)
+        openFolder(null)
+
+        window.addEventListener('resize', this.updateWindowDimensions);
+        this.updateWindowDimensions();
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.updateWindowDimensions);
+    }
+
+    updateWindowDimensions() {
+        this.setState({ width: window.innerWidth, height: window.innerHeight });
+    }
+
+    toggleMobileDrawer() {
+        this.setState(prevState => ({ mobileOpen: !prevState.mobileOpen }))
     }
 
     render() {
-
-        const { classes, isLoggedIn } = this.props;
+        const { classes, isLoggedIn, history, theme, rootFolders } = this.props;
+        const { width, mobileOpen } = this.state;
 
         if (!isLoggedIn)
-            return (
-                <Route path="/" component={LoginPage} />
-            );
-        else
-            return (
-                <div>
-                    <Header />
-                    <div className={classes.root}>
-                        <Switch>
-                            <Redirect exact path="/" to="/home" />
-                            <Route path="/home" component={FolderPage} />
-                        </Switch>
-                        <CredentialModal />
-                    </div>
-                </div>);
+            return <LoginPage />
+        else {
+            if (matchPath(history.location.pathname, { path: '/', exact: true }) || matchPath(history.location.pathname, { path: '/login', exact: true }))
+                history.replace("/home");
+        }
+
+        const isPermanent = width > 600;
+
+        return (
+            <div className={classes.root}>
+                <CssBaseline />
+                <Header onMenuClick={this.toggleMobileDrawer} />
+                <nav className={classes.drawer}>
+                    <Drawer
+                        variant={isPermanent ? "permanent" : "temporary"}
+                        anchor={theme.direction === 'rtl' ? 'right' : 'left'}
+                        open={mobileOpen}
+                        onBackdropClick={() => { this.setState({ mobileOpen: false }) }}
+                        onClose={this.handleDrawerToggle}
+                        classes={{
+                            paper: classes.drawerPaper,
+                        }}
+                    >
+                        <DrawerContent />
+                    </Drawer>
+                </nav>
+                <main style={{ width: `calc(100vw - ${isPermanent ? drawerWidth : 0}px)` }}>
+                    <Switch>
+                        <Route path="/home/:id?" render={props => (<FolderPage {...props} />)} />
+                        <Route path="/inbox" render={() => (<InboxView />)} />
+                        <Route path="/outbox" render={() => (<OutboxView />)} />
+                        <Route path="/folder-administration" render={() => (<FolderAdminView />)} />
+                        <Route path="/logs" render={() => (<LogsPage />)} />
+                        <Route path="/user-administration" render={() => (<UserPage />)} />
+                    </Switch>
+                    <CredentialModal />
+                    <FolderAdministrationModal />
+                    <MessageModal />
+                </main>
+            </div>
+        );
     }
 }
 
 const mapStateToProps = (state) => {
-
     return ({
         isLoggedIn: state.authentication.validity,
         username: state.authentication.username,
@@ -68,8 +161,9 @@ const mapStateToProps = (state) => {
 }
 
 const mapDispatchToProps = {
-    checkAuthValidity
+    checkAuthValidity,
+    openFolder
 }
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(MainSwitch))
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(withStyles(styles, { withTheme: true })(MainSwitch)))

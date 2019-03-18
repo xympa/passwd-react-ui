@@ -1,7 +1,4 @@
-import * as types from "../actions/actionTypes";
-import { CookieStorage } from 'redux-persist-cookie-storage';
-import Cookies from 'cookies-js';
-import { persistReducer } from 'redux-persist';
+import * as types from "../actions/actionTypes"
 
 const INITIAL_STATE = {
     username: undefined,

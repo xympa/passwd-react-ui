@@ -19,7 +19,8 @@ const styles = theme => ({
     form: {
         display: "flex",
         flexDirection: "column",
-        flex: 1
+        flex: 1,
+        width: "100%"
     },
     textField: {
         flex: 1
@@ -84,7 +85,6 @@ export class Form extends Component {
     }
 
     _fieldsFromCredential = (credential) => {
-
         if (credential == null)
             credential = {
                 description: "",
@@ -214,7 +214,7 @@ export class Form extends Component {
                                     text={fields.username.value}
                                     onCopy={() => { enqueueSnackbar("Username copied") }}
                                 >
-                                    <IconButton disabled={!isEditing} aria-label="Copy username to clipboard">
+                                    <IconButton aria-label="Copy username to clipboard">
                                         <CopyIcon color="primary" />
                                     </IconButton>
                                 </CopyToClipboard>
@@ -233,14 +233,14 @@ export class Form extends Component {
                                 onChange={this._handleChange('password')}
                                 endAdornment={(
                                     <InputAdornment position="end">
-                                        <IconButton disabled={!isEditing} aria-label="Toggle password visibility" onClick={this._handleClickShowPassword}>
+                                        <IconButton aria-label="Toggle password visibility" onClick={this._handleClickShowPassword}>
                                             {showPassword ? <VisibilityIcon color="primary" /> : <VisibilityOffIcon color="primary" />}
                                         </IconButton>
                                         <CopyToClipboard
                                             text={fields.password.value}
                                             onCopy={() => { enqueueSnackbar("Password copied") }}
                                         >
-                                            <IconButton disabled={!isEditing} aria-label="Copy password to clipboard">
+                                            <IconButton aria-label="Copy password to clipboard">
                                                 <CopyIcon color="primary" />
                                             </IconButton>
                                         </CopyToClipboard>
@@ -308,13 +308,4 @@ export class Form extends Component {
     }
 }
 
-const mapStateToProps = (state) => ({
-    isEditing: state.credential.isEditing,
-    credential: state.credential.data,
-    forCreation: state.credential.isCreating
-})
-
-const mapDispatchToProps = {
-}
-
-export default withStyles(styles)(withSnackbar(connect(mapStateToProps, mapDispatchToProps)(Form)))
+export default withStyles(styles)(withSnackbar(Form))

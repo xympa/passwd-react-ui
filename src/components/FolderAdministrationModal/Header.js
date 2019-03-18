@@ -2,13 +2,11 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import CloseIcon from '@material-ui/icons/Close'
-import ShareIcon from '@material-ui/icons/Share'
 import LockIcon from '@material-ui/icons/Lock'
 import OpenLockIcon from '@material-ui/icons/LockOpen'
 import { IconButton, Typography } from '@material-ui/core'
 import { withStyles } from '@material-ui/core/styles'
-import { closeCredential, toggleEditMode } from '../../actions/CredentialActions'
-import { composeMessage } from '../../actions/MessageActions'
+import { closeAdmin, toggleEditMode } from '../../actions/FolderAdminActions'
 
 const styles = theme => ({
     margin: {
@@ -18,7 +16,7 @@ const styles = theme => ({
 })
 
 const Header = (props) => {
-    const { closeCredential, isEditing, classes, toggleEditMode, isCreating, openId, composeMessage } = props;
+    const { closeAdmin, isEditing, classes, toggleEditMode, isCreating } = props;
 
     return (
         <div style={{ display: "flex", flex: 0, flexWrap: "nowrap" }}>
@@ -27,17 +25,14 @@ const Header = (props) => {
                     <IconButton aria-label="Delete" className={classes.margin} onClick={toggleEditMode}>
                         {isEditing ? <LockIcon color="secondary" /> : <OpenLockIcon color="secondary" />}
                     </IconButton>
-                    <IconButton aria-label="Delete" className={classes.margin} onClick={() => { composeMessage(openId) }}>
-                        <ShareIcon color="secondary" />
-                    </IconButton>
                 </div>
             ) : (
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <Typography variant="h5">Insert the details of the new credential</Typography>
+                    <div style={{display: "flex", alignItems: "center"}}>
+                        <Typography variant="h5">Insert the details of the new Folder</Typography>
                     </div>
                 )}
             <div style={{ flex: 1 }} />
-            <IconButton aria-label="Delete" className={classes.margin} onClick={closeCredential}>
+            <IconButton aria-label="Delete" className={classes.margin} onClick={closeAdmin}>
                 <CloseIcon color="secondary" />
             </IconButton>
         </div>
@@ -46,27 +41,20 @@ const Header = (props) => {
 
 Header.propTypes = {
     isEditing: PropTypes.bool.isRequired,
-    closeCredential: PropTypes.func.isRequired,
+    closeAdmin: PropTypes.func.isRequired,
     classes: PropTypes.object.isRequired,
     toggleEditMode: PropTypes.func.isRequired,
     isCreating: PropTypes.bool.isRequired,
-    openId: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.string
-    ]),
-    composeMessage: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = (state) => ({
-    isEditing: state.credential.isEditing,
-    isCreating: state.credential.isCreating,
-    openId: state.credential.openCredential,
+    isEditing: state.folderAdmin.isEditing,
+    isCreating: state.folderAdmin.isCreating
 })
 
 const mapDispatchToProps = {
-    closeCredential,
-    toggleEditMode,
-    composeMessage
+    closeAdmin,
+    toggleEditMode
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Header))

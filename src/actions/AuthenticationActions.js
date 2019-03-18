@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { REST_BASE } from '../constants/rest'
+import { REST_BASE } from '../AppConfig'
 import { CHECK_AUTH, PERFORM_LOGIN, LOGOUT } from './actionTypes'
 
 export const checkAuthValidity = (username, sessionkey) => dispatch => {

@@ -28,6 +28,7 @@ export class CredentialModal extends Component {
         isCreating: PropTypes.bool.isRequired,
         enqueueSnackbar: PropTypes.func.isRequired,
         setFetching: PropTypes.func.isRequired,
+        credential: PropTypes.object,
     }
 
     constructor(props) {
@@ -40,6 +41,7 @@ export class CredentialModal extends Component {
 
         this.submitFormForUpdate = this.submitFormForUpdate.bind(this)
         this.submitFormForInsert = this.submitFormForInsert.bind(this)
+        this.attemptDelete = this.attemptDelete.bind(this)
     }
 
 
@@ -119,7 +121,7 @@ export class CredentialModal extends Component {
 
     render() {
         const { isShowing } = this.state;
-        const { isFetching, isEditing, isCreating } = this.props;
+        const { isFetching, isEditing, isCreating, credential } = this.props;
 
         return (
             <Dialog open={isShowing} maxWidth="lg" TransitionComponent={Zoom}>
@@ -128,7 +130,9 @@ export class CredentialModal extends Component {
                 </DialogTitle>
                 <DialogContent>
                     {isFetching && <CircularProgress />}
-                    <div style={isFetching ? { display: "none" } : {}}><CredentialForm onFormChanged={(form) => { this.setState({ form: form }); }} /></div>
+                    <div style={isFetching ? { display: "none" } : {}}>
+                    <CredentialForm isEditing={isEditing} credential={credential} onFormChanged={(form) => { this.setState({ form: form }); }} />
+                    </div>
                 </DialogContent>
                 {!isCreating ? (
                     <Fade in={isEditing}>

@@ -1,18 +1,22 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 import { PersistGate } from 'redux-persist/lib/integration/react';
 import { persistStore, persistReducer } from 'redux-persist';
 import { CookieStorage } from 'redux-persist-cookie-storage';
+import { MuiPickersUtilsProvider } from 'material-ui-pickers';
 import Cookies from 'cookies-js';
 import { createStore, applyMiddleware } from "redux";
 import thunk from 'redux-thunk';
 import { Provider } from "react-redux";
-import reducers from './reducers';
-import { SnackbarProvider, withSnackbar } from 'notistack';
-import MainSwitch from './components/MainSwitch';
-import { BrowserRouter } from 'react-router-dom';
+import { SnackbarProvider } from 'notistack';
+import { BrowserRouter, HashRouter } from 'react-router-dom';
+import MomentUtils from '@date-io/moment'
 import axios from 'axios'
+// eslint-disable-next-line import/no-named-as-default
+import MainSwitch from './components/MainSwitch';
+import reducers from './reducers';
+import { useHashRouter } from './AppConfig'
 
 
 const theme = createMuiTheme({
@@ -116,17 +120,21 @@ axios.interceptors.response.use(function (response) {
     return Promise.reject(error);
 });
 
+const Router = useHashRouter ? HashRouter : BrowserRouter;
+
 const App = () => (
     <MuiThemeProvider theme={theme}>
-        <SnackbarProvider maxSnack={3}>
-            <Provider store={store}>
-                <PersistGate loading={(<div>LoadingState</div>)} persistor={persistor}>
-                    <BrowserRouter>
-                        <MainSwitch />
-                    </BrowserRouter>
-                </PersistGate>
-            </Provider>
-        </SnackbarProvider>
+        <MuiPickersUtilsProvider utils={MomentUtils}>
+            <SnackbarProvider maxSnack={3}>
+                <Provider store={store}>
+                    <PersistGate loading={(<div>LoadingState</div>)} persistor={persistor}>
+                        <Router>
+                            <MainSwitch />
+                        </Router>
+                    </PersistGate>
+                </Provider>
+            </SnackbarProvider>
+        </MuiPickersUtilsProvider>
     </MuiThemeProvider>
 )
 

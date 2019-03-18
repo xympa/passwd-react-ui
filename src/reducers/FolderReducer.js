@@ -9,7 +9,7 @@ const INITIAL_STATE = {
     openId: null,
     folderInfo: null,
     permissions: [],
-    isFetching: false
+    isFetching: false,
 };
 
 const FolderReducer = (state = INITIAL_STATE, action) => {
@@ -28,7 +28,6 @@ const FolderReducer = (state = INITIAL_STATE, action) => {
             return {
                 ...state,
                 openId: action.payload,
-                isFetching: true
             }
         case types.FETCHED_FOLDER_INFO:
             return {

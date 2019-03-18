@@ -47,7 +47,7 @@ export class FolderBreadcrumbs extends Component {
                     })
                 })()}
                 {
-                    search.trim() != "" && (
+                    search.trim() !== "" && (
                         <Button disabled>
                             <SearchIcon />
                             {`Looking for: "${search}"`}

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { REST_BASE } from '../constants/rest'
+import { REST_BASE } from '../AppConfig'
 import { CLOSED_CREDENTIAL, FETCHED_CREDENTIAL, OPENED_CREDENTIAL, CREDENTIAL_TOGGLE_EDIT_MODE, CREDENTIAL_SET_FETCHING, CREDENTIAL_BEGIN_CREATION } from './actionTypes'
 import { networkDecode, networkEncode } from '../EnsoSharedBridge';
 import { fetchFolderContents } from './FolderActions'
@@ -21,12 +21,21 @@ const parse406Error = (error) => {
         case 5:
             error.message = "O servidor não reconhece a pasta onde está a tentar criar a credencial";
             break;
+        default:
+            error.message = "406 com resposta " + JSON.stringify(error.response.data, null, 2);
     }
 
     return Promise.reject(error);
 }
 
-export const fetchCredential = (id) => (dispatch, getState) => {
+export const fetchCredential = id => dispatch => {
+    return dispatch(requestCredentialInfo(id))
+        .then(response => {
+            dispatch(setOpenCredentialInfo(response.data));
+        })
+};
+
+export const requestCredentialInfo = id => (dispatch, getState) => {
 
     const { username, sessionKey } = getState().authentication;
 
@@ -41,11 +50,8 @@ export const fetchCredential = (id) => (dispatch, getState) => {
                 credentialId: id
             }
         })
-        .then(response => {
-            dispatch(setOpenCredentialInfo(response.data));
-        })
         .catch(parse406Error)
-};
+}
 
 const setOpenCredentialInfo = info => ({
     type: FETCHED_CREDENTIAL,

@@ -1,12 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
 import { ListItem, Avatar, ListItemText, Typography, Chip } from '@material-ui/core';
 import FolderIcon from '@material-ui/icons/Folder'
 import KeyIcon from '@material-ui/icons/VpnKey'
+import { withRouter } from 'react-router-dom'
 import GroupIcon from '@material-ui/icons/Group'
 import { withStyles } from '@material-ui/core/styles'
-import { openFolder } from '../../actions/FolderActions'
 
 const styles = theme => ({
     avatar: {
@@ -29,10 +28,10 @@ const styles = theme => ({
 
 
 const FolderListItem = (props) => {
-    const { classes, folder, openFolder, style } = props;
+    const { classes, folder, style, onClick } = props;
 
     return (
-        <ListItem style={{ ...style }} button onClick={() => { openFolder(folder.idFolders) }}>
+        <ListItem style={{ ...style }} button onClick={onClick}>
             <Avatar className={classes.avatar}>
                 <FolderIcon style={{ height: 32, width: 32 }} />
             </Avatar>
@@ -52,7 +51,7 @@ const FolderListItem = (props) => {
                     avatar={<Avatar><KeyIcon color="primary" /></Avatar>}
                     label={`${folder.credentialChildren} credenciais contidas`}
                 />
-                <Chip className={classes.margin} avatar={<Avatar><GroupIcon color="primary" /></Avatar>} label="? outras pessoas têm acesso" />
+                {/*<Chip className={classes.margin} avatar={<Avatar><GroupIcon color="primary" /></Avatar>} label="? outras pessoas têm acesso" />*/}
             </div>
         </ListItem>
     )
@@ -61,16 +60,8 @@ const FolderListItem = (props) => {
 FolderListItem.propTypes = {
     classes: PropTypes.object.isRequired,
     folder: PropTypes.object.isRequired,
-    openFolder: PropTypes.func.isRequired,
+    onClick: PropTypes.func,
     style: PropTypes.object
 }
 
-const mapStateToProps = () => ({
-
-})
-
-const mapDispatchToProps = {
-    openFolder
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(FolderListItem))
+export default withStyles(styles)(withRouter(FolderListItem))
