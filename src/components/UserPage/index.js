@@ -8,7 +8,8 @@ import CreateIcon from '@material-ui/icons/Create'
 import { fetchUserList } from '../../actions/UserActions'
 import { replaceSearchAction, removeSearchAction } from '../../actions/SearchActions'
 import { measureElement } from '../../Utils'
-import UserListItem from '../UserListItem';
+import UserListItem from '../UserListItem'
+import UserAdminModal from '../UserAdminModal'
 
 const styles = theme => ({
     fab: {
@@ -44,6 +45,7 @@ export class UserPage extends Component {
             error: undefined,
             width: window.innerWidth,
             height: window.innerHeight,
+            isCreationModalShowing: false
         }
 
         this.reloadViewContents = this.reloadViewContents.bind(this)
@@ -70,7 +72,7 @@ export class UserPage extends Component {
     reloadViewContents(resolve) {
         const { fetchUserList } = this.props;
 
-        
+
 
         this.setState({ isFetching: true }, () => {
             fetchUserList()
@@ -90,7 +92,7 @@ export class UserPage extends Component {
 
     render() {
 
-        const { isFetching, error, width, height } = this.state;
+        const { isFetching, error, width, height, isCreationModalShowing } = this.state;
 
         const { users, classes, createUser } = this.props;
 
@@ -127,10 +129,23 @@ export class UserPage extends Component {
                     </Fade>
                 </div>
                 <Zoom in>
-                    <Fab className={classes.fab} color="secondary" onClick={() => { createUser() }}>
+                    <Fab
+                        className={classes.fab}
+                        color="secondary"
+                        onClick={() => {
+                            this.setState({ isCreationModalShowing: true })
+                        }}
+                    >
                         <CreateIcon />
                     </Fab>
                 </Zoom>
+                <UserAdminModal
+                    forCreation
+                    open={isCreationModalShowing}
+                    onRequestClose={() => {
+                        this.setState({ isCreationModalShowing: false })
+                    }}
+                />
             </div>
         )
     }
@@ -143,7 +158,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
     fetchUserList,
     removeSearchAction,
-    replaceSearchAction
+    replaceSearchAction,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(UserPage))

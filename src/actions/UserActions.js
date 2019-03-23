@@ -28,7 +28,7 @@ export const requestUserList = (useSearch = false) => (dispatch, getState) => {
         })
 }
 
-export const requestUser = () => (dispatch, getState) => {
+export const requestUser = usernameToFetch => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
 
     var url = `${REST_BASE}users/`;
@@ -39,7 +39,7 @@ export const requestUser = () => (dispatch, getState) => {
             params: {
                 authusername: username,
                 sessionkey: sessionKey,
-                username: username
+                username: usernameToFetch
             }
         })
 }
@@ -55,3 +55,54 @@ export const fetchUserList = () => (dispatch) => new Promise(resolve => {
             resolve()
         })
 })
+
+export const requestUserCreation = user => (dispatch, getState) => {
+    const { username, sessionKey } = getState().authentication;
+
+    var url = `${REST_BASE}users/`;
+    return axios(
+        {
+            url: url,
+            method: "post",
+            params: {
+                authusername: username,
+                sessionkey: sessionKey,
+
+                ...user
+            }
+        })
+}
+
+export const requestUserEdit = user => (dispatch, getState) => {
+    const { username, sessionKey } = getState().authentication;
+
+    var url = `${REST_BASE}users/`;
+    return axios(
+        {
+            url: url,
+            method: "put",
+            params: {
+                authusername: username,
+                sessionkey: sessionKey,
+
+                ...user
+            }
+        })
+}
+
+export const requestUserRemoval = usernameToDelete => (dispatch, getState) => {
+    const { username, sessionKey } = getState().authentication;
+
+    var url = `${REST_BASE}users/`;
+    return axios(
+        {
+            url: url,
+            method: "delete",
+            params: {
+                authusername: username,
+                sessionkey: sessionKey,
+
+                username: usernameToDelete
+            }
+        })
+}

@@ -59,8 +59,6 @@ class UserListItem extends React.Component {
         const { classes, style, user, messageId, openMessage } = this.props;
         const { isModalOpen, hovered } = this.state
 
-        console.log(this.state)
-
         return (
             <div>
                 <ListItem
