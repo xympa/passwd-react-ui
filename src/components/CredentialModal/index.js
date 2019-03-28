@@ -8,6 +8,7 @@ import { withSnackbar } from 'notistack';
 import CredentialForm from './Form'
 import ModalHeader from './Header'
 import { updateCredential, deleteCredential, insertCredential, setFetching } from '../../actions/CredentialActions'
+import { Translate, withLocalize } from 'react-localize-redux';
 
 
 const styles = () => ({
@@ -29,6 +30,7 @@ export class CredentialModal extends Component {
         enqueueSnackbar: PropTypes.func.isRequired,
         setFetching: PropTypes.func.isRequired,
         credential: PropTypes.object,
+        translate: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -54,7 +56,7 @@ export class CredentialModal extends Component {
     }
 
     submitFormForUpdate() {
-        const { updateCredential, enqueueSnackbar, setFetching } = this.props;
+        const { updateCredential, enqueueSnackbar, setFetching, translate } = this.props;
         const { form } = this.state;
 
         const valid = Object.keys(form).filter(field => !form[field].valid).length === 0
@@ -75,14 +77,14 @@ export class CredentialModal extends Component {
 
                 })
         else {
-            enqueueSnackbar('Some fields look invalid please check the form again', {
+            enqueueSnackbar(translate("badForm"), {
                 variant: "error"
             })
         }
     }
 
     submitFormForInsert() {
-        const { insertCredential, enqueueSnackbar, setFetching } = this.props;
+        const { insertCredential, enqueueSnackbar, setFetching, translate } = this.props;
         const { form } = this.state;
 
         const valid = Object.keys(form).filter(field => !form[field].valid).length === 0
@@ -102,7 +104,7 @@ export class CredentialModal extends Component {
                     setFetching(false)
                 })
         else {
-            enqueueSnackbar('Some fields look invalid please check the form again', {
+            enqueueSnackbar(translate("badForm"), {
                 variant: "error"
             })
         }
@@ -131,25 +133,26 @@ export class CredentialModal extends Component {
                 <DialogContent>
                     {isFetching && <CircularProgress />}
                     <div style={isFetching ? { display: "none" } : {}}>
-                    <CredentialForm isEditing={isEditing} credential={credential} onFormChanged={(form) => { this.setState({ form: form }); }} />
+                        <CredentialForm isEditing={isEditing} credential={credential} onFormChanged={(form) => { this.setState({ form: form }); }} />
                     </div>
                 </DialogContent>
                 {!isCreating ? (
                     <Fade in={isEditing}>
                         <DialogActions>
                             <Button variant="contained" onClick={this.attemptDelete}>
-                                Delete
+                                <Translate id="delete" />
                             </Button>
                             <div style={{ flex: 1 }} />
                             <Button variant="contained" style={{ justifySelf: "flex-start" }} onClick={this.submitFormForUpdate} color="secondary">
-                                Save
+                                <Translate id="save" />
                             </Button>
                         </DialogActions>
-                    </Fade>) : (
+                    </Fade>
+                ) : (
                         <Fade in>
                             <DialogActions>
                                 <Button variant="contained" onClick={this.submitFormForInsert}>
-                                    Create
+                                    <Translate id="create" />
                                 </Button>
                             </DialogActions>
                         </Fade>
@@ -174,4 +177,4 @@ const mapDispatchToProps = {
     setFetching
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(CredentialModal)))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(withLocalize(CredentialModal))))

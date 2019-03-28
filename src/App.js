@@ -17,6 +17,7 @@ import axios from 'axios'
 import MainSwitch from './components/MainSwitch';
 import reducers from './reducers';
 import { useHashRouter } from './AppConfig'
+import { LocalizeProvider } from 'react-localize-redux';
 
 
 const theme = createMuiTheme({
@@ -123,19 +124,21 @@ axios.interceptors.response.use(function (response) {
 const Router = useHashRouter ? HashRouter : BrowserRouter;
 
 const App = () => (
-    <MuiThemeProvider theme={theme}>
-        <MuiPickersUtilsProvider utils={MomentUtils}>
-            <SnackbarProvider maxSnack={3}>
-                <Provider store={store}>
-                    <PersistGate loading={(<div>LoadingState</div>)} persistor={persistor}>
-                        <Router>
-                            <MainSwitch />
-                        </Router>
-                    </PersistGate>
-                </Provider>
-            </SnackbarProvider>
-        </MuiPickersUtilsProvider>
-    </MuiThemeProvider>
+    <LocalizeProvider>
+        <MuiThemeProvider theme={theme}>
+            <MuiPickersUtilsProvider utils={MomentUtils}>
+                <SnackbarProvider maxSnack={3}>
+                    <Provider store={store}>
+                        <PersistGate loading={(<div>LoadingState</div>)} persistor={persistor}>
+                            <Router>
+                                <MainSwitch />
+                            </Router>
+                        </PersistGate>
+                    </Provider>
+                </SnackbarProvider>
+            </MuiPickersUtilsProvider>
+        </MuiThemeProvider>
+    </LocalizeProvider>
 )
 
 

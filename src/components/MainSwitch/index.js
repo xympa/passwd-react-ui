@@ -5,7 +5,9 @@ import { connect } from 'react-redux'
 import { Switch, Route, withRouter, matchPath } from 'react-router-dom'
 import { withStyles } from '@material-ui/core/styles'
 import { CssBaseline, Drawer, } from '@material-ui/core'
-
+import { withLocalize } from "react-localize-redux"
+import { renderToStaticMarkup } from "react-dom/server"
+import globalTranslations from './globalTranslations.json'
 
 import LoginPage from '../LoginPage'
 import { checkAuthValidity } from '../../actions/AuthenticationActions'
@@ -65,7 +67,8 @@ export class MainSwitch extends Component {
         username: PropTypes.string,
         sessionKey: PropTypes.string,
         checkAuthValidity: PropTypes.func.isRequired,
-        classes: PropTypes.object.isRequired
+        classes: PropTypes.object.isRequired,
+        initialize: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -74,10 +77,20 @@ export class MainSwitch extends Component {
         this.state = {
             width: window.innerWidth,
             height: window.innerHeight,
-            mobileOpen: true
+            mobileOpen: false,
         }
+
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
         this.toggleMobileDrawer = this.toggleMobileDrawer.bind(this)
+
+        props.initialize({
+            languages: [
+                { name: "English", code: "en" },
+                { name: "Portuguese", code: "pt" }
+            ],
+            translation: globalTranslations,
+            options: { renderToStaticMarkup }
+        });
     }
 
     componentDidMount() {
@@ -166,4 +179,4 @@ const mapDispatchToProps = {
 }
 
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(withStyles(styles, { withTheme: true })(MainSwitch)))
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(withStyles(styles, { withTheme: true })(withLocalize(MainSwitch))))

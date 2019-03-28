@@ -1,0 +1,58 @@
+{
+    "username": [
+        "Username",
+        "Nome de Utilizador"
+    ],
+    "password": [
+        "Password",
+        "Senha"
+    ],
+    "open": [
+        "Open",
+        "Abrir"
+    ],
+    "url": [
+        "url",
+        "url"
+    ],
+    "passwordCopied": [
+        "Password copied!",
+        "Senha copiada!"
+    ],
+    "usernameCopied": [
+        "Username copied!",
+        "Nome de utilizador copiado!"
+    ],
+    "lockModal": [
+        "Lock Modal",
+        "Desactivar Edição"
+    ],
+    "unlockModal": [
+        "Unlock Modal",
+        "Activar Edição"
+    ],
+    "closeModal": [
+        "Close dialog",
+        "Fchar diálogo"
+    ],
+    "delete": [
+        "Delete",
+        "Remover"
+    ],
+    "save": [
+        "Save",
+        "Guardar"
+    ],
+    "cancel": [
+        "Cancel",
+        "Cancelar"
+    ],
+    "create": [
+        "Create",
+        "Criar"
+    ],
+    "badForm": [
+        "Some fields look invalid, look for the red warnings!",
+        "Alguns campos parecem ser inválidos, procure os avisos a vermelho!"
+    ]
+}

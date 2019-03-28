@@ -6,15 +6,23 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import InputBase from '@material-ui/core/InputBase';
-import Badge from '@material-ui/core/Badge';
+import Typography from '@material-ui/core/Typography';
+import Popper from '@material-ui/core/Popper';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
 import MenuItem from '@material-ui/core/MenuItem';
-import Menu from '@material-ui/core/Menu';
-import { Fab } from '@material-ui/core'
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import MenuList from '@material-ui/core/MenuList';
+import Paper from '@material-ui/core/Paper';
+import Grow from '@material-ui/core/Grow';
+import Button from '@material-ui/core/Button';
+import { Fab, Select } from '@material-ui/core'
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import { withStyles } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountIcon from '@material-ui/icons/Person';
-import MoreIcon from '@material-ui/icons/MoreVert';
+import MenuIcon from '@material-ui/icons/Menu';
+import { withLocalize } from 'react-localize-redux'
 
 import { logout } from '../../actions/AuthenticationActions'
 import { changeSearch } from '../../actions/SearchActions'
@@ -113,8 +121,13 @@ export class Header extends Component {
     constructor(props) {
         super(props);
 
+        this.state = {
+            accountMenuShowing: false
+        }
+
         this._searchChanged = _.debounce(this._searchChanged.bind(this), 30);
         this.handleSearchChange = this.handleSearchChange.bind(this)
+        this._handleClose = this._handleClose.bind(this)
     }
 
     handleSearchChange(event) {
@@ -122,15 +135,20 @@ export class Header extends Component {
         this._searchChanged(event);
     }
 
-
-
     _searchChanged(event) {
         const { changeSearch } = this.props;
         changeSearch(event.target.value);
     }
 
+    _handleClose() {
+        this.setState(prevState => ({
+            accountMenuShowing: !prevState.accountMenuShowing
+        }))
+    }
+
     render() {
-        const { classes, search, onMenuClick, username } = this.props;
+        const { classes, search, onMenuClick, username, logout, activeLanguage, languages, setActiveLanguage } = this.props;
+        const { accountMenuShowing } = this.state
 
         return (
             <div className={classes.root}>
@@ -143,7 +161,7 @@ export class Header extends Component {
                     <Toolbar>
                         <div className={classes.sectionMobile}>
                             <IconButton aria-haspopup="true" onClick={onMenuClick} color="inherit">
-                                <MoreIcon />
+                                <MenuIcon />
                             </IconButton>
                         </div>
                         <img className={classes.title} src={require('../../assets/logo-branco.png')} alt="enso logo branco" />
@@ -163,13 +181,57 @@ export class Header extends Component {
                         </div>
                         <div className={classes.grow} />
                         <div className={classes.sectionDesktop} />
-                        <IconButton className={classes.fab}>
-                            <AccountIcon style={{color: "white"}} className={classes.extendedIcon} />
-                            {/*username*/}
-                        </IconButton>
+                        <Button
+                            className={classes.fab}
+                            buttonRef={ref => { this._anchorEl = ref }}
+                            onClick={() => { this.setState(prevState => ({ accountMenuShowing: !prevState.accountMenuShowing })) }}
+                        >
+                            <AccountIcon style={{ color: "white", marginRight: "1em" }} />
+                            <Typography style={{ color: "white", textTransform: "capitalize" }}>Hi {username}!</Typography>
+                        </Button>
+                        <Popper open={accountMenuShowing} placement="bottom-end" anchorEl={this._anchorEl} transition disablePortal>
+                            {({ TransitionProps }) => (
+                                <Grow
+                                    {...TransitionProps}
+                                    id="menu-list-grow"
+                                    style={{ transformOrigin: 'right top' }}
+                                >
+                                    <Paper>
+                                        <ClickAwayListener onClickAway={this._handleClose}>
+                                            <MenuList>
+                                                <MenuItem onClick={this._handleClose}>My account</MenuItem>
+                                                <MenuItem>
+                                                    <FormControl className={classes.formControl}>
+                                                        <InputLabel htmlFor="age-simple">Language</InputLabel>
+                                                        <Select
+                                                            value={activeLanguage.code}
+                                                            onChange={(event) => { setActiveLanguage(event.target.value) }}
+                                                            inputProps={{
+                                                                name: 'lang',
+                                                                id: 'lang',
+                                                            }}
+                                                        >
+                                                            {
+                                                                languages.map(lang => (
+                                                                    <MenuItem key={lang.code} value={lang.code}>{lang.name}</MenuItem>
+                                                                ))
+                                                            }
+                                                        </Select>
+                                                    </FormControl>
+                                                </MenuItem>
+                                                <MenuItem onClick={logout}>
+                                                    Logout
+                                                </MenuItem>
+                                            </MenuList>
+                                        </ClickAwayListener>
+                                    </Paper>
+                                </Grow>
+                            )}
+                        </Popper>
                     </Toolbar>
                 </AppBar>
-            </div>);
+            </div>
+        );
     }
 }
 
@@ -182,4 +244,4 @@ const mapStateToProps = state => ({
     username: state.authentication.username
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Header))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(Header)))

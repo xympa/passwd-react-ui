@@ -5,8 +5,9 @@ import CloseIcon from '@material-ui/icons/Close'
 import ShareIcon from '@material-ui/icons/Share'
 import LockIcon from '@material-ui/icons/Lock'
 import OpenLockIcon from '@material-ui/icons/LockOpen'
-import { IconButton, Typography } from '@material-ui/core'
+import { IconButton, Typography, Tooltip } from '@material-ui/core'
 import { withStyles } from '@material-ui/core/styles'
+import { Translate, withLocalize } from 'react-localize-redux'
 import { closeCredential, toggleEditMode } from '../../actions/CredentialActions'
 import { composeMessage } from '../../actions/MessageActions'
 
@@ -18,28 +19,34 @@ const styles = theme => ({
 })
 
 const Header = (props) => {
-    const { closeCredential, isEditing, classes, toggleEditMode, isCreating, openId, composeMessage } = props;
+    const { closeCredential, isEditing, classes, toggleEditMode, isCreating, openId, composeMessage, translate } = props;
 
     return (
         <div style={{ display: "flex", flex: 0, flexWrap: "nowrap" }}>
             {!isCreating ? (
                 <div>
-                    <IconButton aria-label="Delete" className={classes.margin} onClick={toggleEditMode}>
-                        {isEditing ? <LockIcon color="secondary" /> : <OpenLockIcon color="secondary" />}
-                    </IconButton>
-                    <IconButton aria-label="Delete" className={classes.margin} onClick={() => { composeMessage(openId) }}>
-                        <ShareIcon color="secondary" />
-                    </IconButton>
+                    <Tooltip title={isEditing ? translate("lockModal") : translate("unlockModal")}>
+                        <IconButton aria-label="Delete" className={classes.margin} onClick={toggleEditMode}>
+                            {isEditing ? <LockIcon color="secondary" /> : <OpenLockIcon color="secondary" />}
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title={translate("shareCredential")}>
+                        <IconButton aria-label={translate("shareCredential")} className={classes.margin} onClick={() => { composeMessage(openId) }}>
+                            <ShareIcon color="secondary" />
+                        </IconButton>
+                    </Tooltip>
                 </div>
             ) : (
                     <div style={{ display: "flex", alignItems: "center" }}>
-                        <Typography variant="h5">Insert the details of the new credential</Typography>
+                        <Typography variant="h5"><Translate id="credentialModalHeader" /></Typography>
                     </div>
                 )}
             <div style={{ flex: 1 }} />
-            <IconButton aria-label="Delete" className={classes.margin} onClick={closeCredential}>
-                <CloseIcon color="secondary" />
-            </IconButton>
+            <Tooltip title={translate("closeModal")}>
+                <IconButton aria-label="Delete" className={classes.margin} onClick={closeCredential}>
+                    <CloseIcon color="secondary" />
+                </IconButton>
+            </Tooltip>
         </div>
     )
 }
@@ -69,4 +76,4 @@ const mapDispatchToProps = {
     composeMessage
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Header))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(Header)))

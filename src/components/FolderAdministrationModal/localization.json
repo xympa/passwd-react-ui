@@ -1,0 +1,18 @@
+{
+    "folderModalHeader": [
+        "Insert the details of the new folder...",
+        "Insira os detalhes da nova pasta..."
+    ],
+    "name": [
+        "Name",
+        "Nome"
+    ],
+    "nameMandatory": [
+        "The name is a mandatory field",
+        "O nome é um campo obrigatório"
+    ],
+    "noPermissions": [
+        "There are no permissions for this folder",
+        "Não existem permissões para esta pasta"
+    ]
+}

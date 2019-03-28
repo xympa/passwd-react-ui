@@ -10,8 +10,15 @@ import CopyIcon from '@material-ui/icons/FileCopyOutlined'
 import OpenIcon from '@material-ui/icons/OpenInNew'
 import { withSnackbar } from 'notistack'
 import Validator from 'validator'
+import { withLocalize, Translate } from 'react-localize-redux'
+import localization from './localization.json'
 import { openCredential } from '../../actions/CredentialActions'
 
+const translateToString = (translate, id) => {
+    return translate(({ translate }) => {
+        return translate(id)
+    })
+}
 
 const styles = theme => ({
     avatar: {
@@ -40,6 +47,8 @@ class CredentialListItem extends React.PureComponent {
         style: PropTypes.object,
         openCredential: PropTypes.func.isRequired,
         enqueueSnackbar: PropTypes.func.isRequired,
+        translate: PropTypes.func.isRequired,
+        addTranslation: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -48,11 +57,14 @@ class CredentialListItem extends React.PureComponent {
         this.state = {
             hovered: false
         }
+
+        const { addTranslation } = this.props
+        addTranslation(localization)
     }
 
 
     render() {
-        const { classes, credential, style, openCredential, enqueueSnackbar } = this.props;
+        const { classes, credential, style, openCredential, enqueueSnackbar, translate } = this.props;
         const { hovered } = this.state;
 
         return (
@@ -76,50 +88,50 @@ class CredentialListItem extends React.PureComponent {
                         <div style={{ display: "flex", marginRight: 50 }}>
                             <CopyToClipboard
                                 text={credential.username}
-                                onCopy={() => { enqueueSnackbar("Username copied") }}
+                                onCopy={() => { enqueueSnackbar(translate("usernameCopied")) }}
                             >
                                 <Button color="secondary" onClick={(event) => { event.stopPropagation() }}>
                                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                                         <CopyIcon />
                                         <Typography variant="caption" color="secondary">
-                                            Copy
+                                            <Translate id="copy" />
                                         </Typography>
                                         <Typography variant="caption" color="secondary">
-                                            Username
+                                            <Translate id="username" />
                                         </Typography>
                                     </div>
                                 </Button>
                             </CopyToClipboard>
                             <CopyToClipboard
                                 text={credential.password}
-                                onCopy={() => { enqueueSnackbar("Password copied") }}
+                                onCopy={() => { enqueueSnackbar(translate("passwordCopied")) }}
                             >
                                 <Button onClick={(event) => { event.stopPropagation() }}>
                                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                                         <CopyIcon />
                                         <Typography variant="caption">
-                                            Copy
+                                            <Translate id="copy" />
                                         </Typography>
                                         <Typography variant="caption">
-                                            Password
+                                            <Translate id="password" />
                                         </Typography>
                                     </div>
                                 </Button>
                             </CopyToClipboard>
-                            <Button disabled={!Validator.isURL(credential.url)} style={{ marginRight: 20 }} color="secondary" onClick={(event) => {event.stopPropagation(); window.open(credential.url, '_blank')}}>
+                            <Button disabled={!Validator.isURL(credential.url)} style={{ marginRight: 20 }} color="secondary" onClick={(event) => { event.stopPropagation(); window.open(credential.url, '_blank') }}>
                                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                                     <OpenIcon />
-                                    <Typography variant="caption" color="secondary" style={!Validator.isURL(credential.url) ? { color: "rgba(0, 0, 0, 0.26)"} : {}}>
-                                        Open
+                                    <Typography variant="caption" color="secondary" style={!Validator.isURL(credential.url) ? { color: "rgba(0, 0, 0, 0.26)" } : {}}>
+                                        <Translate id="open" />
                                     </Typography>
-                                    <Typography variant="caption" color="secondary" style={!Validator.isURL(credential.url) ? { color: "rgba(0, 0, 0, 0.26)"} : {}}>
-                                        Url
+                                    <Typography variant="caption" color="secondary" style={!Validator.isURL(credential.url) ? { color: "rgba(0, 0, 0, 0.26)" } : {}}>
+                                        <Translate id="url" />
                                     </Typography>
                                 </div>
                             </Button>
                         </div>
                     </Fade>
-                    <Chip className={classes.margin} avatar={<Avatar><GroupIcon color="primary" /></Avatar>} label={"Criada por " + credential.createdById} />
+                    <Chip className={classes.margin} avatar={<Avatar><GroupIcon color="primary" /></Avatar>} label={translate("createdBy") + credential.createdById} />
                 </div>
             </ListItem>
         )
@@ -134,4 +146,4 @@ const mapDispatchToProps = {
     openCredential
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(CredentialListItem)))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(withLocalize(CredentialListItem))))

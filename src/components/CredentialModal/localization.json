@@ -1,0 +1,74 @@
+{
+    "title": [
+        "Title",
+        "Título"
+    ],
+    "titleMandatory": [
+        "The title is mandatory.",
+        "O título é um atributo obrigatório."
+    ],
+    "copyUsernameTooltip": [
+        "Copy username to clipboard",
+        "Copiar nome de utilizador para a área de transferência"
+    ],
+    "copyPasswordTooltip": [
+        "Copy password to clipboard",
+        "Copiar senha para a área de transferência"
+    ],
+    "hidePassword": [
+        "Hide password",
+        "Esconder senha"
+    ],
+    "showPassword": [
+        "Show password",
+        "Mostrar senha"
+    ],
+    "showPasswordGeneration": [
+        "Show password generation options",
+        "Mostrar opções de geração de senhas"
+    ],
+    "generatePassword": [
+        "Generate password",
+        "Gerar senha"
+    ],
+    "passwordMandatory": [
+        "The password is a mandatory field, try generating one...",
+        "A senha é um campo obrigatório, tente gerar uma..."
+    ],
+    "numbers": [
+        "Numbers",
+        "Números"
+    ],
+    "symbols": [
+        "Symbols",
+        "Simbolos"
+    ],
+    "uppercase": [
+        "Uppercase letters",
+        "Letras maiusculas"
+    ],
+    "excludeSimilarCharacters": [
+        "Exclude similar characters",
+        "Excluir carácteres semelhantes"
+    ],
+    "length": [
+        "Length",
+        "Tamanho"
+    ],
+    "badUrl": [
+        "This url is malformed! This is not a mandatory field, if you must, leave it on the description.",
+        "O campo não contém um url válido! Este campo não é obrigatório, considere deixar na descrição."
+    ],
+    "description": [
+        "Description",
+        "Descrição"
+    ],
+    "credentialModalHeader": [
+        "Insert the details of the new credential...",
+        "Insira os detalhes da nova credencial..."
+    ],
+    "shareCredential": [
+        "Share credential...",
+        "Partilhar credencial..."
+    ]
+}

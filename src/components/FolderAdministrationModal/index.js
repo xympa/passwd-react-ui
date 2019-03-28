@@ -6,11 +6,13 @@ import { CircularProgress, Dialog, DialogContent, DialogTitle, DialogActions, Bu
 import { withStyles } from '@material-ui/core/styles'
 import { withSnackbar } from 'notistack'
 import Validator from 'validator'
+import { Translate, withLocalize } from 'react-localize-redux'
 import classNames from 'classnames'
 import ModalHeader from './Header'
 import UserAutocomplete from './UserAutocomplete'
 import PermissionListItem from './PermissionListItem'
 import { updateFolder, createFolder, setFetching, deleteFolder } from '../../actions/FolderAdminActions'
+import localization from './localization.json'
 
 const StyledDialog = withStyles(() => ({
     paper: {
@@ -46,6 +48,8 @@ export class FolderAdministrationModal extends Component {
         permissions: PropTypes.array.isRequired,
         folder: PropTypes.object,
         classes: PropTypes.object.isRequired,
+        translate: PropTypes.func.isRequired,
+        addTranslation: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -65,6 +69,9 @@ export class FolderAdministrationModal extends Component {
         this.submitFormForUpdate = this.submitFormForUpdate.bind(this)
         this.submitFormForInsert = this.submitFormForInsert.bind(this)
         this.attemptDelete = this.attemptDelete.bind(this)
+
+        const { addTranslation} = this.props
+        addTranslation(localization)
     }
 
     componentDidUpdate(prevProps) {
@@ -160,7 +167,7 @@ export class FolderAdministrationModal extends Component {
     }
 
     submitFormForUpdate() {
-        const { updateFolder, enqueueSnackbar, setFetching } = this.props;
+        const { updateFolder, enqueueSnackbar, setFetching, translate } = this.props;
         const { fields } = this.state;
 
         const valid = Object.keys(fields).filter(field => !fields[field].valid).length === 0
@@ -177,14 +184,14 @@ export class FolderAdministrationModal extends Component {
 
                 })
         else {
-            enqueueSnackbar('Some fields look invalid please check the form again', {
+            enqueueSnackbar(translate("badForm"), {
                 variant: "error"
             })
         }
     }
 
     submitFormForInsert() {
-        const { createFolder, enqueueSnackbar, setFetching } = this.props;
+        const { createFolder, enqueueSnackbar, setFetching, translate } = this.props;
         const { fields } = this.state;
 
         const valid = Object.keys(fields).filter(field => !fields[field].valid).length === 0
@@ -200,7 +207,7 @@ export class FolderAdministrationModal extends Component {
                     setFetching(false)
                 })
         else {
-            enqueueSnackbar('Some fields look invalid please check the form again', {
+            enqueueSnackbar(translate("badForm"), {
                 variant: "error"
             })
         }
@@ -226,7 +233,7 @@ export class FolderAdministrationModal extends Component {
                     {isFetching && <CircularProgress />}
                     <div style={isFetching ? { display: "none" } : { display: "flex", flexDirection: "column" }}>
                         <FormControl error={!fields.name.valid} disabled={!isEditing} className={classNames(classes.margin, classes.textField)}>
-                            <InputLabel htmlFor="title">Name</InputLabel>
+                            <InputLabel htmlFor="name"><Translate id="name" /></InputLabel>
                             <Input
                                 id="name"
                                 type='text'
@@ -234,7 +241,7 @@ export class FolderAdministrationModal extends Component {
                                 onChange={this._handleChange('name')}
                             />
                             <Grow in={!fields.name.valid}>
-                                <FormHelperText>The name is mandatory</FormHelperText>
+                                <FormHelperText><Translate id="nameMandatory" /></FormHelperText>
                             </Grow>
                         </FormControl>
                         {/*permissions && users &&*/ (
@@ -256,8 +263,11 @@ export class FolderAdministrationModal extends Component {
                                         isEditing={isEditing}
                                         adminChanged={this.onAdminChanged}
                                         permissionRemoved={this.onPermissionRemoved}
-                                    />)) ||
-                                (<Typography>Não existem permissões para esta pasta</Typography>)
+                                    />
+                                )) ||
+                                (
+                                    <Typography><Translate id="noPermissions" /></Typography>
+                                )
                             }
                         </List>
                     </div>
@@ -266,18 +276,19 @@ export class FolderAdministrationModal extends Component {
                     <Fade in={isEditing}>
                         <DialogActions>
                             <Button variant="contained" onClick={this.attemptDelete}>
-                                Delete
+                                <Translate id="delete" />
                             </Button>
                             <div style={{ flex: 1 }} />
                             <Button variant="contained" style={{ justifySelf: "flex-start" }} onClick={this.submitFormForUpdate} color="secondary">
-                                Save
+                                <Translate id="save" />
                             </Button>
                         </DialogActions>
-                    </Fade>) : (
+                    </Fade>
+                ) : (
                         <Fade in>
                             <DialogActions>
                                 <Button variant="contained" onClick={this.submitFormForInsert}>
-                                    Create
+                                    <Translate id="create" />
                                 </Button>
                             </DialogActions>
                         </Fade>
@@ -304,4 +315,4 @@ const mapDispatchToProps = {
     setFetching
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(FolderAdministrationModal)))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(withLocalize(FolderAdministrationModal))))

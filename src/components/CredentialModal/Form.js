@@ -2,7 +2,11 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
-import { IconButton, TextField, FormControl, Input, InputLabel, InputAdornment, FormControlLabel, Checkbox, ClickAwayListener, Collapse, FormHelperText, Grow } from '@material-ui/core';
+import {
+    IconButton, TextField, FormControl, Input, InputLabel, InputAdornment,
+    FormControlLabel, Checkbox, ClickAwayListener, Collapse, FormHelperText, Grow,
+    Tooltip
+} from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import VisibilityIcon from '@material-ui/icons/Visibility'
@@ -14,6 +18,8 @@ import { withSnackbar } from 'notistack';
 import PasswordGenerator from 'generate-password'
 import Validator from 'validator'
 import _ from 'lodash'
+import { withLocalize, Translate } from 'react-localize-redux'
+import CredentialModalLocalization from './localization.json'
 
 const styles = theme => ({
     form: {
@@ -66,6 +72,9 @@ export class Form extends Component {
             },
             passwordGenerationToolsShow: false
         };
+
+        const { addTranslation } = this.props
+        addTranslation(CredentialModalLocalization)
     }
 
     componentDidMount() {
@@ -77,7 +86,7 @@ export class Form extends Component {
         const { isEditing, credential } = this.props;
 
 
-        if((prevProps.isEditing && !isEditing) || prevProps.credential !== credential)
+        if ((prevProps.isEditing && !isEditing) || prevProps.credential !== credential)
             this.updateFormToMatchStore()
 
         if (prevState.fields !== fields)
@@ -176,21 +185,21 @@ export class Form extends Component {
         }));
     }
 
-    updateFormToMatchStore(){
-        const { credential} = this.props;
+    updateFormToMatchStore() {
+        const { credential } = this.props;
         const newFields = this._fieldsFromCredential(credential)
         this.setState({ fields: newFields });
         this._onFormChanged(newFields);
     }
 
     render() {
-        const { classes, enqueueSnackbar, isEditing } = this.props;
+        const { classes, enqueueSnackbar, isEditing, translate } = this.props;
         const { fields, showPassword, passwordGenerationOptions, passwordGenerationToolsShow } = this.state;
 
         return (
             <div className={classes.form}>
                 <FormControl error={!fields.title.valid} disabled={!isEditing} className={classNames(classes.margin, classes.textField)}>
-                    <InputLabel htmlFor="title">Title</InputLabel>
+                    <InputLabel htmlFor="title"><Translate id="title" /></InputLabel>
                     <Input
                         id="title"
                         type='text'
@@ -198,11 +207,11 @@ export class Form extends Component {
                         onChange={this._handleChange('title')}
                     />
                     <Grow in={!fields.title.valid}>
-                        <FormHelperText>The title is mandatory</FormHelperText>
+                        <FormHelperText><Translate id="titleMandatory" /></FormHelperText>
                     </Grow>
                 </FormControl>
                 <FormControl error={!fields.username.valid} disabled={!isEditing} className={classNames(classes.margin, classes.textField)}>
-                    <InputLabel htmlFor="adornment-username">Username</InputLabel>
+                    <InputLabel htmlFor="adornment-username"><Translate id="username" /></InputLabel>
                     <Input
                         id="adornment-username"
                         type='text'
@@ -212,11 +221,13 @@ export class Form extends Component {
                             <InputAdornment position="end">
                                 <CopyToClipboard
                                     text={fields.username.value}
-                                    onCopy={() => { enqueueSnackbar("Username copied") }}
+                                    onCopy={() => { enqueueSnackbar(translate("usernameCopied")) }}
                                 >
-                                    <IconButton aria-label="Copy username to clipboard">
-                                        <CopyIcon color="primary" />
-                                    </IconButton>
+                                    <Tooltip title={translate("copyUsernameTooltip")}>
+                                        <IconButton aria-label={translate("copyUsernameTooltip")}>
+                                            <CopyIcon color="primary" />
+                                        </IconButton>
+                                    </Tooltip>
                                 </CopyToClipboard>
                             </InputAdornment>
                         )}
@@ -225,7 +236,7 @@ export class Form extends Component {
                 <ClickAwayListener onClickAway={() => { this.setState({ passwordGenerationToolsShow: false }) }}>
                     <div style={{ display: "flex", flexDirection: "column" }}>
                         <FormControl error={!fields.password.valid} disabled={!isEditing} className={classNames(classes.margin, classes.textField)}>
-                            <InputLabel htmlFor="adornment-password">Password</InputLabel>
+                            <InputLabel htmlFor="adornment-password"><Translate id="password" /></InputLabel>
                             <Input
                                 id="adornment-password"
                                 type={showPassword ? 'text' : 'password'}
@@ -234,46 +245,60 @@ export class Form extends Component {
                                 endAdornment={(
                                     <InputAdornment position="end">
                                         <IconButton aria-label="Toggle password visibility" onClick={this._handleClickShowPassword}>
-                                            {showPassword ? <VisibilityIcon color="primary" /> : <VisibilityOffIcon color="primary" />}
+                                            {
+                                                showPassword ? (
+                                                    <Tooltip title={translate("hidePassword")}>
+                                                        <VisibilityOffIcon color="primary" />
+                                                    </Tooltip>
+                                                ) : (
+                                                        <Tooltip title={translate("showPassword")}>
+                                                            <VisibilityIcon color="primary" />
+                                                        </Tooltip>
+                                                    )
+                                            }
                                         </IconButton>
                                         <CopyToClipboard
                                             text={fields.password.value}
-                                            onCopy={() => { enqueueSnackbar("Password copied") }}
+                                            onCopy={() => { enqueueSnackbar(translate("passwordCopied")) }}
                                         >
-                                            <IconButton aria-label="Copy password to clipboard">
-                                                <CopyIcon color="primary" />
-                                            </IconButton>
+                                            <Tooltip title={translate("copyPasswordTooltip")}>
+                                                <IconButton aria-label={translate("copyPasswordTooltip")}>
+                                                    <CopyIcon color="primary" />
+                                                </IconButton>
+                                            </Tooltip>
                                         </CopyToClipboard>
-                                        <IconButton disabled={!isEditing} aria-label="Generate password" onClick={this._generatePassword}>
-                                            <RefreshIcon color="primary" />
-                                        </IconButton>
+                                        <Tooltip title={translate("generatePassword") + (!passwordGenerationToolsShow ? " / " + translate("showPasswordGeneration") : "")}>
+                                            <IconButton disabled={!isEditing} aria-label="Generate password" onClick={this._generatePassword}>
+                                                <RefreshIcon color="primary" />
+                                            </IconButton>
+                                        </Tooltip>
                                     </InputAdornment>
                                 )}
                             />
                             <Grow in={!fields.password.valid}>
-                                <FormHelperText>The password is a mandatory field, try generating a new one...</FormHelperText>
+                                <FormHelperText><Translate id="passwordMandatory" /></FormHelperText>
                             </Grow>
                         </FormControl>
                         <Collapse in={passwordGenerationToolsShow}>
                             <div style={{ display: "flex", flexWrap: "wrap" }}>
                                 <TextField
                                     id="password-length"
-                                    label="Length"
+                                    label={translate("length")}
                                     type="text"
                                     value={passwordGenerationOptions.length}
                                     onChange={this._handlePasswordGenerationChange('length')}
                                     margin="normal"
                                 />
-                                <FormControlLabel control={<Checkbox checked={passwordGenerationOptions.numbers} onChange={this._handlePasswordGenerationChange('numbers')} />} label="Números" />
-                                <FormControlLabel control={<Checkbox checked={passwordGenerationOptions.symbols} onChange={this._handlePasswordGenerationChange('symbols')} />} label="Simbolos" />
-                                <FormControlLabel control={<Checkbox checked={passwordGenerationOptions.uppercase} onChange={this._handlePasswordGenerationChange('uppercase')} />} label="Letras maiusculas" />
-                                <FormControlLabel control={<Checkbox checked={passwordGenerationOptions.excludeSimilarCharacters} onChange={this._handlePasswordGenerationChange('excludeSimilarCharacters')} />} label="Excluir caracteres semelhantes" />
+                                <FormControlLabel control={<Checkbox checked={passwordGenerationOptions.numbers} onChange={this._handlePasswordGenerationChange('numbers')} />} label={translate("numbers")} />
+                                <FormControlLabel control={<Checkbox checked={passwordGenerationOptions.symbols} onChange={this._handlePasswordGenerationChange('symbols')} />} label={translate("symbols")} />
+                                <FormControlLabel control={<Checkbox checked={passwordGenerationOptions.uppercase} onChange={this._handlePasswordGenerationChange('uppercase')} />} label={translate("uppercase")} />
+                                <FormControlLabel control={<Checkbox checked={passwordGenerationOptions.excludeSimilarCharacters} onChange={this._handlePasswordGenerationChange('excludeSimilarCharacters')} />} label={translate("excludeSimilarCharacters")} />
                             </div>
                         </Collapse>
                     </div>
                 </ClickAwayListener>
                 <FormControl error={!fields.url.valid} disabled={!isEditing} className={classNames(classes.margin, classes.textField)}>
-                    <InputLabel htmlFor="adornment-url">Url</InputLabel>
+                    <InputLabel htmlFor="adornment-url"><Translate id="url" /></InputLabel>
                     <Input
                         id="adornment-url"
                         value={fields.url.value}
@@ -281,19 +306,21 @@ export class Form extends Component {
                         onChange={this._handleChange('url')}
                         endAdornment={fields.url.valid && !Validator.isEmpty(fields.url.sanitizedValue) && (
                             <InputAdornment position="end">
-                                <IconButton aria-label="Copy open credential url">
-                                    <OpenIcon color="primary" />
-                                </IconButton>
+                                <Tooltip title={`${translate("open")} ${translate("url")}`}>
+                                    <IconButton aria-label={`${translate("open")} ${translate("url")}`}>
+                                        <OpenIcon color="primary" />
+                                    </IconButton>
+                                </Tooltip>
                             </InputAdornment>
                         )}
                     />
                     <Grow in={!fields.url.valid}>
-                        <FormHelperText>This url is malformed! This is not a mandatory field, if you must, leave it on the description.</FormHelperText>
+                        <FormHelperText><Translate id="badUrl" /></FormHelperText>
                     </Grow>
                 </FormControl>
                 <TextField
                     id="description"
-                    label="Description"
+                    label={translate("description")}
                     disabled={!isEditing}
                     value={fields.description.value}
                     error={!fields.description.valid}
@@ -308,4 +335,4 @@ export class Form extends Component {
     }
 }
 
-export default withStyles(styles)(withSnackbar(Form))
+export default withStyles(styles)(withSnackbar(withLocalize(Form)))
