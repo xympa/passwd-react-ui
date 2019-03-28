@@ -114,6 +114,7 @@ export class FolderPage extends Component {
             <div>
                 <div style={{ flexDirection: "column", flex: 1, overflow: "hidden" }}>
                     <div className={classes.header}>
+                    
                         <IconButton disabled={openFolderId === null} color="secondary" style={{ width: 64 }} onClick={this._homeButtonHandle}>
                             <HomeIcon style={{ fontSize: 32 }} />
                         </IconButton>

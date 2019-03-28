@@ -9,9 +9,9 @@ import Validator from 'validator'
 import { Translate, withLocalize } from 'react-localize-redux'
 import classNames from 'classnames'
 import ModalHeader from './Header'
-import UserAutocomplete from './UserAutocomplete'
 import PermissionListItem from './PermissionListItem'
 import { updateFolder, createFolder, setFetching, deleteFolder } from '../../actions/FolderAdminActions'
+import AutoComplete from '../MaterialAutocomplete'
 import localization from './localization.json'
 
 const StyledDialog = withStyles(() => ({
@@ -70,7 +70,7 @@ export class FolderAdministrationModal extends Component {
         this.submitFormForInsert = this.submitFormForInsert.bind(this)
         this.attemptDelete = this.attemptDelete.bind(this)
 
-        const { addTranslation} = this.props
+        const { addTranslation } = this.props
         addTranslation(localization)
     }
 
@@ -213,19 +213,19 @@ export class FolderAdministrationModal extends Component {
         }
     }
 
-    addPermission(username) {
+    addPermission(perm) {
         const { openId } = this.props;
         this.setState(prevState => ({
-            formPermissions: [...prevState.formPermissions, { userId: username, hasAdmin: 0, folderId: openId }]
+            formPermissions: [...prevState.formPermissions, { userId: perm.value, hasAdmin: 0, folderId: openId }]
         }))
     }
 
     render() {
         const { isShowing, formPermissions, fields } = this.state;
-        const { isFetching, isEditing, isCreating, users, classes } = this.props;
+        const { isFetching, isEditing, isCreating, users, classes, translate } = this.props;
 
         return (
-            <StyledDialog open={isShowing} maxWidth="md" TransitionComponent={Zoom} fullWidth style={{ overflow: "visible" }}>
+            <StyledDialog open={isShowing} maxWidth="md" TransitionComponent={Zoom} fullWidth style={{ overflow: "visible" }} disableRestoreFocus>
                 <DialogTitle>
                     {!isFetching && <ModalHeader />}
                 </DialogTitle>
@@ -244,15 +244,15 @@ export class FolderAdministrationModal extends Component {
                                 <FormHelperText><Translate id="nameMandatory" /></FormHelperText>
                             </Grow>
                         </FormControl>
-                        {/*permissions && users &&*/ (
-                            <UserAutocomplete
-                                suggestions={users
-                                    .filter(user => !formPermissions.map(perm => perm.userId).includes(user.username))
-                                    .map(user => ({ value: user.username, label: user.username }))
-                                }
-                                onAutocomplete={this.addPermission}
-                            />
-                        )}
+                        <AutoComplete
+                            suggestions={users
+                                .filter(user => !formPermissions.map(perm => perm.userId).includes(user.username))
+                                .map(user => ({ value: user.username, label: user.username }))
+                            }
+                            onSuggestionAccepted={this.addPermission}
+                            disabled={!isEditing}
+                            placeholder={translate("username")}
+                        />
                         <List>
                             {formPermissions && formPermissions.length > 0 &&
                                 formPermissions.map(perm => (

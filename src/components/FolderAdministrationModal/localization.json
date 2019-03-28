@@ -14,5 +14,21 @@
     "noPermissions": [
         "There are no permissions for this folder",
         "Não existem permissões para esta pasta"
+    ],
+    "folderAdmin": [
+        "Folder administrator",
+        "Administrador de pasta"
+    ],
+    "normalUser": [
+        "Normal user",
+        "Utilizador normal"
+    ],
+    "isFolderAdmin": [
+        "Is folder administrator?",
+        "É administrador de pasta?"
+    ],
+    "removePermissionTooltip": [
+        "Remove permission",
+        "Remover permissão"
     ]
 }

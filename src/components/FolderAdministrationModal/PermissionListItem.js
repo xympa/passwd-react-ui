@@ -4,39 +4,42 @@ import { withStyles } from '@material-ui/core/styles';
 import PersonIcon from '@material-ui/icons/Person'
 import DeleteIcon from '@material-ui/icons/Delete'
 import BuildIcon from '@material-ui/icons/Build'
-import { Checkbox, ListItem, ListItemAvatar, ListItemSecondaryAction, IconButton, Avatar, ListItemText, FormControlLabel, Fade } from '@material-ui/core';
+import { Checkbox, ListItem, ListItemAvatar, ListItemSecondaryAction, IconButton, Avatar, ListItemText, FormControlLabel, Fade, Tooltip } from '@material-ui/core';
+import { withLocalize } from 'react-localize-redux';
 
 const styles = theme => ({
     disabledAvatar: {
-      margin: 10,
+        margin: 10,
     },
     adminAvatar: {
-      margin: 10,
-      color: '#fff',
-      backgroundColor: theme.palette.secondary.main,
+        margin: 10,
+        color: '#fff',
+        backgroundColor: theme.palette.secondary.main,
     },
     userAvatar: {
-      margin: 10,
-      color: '#fff',
-      backgroundColor: theme.palette.primary.main,
+        margin: 10,
+        color: '#fff',
+        backgroundColor: theme.palette.primary.main,
     },
     deleteButton: {
         backgroundColor: theme.palette.error.main
     }
-  });
-  
+});
+
 
 const PermissionListItem = (props) => {
 
-    const { hasAdmin, userId, adminChanged, isEditing, permissionRemoved, classes } = props;
+    const { hasAdmin, userId, adminChanged, isEditing, permissionRemoved, classes, translate } = props;
 
     return (
         <ListItem>
-            <ListItemAvatar>
-                <Avatar className={!isEditing ? classes.disabledAvatar : (hasAdmin == 1 ? classes.adminAvatar : classes.userAvatar)}>
-                    {hasAdmin == 1 ? <BuildIcon /> : <PersonIcon />}
-                </Avatar>
-            </ListItemAvatar>
+            <Tooltip title={hasAdmin ? translate("folderAdmin") : translate("normalUser")} enterDelay={500}>
+                <ListItemAvatar>
+                    <Avatar className={!isEditing ? classes.disabledAvatar : (hasAdmin == 1 ? classes.adminAvatar : classes.userAvatar)}>
+                        {hasAdmin == 1 ? <BuildIcon /> : <PersonIcon />}
+                    </Avatar>
+                </ListItemAvatar>
+            </Tooltip>
             <ListItemText
                 primary={userId}
             />
@@ -47,17 +50,19 @@ const PermissionListItem = (props) => {
                         onChange={(event, checked) => { adminChanged(userId, checked) }}
                         value="checkedB"
                         color="primary"
-                    />)
-                }
-                label="Is folder administrator?"
+                    />
+                )}
+                label={translate("isFolderAdmin")}
                 style={{ marginRight: 32 }}
                 disabled={!isEditing}
             />
-            <Fade in>
+            <Fade in={isEditing}>
                 <ListItemSecondaryAction>
-                    <IconButton disabled={!isEditing} aria-label="Delete" onClick={() => permissionRemoved(userId)}>
-                        <DeleteIcon color={!isEditing ? "disabled" : "error"} />
-                    </IconButton>
+                    <Tooltip title={translate("removePermissionTooltip")}>
+                        <IconButton disabled={!isEditing} aria-label="Delete" onClick={() => permissionRemoved(userId)}>
+                            <DeleteIcon color={!isEditing ? "disabled" : "error"} />
+                        </IconButton>
+                    </Tooltip>
                 </ListItemSecondaryAction>
             </Fade>
         </ListItem>
@@ -73,4 +78,4 @@ PermissionListItem.propTypes = {
     classes: PropTypes.object.isRequired,
 }
 
-export default withStyles(styles)(PermissionListItem)
+export default withStyles(styles)(withLocalize(PermissionListItem))

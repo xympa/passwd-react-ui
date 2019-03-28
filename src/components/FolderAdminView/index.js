@@ -2,7 +2,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { Zoom, Fab, Fade, Typography } from '@material-ui/core';
+import { Zoom, Fab, Fade, Typography, Tooltip } from '@material-ui/core';
 import FolderIcon from '@material-ui/icons/Folder'
 import AddIcon from '@material-ui/icons/Add'
 import { withStyles } from '@material-ui/core/styles'
@@ -12,6 +12,8 @@ import { replaceSearchAction, removeSearchAction } from '../../actions/SearchAct
 import FolderListItem from '../FolderListItem';
 import { beginCreation as beginFolderCreation, adminFolder } from '../../actions/FolderAdminActions'
 import { measureElement } from '../../Utils'
+import { Translate, withLocalize } from 'react-localize-redux'
+import localization from './localization.json'
 
 const styles = theme => ({
     fab: {
@@ -32,6 +34,8 @@ export class FolderAdminView extends Component {
         contents: PropTypes.arrayOf(PropTypes.object),
         isFetching: PropTypes.bool.isRequired,
         beginFolderCreation: PropTypes.func.isRequired,
+        translate: PropTypes.func.isRequired,
+        addTranslation: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -43,6 +47,9 @@ export class FolderAdminView extends Component {
 
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
         this.refreshView = this.refreshView.bind(this)
+
+        const { addTranslation } = this.props
+        addTranslation(localization)
     }
 
     componentDidMount() {
@@ -72,7 +79,7 @@ export class FolderAdminView extends Component {
     }
 
     render() {
-        const { contents, isFetching, beginFolderCreation, classes, adminFolder } = this.props;
+        const { contents, isFetching, beginFolderCreation, classes, adminFolder, translate } = this.props;
         const { width, height } = this.state;
 
         return (
@@ -87,7 +94,7 @@ export class FolderAdminView extends Component {
                             style={{ outline: 'none' }}
                             noRowsRenderer={() => (
                                 <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexGrow: "1 1 1" }}>
-                                    <Typography variant="h5" align="center">Use the button on the bottom right to create your first folder! Good Luck!</Typography>
+                                    <Typography variant="h5" align="center"><Translate id="folderIntroduction" /></Typography>
                                 </div>
                             )}
                             rowRenderer={({ index, style }) => {
@@ -106,7 +113,9 @@ export class FolderAdminView extends Component {
                     </Fade>
                 </div>
                 <Zoom in={!isFetching}>
-                    <Fab color="secondary" className={classes.fab} onClick={() => { beginFolderCreation() }}><AddIcon /></Fab>
+                    <Tooltip title={translate("createFolder")}>
+                        <Fab color="secondary" className={classes.fab} onClick={() => { beginFolderCreation() }}><AddIcon /></Fab>
+                    </Tooltip>
                 </Zoom>
             </div>
         )
@@ -126,4 +135,4 @@ const mapDispatchToProps = {
     adminFolder
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(FolderAdminView))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(FolderAdminView)))

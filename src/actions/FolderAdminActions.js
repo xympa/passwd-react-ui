@@ -1,6 +1,6 @@
 import { SET_ADMIN_FOLDER, ADMIN_FOLDER_FETCHED, CLOSED_FOLDER_ADMIN, ADMIN_FOLDER_USER_LIST_FETCHED, FOLDER_ADMIN_SET_FETCHING, FOLDER_ADMIN_SET_EDIT_MODE, FOLDER_BEGIN_CREATION } from './actionTypes'
 import { fetchFolderInfo, requestFolderUpdate, requestFolderCreation, updateContents, goToParent, requestFolderDeletion } from './FolderActions'
-import { fetchUserList } from './UserActions'
+import { requestUserList } from './UserActions'
 
 const setAdminFolder = (id) => ({
     type: SET_ADMIN_FOLDER,
@@ -87,7 +87,7 @@ export const adminFolder = (id) => (dispatch, getState) => {
                 console.log(response)
                 return new Promise(resolve => { dispatch(adminFolderFetched(response.data)); resolve(); })
             }),
-        dispatch(fetchUserList())
+        dispatch(requestUserList())
             .then(response => {
                 return new Promise(resolve => { dispatch(adminUserListFetched(response.data)); resolve(); })
             })
@@ -105,9 +105,10 @@ export const beginCreation = (parent = null) => (dispatch, getState) => {
     Promise.all([
         dispatch(fetchFolderInfo(parent))
             .then(response => {
-                return new Promise(resolve => { response.data.folderInfo = undefined; dispatch(adminFolderFetched(response.data)); resolve(); })
+                if (response)
+                    return new Promise(resolve => { response.data.folderInfo = undefined; dispatch(adminFolderFetched(response.data)); resolve(); })
             }),
-        dispatch(fetchUserList())
+        dispatch(requestUserList())
             .then(response => {
                 return new Promise(resolve => { dispatch(adminUserListFetched(response.data)); resolve(); })
             })

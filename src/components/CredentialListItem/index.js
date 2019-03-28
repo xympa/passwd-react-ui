@@ -74,6 +74,7 @@ class CredentialListItem extends React.PureComponent {
                 onClick={() => { openCredential(credential.idCredentials) }}
                 onMouseEnter={() => { this.setState({ hovered: true }) }}
                 onMouseLeave={() => { this.setState({ hovered: false }) }}
+                selected={hovered}
             >
                 <Avatar className={classes.avatar}>
                     <LockIcon style={{ height: 32, width: 32 }} />
@@ -131,7 +132,6 @@ class CredentialListItem extends React.PureComponent {
                             </Button>
                         </div>
                     </Fade>
-                    <Chip className={classes.margin} avatar={<Avatar><GroupIcon color="primary" /></Avatar>} label={translate("createdBy") + credential.createdById} />
                 </div>
             </ListItem>
         )

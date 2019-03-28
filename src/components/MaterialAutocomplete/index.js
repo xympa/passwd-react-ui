@@ -175,6 +175,8 @@ class MaterialAutocomplete extends React.Component {
         suggestions: PropTypes.array.isRequired,
         onSuggestionAccepted: PropTypes.func,
         placeholder: PropTypes.string,
+        value: PropTypes.any,
+        disabled: PropTypes.bool,
     }
 
     constructor(props) {
@@ -187,17 +189,17 @@ class MaterialAutocomplete extends React.Component {
         this.handleChangeSingle = this.handleChangeSingle.bind(this)
     }
 
-    handleChangeSingle(value) {
-        const { onSuggestionAccepted } = this.props;
+    handleChangeSingle(newValue) {
+        const { onSuggestionAccepted, value } = this.props;
         this.setState({
-            single: value
+            single: !value ? null : newValue
         }, () => {
-            if(onSuggestionAccepted) onSuggestionAccepted(value)
+            if (onSuggestionAccepted) onSuggestionAccepted(newValue)
         });
     }
 
     render() {
-        const { classes, suggestions, placeholder } = this.props
+        const { classes, suggestions, placeholder, disabled } = this.props
         const { single } = this.state
 
 
@@ -223,6 +225,7 @@ class MaterialAutocomplete extends React.Component {
                     value={single}
                     onChange={this.handleChangeSingle}
                     placeholder={placeholder}
+                    isDisabled={disabled}
                 />
             </div>
         );

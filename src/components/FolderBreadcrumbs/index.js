@@ -4,9 +4,9 @@ import { connect } from 'react-redux'
 import { Button } from '@material-ui/core';
 import RightArrowIcon from '@material-ui/icons/ArrowRight'
 import SearchIcon from '@material-ui/icons/Search';
-
 import { withStyles } from '@material-ui/core/styles'
-
+import localization from './localization.json'
+import { withLocalize } from 'react-localize-redux';
 
 const styles = () => ({
     root: {
@@ -27,11 +27,20 @@ export class FolderBreadcrumbs extends Component {
         })).isRequired,
         classes: PropTypes.object.isRequired,
         search: PropTypes.string.isRequired,
+        translate: PropTypes.func.isRequired,
+        addTranslation: PropTypes.func.isRequired,
+    }
+
+    constructor(props) {
+        super(props)
+
+        const { addTranslation } = this.props
+        addTranslation(localization)
     }
 
     render() {
 
-        const { classes, path, search } = this.props;
+        const { classes, path, search, translate } = this.props;
 
         return (
             <div className={classes.root}>
@@ -43,14 +52,15 @@ export class FolderBreadcrumbs extends Component {
                             <div className={classes.breadcrumb} key={element.parent + "-" + element.name}>
                                 <Button disabled={iter === path.length}>{element.name}</Button>
                                 {iter !== path.length && <RightArrowIcon />}
-                            </div>)
+                            </div>
+                        )
                     })
                 })()}
                 {
                     search.trim() !== "" && (
                         <Button disabled>
                             <SearchIcon />
-                            {`Looking for: "${search}"`}
+                            {translate("lookingFor") + search}
                         </Button>
                     )
                 }
@@ -67,4 +77,4 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(FolderBreadcrumbs))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(FolderBreadcrumbs)))

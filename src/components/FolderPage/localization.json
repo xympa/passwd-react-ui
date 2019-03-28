@@ -1,0 +1,10 @@
+{
+    "homeTooltip": [
+        "Go to root",
+        "Voltar à raiz"
+    ],
+    "parentTooltip": [
+        "Go to parent",
+        "Subir um nível"
+    ]
+}

@@ -15,7 +15,7 @@ import { withStyles } from '@material-ui/core/styles'
 import { withSnackbar } from 'notistack';
 import CredentialForm from '../CredentialModal/Form'
 import ModalHeader from './Header'
-import UserAutoComplete from '../FolderAdministrationModal/UserAutocomplete'
+import UserAutoComplete from '../MaterialAutocomplete'
 import { sendMessage, setFetching, getFrontServerPath, moveToCredentialLocationStep, saveCredential } from '../../actions/MessageActions'
 
 const timeToDieOptions = [

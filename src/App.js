@@ -18,6 +18,7 @@ import MainSwitch from './components/MainSwitch';
 import reducers from './reducers';
 import { useHashRouter } from './AppConfig'
 import { LocalizeProvider } from 'react-localize-redux';
+import { Tooltip } from '@material-ui/core';
 
 
 const theme = createMuiTheme({
