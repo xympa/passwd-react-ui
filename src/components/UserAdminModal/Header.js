@@ -1,14 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
 import CloseIcon from '@material-ui/icons/Close'
-import ShareIcon from '@material-ui/icons/Share'
 import LockIcon from '@material-ui/icons/Lock'
 import OpenLockIcon from '@material-ui/icons/LockOpen'
 import { IconButton, Typography } from '@material-ui/core'
 import { withStyles } from '@material-ui/core/styles'
-import { closeCredential, toggleEditMode } from '../../actions/CredentialActions'
-import { composeMessage } from '../../actions/MessageActions'
 
 const styles = theme => ({
     margin: {

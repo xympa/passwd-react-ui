@@ -1,0 +1,10 @@
+{
+    "login": [
+        "Login",
+        "Entrar"
+    ],
+    "badAuth": [
+        "Authentication failed",
+        "Autenticação falhada"
+    ]
+}

@@ -6,6 +6,8 @@ import FolderIcon from '@material-ui/icons/Folder'
 import MessageIcon from '@material-ui/icons/Message'
 import GroupIcon from '@material-ui/icons/Group'
 import { withStyles } from '@material-ui/core/styles'
+import { withLocalize, Translate } from 'react-localize-redux'
+import localization from './localization.json'
 import { openMessage } from '../../actions/MessageActions'
 
 const styles = theme => ({
@@ -28,8 +30,8 @@ const styles = theme => ({
 });
 
 
-const MessageListItem = (props) => {
-    const { classes, style, received, receiverId, senderId, title, message, messageId, openMessage } = props;
+const MessageListItem = withLocalize((props) => {
+    const { classes, style, received, receiverId, senderId, title, message, messageId, openMessage, translate } = props;
 
     return (
         <ListItem style={{ ...style }} button onClick={() => { openMessage(messageId, !received) }}>
@@ -40,32 +42,19 @@ const MessageListItem = (props) => {
                 style={{ flex: 1 }}
                 primary={(
                     <Typography>
-                        {received ? "Enviada por: " : "Destinatário: "}
+                        {received ? translate("sentBy") : translate("messageReceiver")}
                         {received ? senderId : receiverId}
                     </Typography>
                 )}
                 secondary={(
                     <Typography variant="caption" noWrap>
-                        {message ? "Mensagem: " + message : "Titulo da credencial: " + title}
+                        {message ? translate("message") + message : translate("credentialTitle") + title}
                     </Typography>
                 )}
             />
-            {/*<div style={{ display: "flex", flex: 1, justifyContent: "flex-end" }}>
-                <Chip
-                    className={classes.margin}
-                    avatar={<Avatar><FolderIcon color="primary" /></Avatar>}
-                    label={`${folder.folderChildren} pastas contidas`}
-                />
-                <Chip
-                    className={classes.margin}
-                    avatar={<Avatar><KeyIcon color="primary" /></Avatar>}
-                    label={`${folder.credentialChildren} credenciais contidas`}
-                />
-            </div>
-    */}
         </ListItem>
     )
-}
+})
 
 MessageListItem.propTypes = {
     classes: PropTypes.object.isRequired,

@@ -177,6 +177,11 @@ class MaterialAutocomplete extends React.Component {
         placeholder: PropTypes.string,
         value: PropTypes.any,
         disabled: PropTypes.bool,
+        keepValue: PropTypes.bool,
+    }
+
+    static defaultProps = {
+        keepValue: false
     }
 
     constructor(props) {
@@ -190,9 +195,9 @@ class MaterialAutocomplete extends React.Component {
     }
 
     handleChangeSingle(newValue) {
-        const { onSuggestionAccepted, value } = this.props;
+        const { onSuggestionAccepted, keepValue } = this.props;
         this.setState({
-            single: !value ? null : newValue
+            single: !keepValue ? null : newValue
         }, () => {
             if (onSuggestionAccepted) onSuggestionAccepted(newValue)
         });

@@ -2,13 +2,15 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles'
 import { connect } from 'react-redux'
-import { Fade, Typography, Zoom, Fab, Divider } from '@material-ui/core'
+import { Fade, Typography, Zoom, Fab, Divider, Tooltip } from '@material-ui/core'
 import { List } from 'react-virtualized';
 import CreateIcon from '@material-ui/icons/Create'
 import { fetchInbox, composeMessage } from '../../actions/MessageActions'
 import { replaceSearchAction, removeSearchAction } from '../../actions/SearchActions'
 import { measureElement } from '../../Utils'
 import MessageListItem from '../MessageListItem';
+import { withLocalize, Translate } from 'react-localize-redux'
+import localization from './localization.json'
 
 const styles = theme => ({
     fab: {
@@ -34,6 +36,8 @@ export class InboxView extends Component {
         replaceSearchAction: PropTypes.func.isRequired,
         classes: PropTypes.object.isRequired,
         composeMessage: PropTypes.func.isRequired,
+        addTranslation: PropTypes.func.isRequired,
+        translate: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -48,6 +52,9 @@ export class InboxView extends Component {
 
         this.reloadViewContents = this.reloadViewContents.bind(this)
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
+
+        const { addTranslation } = this.props
+        addTranslation(localization)
     }
 
     componentDidMount() {
@@ -90,13 +97,15 @@ export class InboxView extends Component {
 
         const { isFetching, error, width, height } = this.state;
 
-        const { messages, classes, composeMessage } = this.props;
+        const { messages, classes, composeMessage, translate } = this.props;
 
         return (
             <div>
                 <div style={{ flexDirection: "column", flex: 1, overflow: "hidden" }}>
                     <div className={classes.header}>
-                        <Typography variant="h4">Inbox</Typography>
+                        <Typography variant="h4">
+                            <Translate id="inbox" />
+                        </Typography>
                     </div>
                     <Divider />
                     <Fade in={!isFetching}>
@@ -108,7 +117,7 @@ export class InboxView extends Component {
                             style={{ outline: 'none' }}
                             noRowsRenderer={() => (
                                 <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexGrow: "1 1 1" }}>
-                                    <Typography variant="h5">No messages... :(</Typography>
+                                    <Typography variant="h5"><Translate id="noMessages" /></Typography>
                                 </div>
                             )}
                             rowRenderer={({ index, style }) => (
@@ -124,9 +133,11 @@ export class InboxView extends Component {
                     </Fade>
                 </div>
                 <Zoom in>
-                    <Fab className={classes.fab} color="secondary" onClick={() => { composeMessage() }}>
-                        <CreateIcon />
-                    </Fab>
+                    <Tooltip title={translate("composeMessage")} placement="left">
+                        <Fab className={classes.fab} color="secondary" onClick={() => { composeMessage() }}>
+                            <CreateIcon />
+                        </Fab>
+                    </Tooltip>
                 </Zoom>
             </div>
         )
@@ -144,4 +155,4 @@ const mapDispatchToProps = {
     composeMessage
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(InboxView))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(InboxView)))

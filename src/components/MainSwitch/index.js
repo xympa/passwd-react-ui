@@ -57,7 +57,16 @@ const styles = theme => ({
         width: drawerWidth,
         height: `calc(100vh - 64px)`,
         transform: "translateY(64px) !important",
-        overflowX: "hidden"
+        overflowX: "hidden",
+    },
+    drawerRoot: {
+        top: 64,
+        position: 'absolute'
+    },
+    backDropRoot: {
+        height: `calc(100vh - 64px)`,
+        top: 64,
+        zIndex: 1
     }
 });
 
@@ -69,6 +78,7 @@ export class MainSwitch extends Component {
         checkAuthValidity: PropTypes.func.isRequired,
         classes: PropTypes.object.isRequired,
         initialize: PropTypes.func.isRequired,
+        setActiveLanguage: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -91,6 +101,8 @@ export class MainSwitch extends Component {
             translation: globalTranslations,
             options: { renderToStaticMarkup }
         });
+
+        props.setActiveLanguage(localStorage.getItem("language") || navigator.language.substring(0, 2))
     }
 
     componentDidMount() {
@@ -139,8 +151,14 @@ export class MainSwitch extends Component {
                         anchor={theme.direction === 'rtl' ? 'right' : 'left'}
                         open={mobileOpen}
                         onBackdropClick={() => { this.setState({ mobileOpen: false }) }}
+                        BackdropProps={{
+                            classes: {
+                                root: classes.backDropRoot
+                            }
+                        }}
                         onClose={this.handleDrawerToggle}
                         classes={{
+                            root: classes.drawerRoot,
                             paper: classes.drawerPaper,
                         }}
                     >

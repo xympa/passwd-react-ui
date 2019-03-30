@@ -13,6 +13,8 @@ import {
 import Tree from 'react-animated-tree'
 import { withStyles } from '@material-ui/core/styles'
 import { withSnackbar } from 'notistack';
+import { withLocalize, Translate } from 'react-localize-redux'
+import localization from './localization.json'
 import CredentialForm from '../CredentialModal/Form'
 import ModalHeader from './Header'
 import UserAutoComplete from '../MaterialAutocomplete'
@@ -78,6 +80,8 @@ export class MessageModal extends Component {
         saveCredential: PropTypes.func.isRequired,
         moveToCredentialLocationStep: PropTypes.func.isRequired,
         readonly: PropTypes.bool,
+        addTranslation: PropTypes.func.isRequired,
+        translate: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -103,6 +107,9 @@ export class MessageModal extends Component {
         }
 
         this.sendMessage = this.sendMessage.bind(this)
+
+        const { addTranslation } = this.props
+        addTranslation(localization)
     }
 
     componentDidUpdate(prevProps) {
@@ -181,7 +188,7 @@ export class MessageModal extends Component {
     }
 
     saveMessageCredential() {
-        const { enqueueSnackbar, saveCredential, setFetching, messageInfo } = this.props;
+        const { enqueueSnackbar, saveCredential, setFetching, messageInfo, translate } = this.props;
         const { credentialForm, targetFolder } = this.state;
 
         const valid = Object.keys(credentialForm).filter(field => !credentialForm[field].valid).length === 0
@@ -205,14 +212,14 @@ export class MessageModal extends Component {
                     setFetching(false)
                 })
         else {
-            enqueueSnackbar('Some fields look invalid please check the form again', {
+            enqueueSnackbar(translate("badForm"), {
                 variant: "error"
             })
         }
     }
 
     sendMessage() {
-        const { enqueueSnackbar, sendMessage, credential, setFetching } = this.props;
+        const { enqueueSnackbar, sendMessage, credential, setFetching, translate } = this.props;
         const { fields, credentialForm, isExternal, timeToDie } = this.state;
 
         const valid = Object.keys(fields).filter(field => !fields[field].valid).length === 0 ||
@@ -242,7 +249,7 @@ export class MessageModal extends Component {
                     setFetching(false)
                 })
         else {
-            enqueueSnackbar('Some fields look invalid please check the form again', {
+            enqueueSnackbar(translate("badForm"), {
                 variant: "error"
             })
         }
@@ -289,7 +296,8 @@ export class MessageModal extends Component {
     render() {
         const { isExternal, fields, timeToDie } = this.state;
         const { isFetching, isOpen, credential, isCreating, isEditing, users, classes, sendResult,
-            folderTree, choosingCredentialLocation, moveToCredentialLocationStep, readonly } = this.props;
+            folderTree, choosingCredentialLocation, moveToCredentialLocationStep, readonly, translate } = this.props;
+        console.log(this.state)
 
         return (
             <Dialog open={isOpen} maxWidth="lg" fullWidth TransitionComponent={Zoom}>
@@ -306,17 +314,20 @@ export class MessageModal extends Component {
                                         !isExternal ? (
                                             <UserAutoComplete
                                                 className={classNames(classes.margin, classNames.textField)}
-                                                placeholder="Destinatário"
+                                                placeholder={translate("receiver")}
+                                                keepValue
+                                                value={fields.receiver.value}
                                                 suggestions={users.map(user => ({ value: user.username, label: user.username }))}
                                                 disabled={!isEditing}
-                                                onAutocomplete={username => {
+                                                onSuggestionAccepted={({ value }) => {
+                                                    console.log(value)
                                                     this.setState(prevState => ({
                                                         ...prevState,
                                                         fields: {
                                                             ...prevState.fields,
                                                             receiver: {
-                                                                value: username,
-                                                                sanitizedValue: username,
+                                                                value: value,
+                                                                sanitizedValue: value,
                                                                 valid: true
                                                             }
                                                         }
@@ -325,9 +336,9 @@ export class MessageModal extends Component {
                                             />
                                         ) : (
                                                 <FormControl error={!fields.receiver.valid} disabled={!isEditing} className={classNames(classes.margin, classes.textField)}>
-                                                    <InputLabel htmlFor="email">Destinatário</InputLabel>
+                                                    <InputLabel htmlFor="receiver"><Translate id="receiver" /></InputLabel>
                                                     <Input
-                                                        id="email"
+                                                        id="receiver"
                                                         value={fields.receiver.value}
                                                         type="email"
                                                         onChange={this._handleChange('receiver')}
@@ -341,7 +352,7 @@ export class MessageModal extends Component {
 
                                     <FormControl classes={{ root: classes.timeToDieRoot }}>
                                         <InputLabel shrink htmlFor="time-to-die">
-                                            Time to die
+                                            <Translate id="ttl" />
                                         </InputLabel>
                                         <Select
                                             style={{ width: 150 }}
@@ -367,10 +378,10 @@ export class MessageModal extends Component {
                                                 onChange={(event, checked) => { this.setState({ isExternal: checked }) }}
                                                 value="checkedB"
                                                 color="primary"
-                                            />)
-                                        }
+                                            />
+                                        )}
                                         className={classes.leftMargin}
-                                        label="Utilizador externo?"
+                                        label={translate("isExternalUser")}
                                         classes={{ root: classes.timeToDieRoot }}
                                         disabled={!isEditing}
                                     />
@@ -379,7 +390,7 @@ export class MessageModal extends Component {
                             <CredentialForm isEditing={isEditing && isCreating && !credential} credential={credential} onFormChanged={(form) => { this.setState({ credentialForm: form }); }} />
                             <TextField
                                 id="message"
-                                label="Message"
+                                label={translate("message")}
                                 disabled={!isEditing || !isCreating}
                                 value={fields.message.value}
                                 error={!fields.message.valid}
@@ -396,17 +407,17 @@ export class MessageModal extends Component {
                             {sendResult && sendResult.sent && <Typography>Foi enviado um email para o destinatário.</Typography>}
                             {sendResult && sendResult.externalKey && (
                                 <Typography>
-                                    Pode aceder à credencial através do seguinte
-                                    <a href={getFrontServerPath() + sendResult.externalKey} target="_blank" rel="noopener noreferrer"> link</a>
+                                    <Translate id="youCanAccess" />
+                                    <a href={getFrontServerPath() + sendResult.externalKey} target="_blank" rel="noopener noreferrer">
+                                        <Translate id="link" />
+                                    </a>
                                 </Typography>
                             )}
                         </div>
                     </Fade>
                     <Slide in={!isFetching && choosingCredentialLocation}>
                         <div style={{ display: (choosingCredentialLocation ? "flex" : "none"), flexDirection: "column" }}>
-                            {
-                                this.renderFolderTree(folderTree, true)
-                            }
+                            {this.renderFolderTree(folderTree, true)}
                         </div>
                     </Slide>
                 </DialogContent>
@@ -416,25 +427,28 @@ export class MessageModal extends Component {
                             <Fade in={isEditing}>
                                 <DialogActions>
                                     <Button variant="contained" onClick={this.attemptDelete}>
-                                        Delete
+                                        <Translate id="delete" />
                                     </Button>
                                     <div style={{ flex: 1 }} />
                                     {!choosingCredentialLocation ? (
                                         <Button variant="contained" style={{ justifySelf: "flex-start" }} onClick={moveToCredentialLocationStep} color="secondary">
-                                            Choose Location
+                                            <Translate id="chooseLocation" />
                                         </Button>
                                     ) : (
                                             <Button variant="contained" style={{ justifySelf: "flex-start" }} onClick={() => { this.saveMessageCredential() }} color="secondary">
-                                                Save Credential
+                                                <Translate id="save" />
+                                                {" "}
+                                                <Translate id="credential" />
                                             </Button>
                                         )
                                     }
                                 </DialogActions>
-                            </Fade>) : (
+                            </Fade>
+                        ) : (
                                 <Fade in>
                                     <DialogActions>
                                         <Button variant="contained" onClick={this.sendMessage}>
-                                            Send
+                                            <Translate id="send" />
                                         </Button>
                                     </DialogActions>
                                 </Fade>
@@ -457,7 +471,7 @@ const mapStateToProps = (state) => ({
     sendResult: state.messages.modal.sendResult,
     folderTree: state.messages.modal.folderTree,
     choosingCredentialLocation: state.messages.modal.choosingCredentialLocation,
-    messageInfo: state.messages.modal.messageInfo
+    messageInfo: state.messages.modal.messageInfo,
 })
 
 const mapDispatchToProps = {
@@ -467,4 +481,4 @@ const mapDispatchToProps = {
     saveCredential
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(MessageModal)))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(withLocalize(MessageModal))))

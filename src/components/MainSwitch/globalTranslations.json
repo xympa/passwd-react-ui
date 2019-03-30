@@ -12,8 +12,8 @@
         "Abrir"
     ],
     "url": [
-        "url",
-        "url"
+        "URL",
+        "URL"
     ],
     "passwordCopied": [
         "Password copied!",
@@ -54,5 +54,49 @@
     "badForm": [
         "Some fields look invalid, look for the red warnings!",
         "Alguns campos parecem ser inválidos, procure os avisos a vermelho!"
+    ],
+    "inbox": [
+        "Inbox",
+        "Caixa de Entrada"
+    ],
+    "outbox": [
+        "Outbox",
+        "Caixa de Saida"
+    ],
+    "credentialExplorer": [
+        "Credential explorer",
+        "Explorador de credenciais"
+    ],
+    "messages": [
+        "Messages",
+        "Mensagens"
+    ],
+    "administration": [
+        "Administration",
+        "Administração"
+    ],
+    "folderManagement": [
+        "Manage Folders",
+        "Gerir Pastas"
+    ],
+    "userManagement": [
+        "Manage Users",
+        "Gerir Utilizadores"
+    ],
+    "logExplorer": [
+        "Explore Logs",
+        "Ver Registos"
+    ],
+    "isExternalUser": [
+        "External user?",
+        "Utilizador externo?"
+    ],
+    "noMessages": [
+        "No messages...",
+        "Sem mensagens..."
+    ],
+    "composeMessage": [
+        "Compose message...",
+        "Compor mensagem..."
     ]
 }

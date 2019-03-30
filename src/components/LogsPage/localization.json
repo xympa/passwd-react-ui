@@ -1,0 +1,26 @@
+{
+    "insertedDate": [
+        "Log date",
+        "data de registo"
+    ],
+    "facility": [
+        "Category",
+        "Categoria"
+    ],
+    "severity": [
+        "Severity",
+        "Gravidade"
+    ],
+    "action": [
+        "Action",
+        "Acção"
+    ],
+    "initialDate": [
+        "Initial date",
+        "Data inicial"
+    ],
+    "finalDate": [
+        "Final date",
+        "Data final"
+    ]
+}

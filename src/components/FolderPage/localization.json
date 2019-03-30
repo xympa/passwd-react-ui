@@ -6,5 +6,25 @@
     "parentTooltip": [
         "Go to parent",
         "Subir um nível"
+    ],
+    "folderAdminTooltip": [
+        "Open folder administration dialog",
+        "Abrir administração de pasta"
+    ],
+    "emptyFolder": [
+        "This is folder seems empty... Try adding something :D Use the button on the bottom right corner.",
+        "Esta pasta pasta está vazia tente adicioanr algo! :D Use o botão no canto inferior direito."
+    ],
+    "addContent": [
+        "Add content...",
+        "Adicionar conteúdo..."
+    ],
+    "addFolder": [
+        "Add folder...",
+        "Adicionar pasta..."
+    ],
+    "addCredential": [
+        "Add credential...",
+        "Adicionar credencial..."
     ]
 }

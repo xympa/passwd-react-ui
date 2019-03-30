@@ -1,0 +1,18 @@
+{
+    "sentBy": [
+        "Sent by: ",
+        "Enviada por: "
+    ],
+    "messageReceiver": [
+        "Receiver: ",
+        "Destintário: "
+    ],
+    "message": [
+        "Message: ",
+        "Mensagem: "
+    ],
+    "credentialTitle": [
+        "Credential title: ",
+        "Titulo da credencial: "
+    ]
+}

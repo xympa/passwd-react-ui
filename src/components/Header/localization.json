@@ -1,0 +1,22 @@
+{
+    "search": [
+        "Search...",
+        "Procurar..."
+    ],
+    "greeting": [
+        "Hi ",
+        "Olá "
+    ],
+    "myAccount": [
+        "My Account",
+        "A Minha Conta"
+    ],
+    "language": [
+        "Language",
+        "Linguagem"
+    ],
+    "logout": [
+        "Logout",
+        "Sair"
+    ]
+}

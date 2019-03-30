@@ -2,9 +2,9 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import CloseIcon from '@material-ui/icons/Close'
-import { IconButton, Typography } from '@material-ui/core'
+import { IconButton, Typography, Tooltip } from '@material-ui/core'
 import { withStyles } from '@material-ui/core/styles'
-
+import { withLocalize, Translate } from 'react-localize-redux'
 import { closeModal } from '../../actions/MessageActions'
 
 const styles = theme => ({
@@ -14,30 +14,32 @@ const styles = theme => ({
     }
 })
 
-const MessageModalHeader = (props) => {
-    const { classes, closeModal, isCreating, readonly } = props;
+const MessageModalHeader = withLocalize((props) => {
+    const { classes, closeModal, isCreating, readonly, translate } = props;
 
     return (
         <div style={{ display: "flex", flex: 0, flexWrap: "nowrap" }}>
             {!readonly && (
                 isCreating ? (
                     <div style={{ display: "flex", alignItems: "center" }}>
-                        <Typography variant="h5">Insert the details of the new message</Typography>
+                        <Typography variant="h5"><Translate id="createMessageModalHeader" /></Typography>
                     </div>
                 ) : (
                         <div style={{ display: "flex", alignItems: "center" }}>
-                            <Typography variant="h5">Saving credential...</Typography>
+                            <Typography variant="h5"><Translate id="savingCredential" /></Typography>
                         </div>
                     )
             )
             }
             <div style={{ flex: 1 }} />
-            <IconButton aria-label="Delete" className={classes.margin} onClick={closeModal}>
-                <CloseIcon color="secondary" />
-            </IconButton>
+            <Tooltip title={translate("closeModal")}>
+                <IconButton aria-label="Delete" className={classes.margin} onClick={closeModal}>
+                    <CloseIcon color="secondary" />
+                </IconButton>
+            </Tooltip>
         </div>
     )
-}
+})
 
 MessageModalHeader.propTypes = {
     classes: PropTypes.object.isRequired,

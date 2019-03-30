@@ -1,21 +1,16 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { withStyles } from '@material-ui/core/styles'
+import { withStyles, MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import { connect } from 'react-redux'
 import { DateTimePicker } from "material-ui-pickers";
 import moment from 'moment'
-import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
-import { Fade, Grow, Zoom, Fab, Divider, FormControl, MenuItem, InputLabel, Select, CircularProgress, Collapse } from '@material-ui/core'
-import TableCell from '@material-ui/core/TableCell';
-import TableSortLabel from '@material-ui/core/TableSortLabel';
-import Paper from '@material-ui/core/Paper';
-import classNames from 'classnames'
-import { List, InfiniteLoader, AutoSizer } from 'react-virtualized';
+import { Fade, CircularProgress, Divider } from '@material-ui/core'
+import MUIDataTable from 'mui-datatables'
+import { withLocalize, Translate } from 'react-localize-redux'
+import localization from './localization.json'
 import { replaceSearchAction, removeSearchAction } from '../../actions/SearchActions'
 import { measureElement } from '../../Utils'
 import { fetchLogMeta, fetchLogs } from '../../actions/LogActions';
-import MaterialAutocomplete from '../MaterialAutocomplete';
-import MUIDataTable from 'mui-datatables'
 
 const fetchPerRequest = 20
 
@@ -68,6 +63,8 @@ export class LogsPage extends Component {
         removeSearchAction: PropTypes.func.isRequired,
         replaceSearchAction: PropTypes.func.isRequired,
         classes: PropTypes.object.isRequired,
+        addTranslation: PropTypes.func.isRequired,
+        translate:PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -91,6 +88,9 @@ export class LogsPage extends Component {
 
         this.reloadViewContents = this.reloadViewContents.bind(this)
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
+
+        const { addTranslation}= this.props
+        addTranslation(localization)
     }
 
     componentDidMount() {
@@ -195,8 +195,7 @@ export class LogsPage extends Component {
 
         const { isFetching, error, width, height, filters, hasNextPage, isNextPageLoading } = this.state;
 
-        const { classes, meta, list } = this.props
-
+        const { classes, meta, list, translate } = this.props
 
         const myTheme = createMuiTheme({
             overrides: {
@@ -233,14 +232,14 @@ export class LogsPage extends Component {
                                             data={list}
                                             columns={[
                                                 {
-                                                    label: 'data',
+                                                    label: translate('insertedDate'),
                                                     name: 'inserted_timestamp',
                                                     options: {
                                                         filter: false
                                                     }
                                                 },
                                                 {
-                                                    label: 'Facility',
+                                                    label: translate("facility"),
                                                     name: 'facility',
                                                     options: {
                                                         filterOptions: meta.facilities
@@ -248,21 +247,21 @@ export class LogsPage extends Component {
                                                 },
 
                                                 {
-                                                    label: 'Gravidade',
+                                                    label: translate("severity"),
                                                     name: 'severity_level',
                                                     options: {
                                                         filterOptions: meta.severities
                                                     }
                                                 },
                                                 {
-                                                    label: 'Action',
+                                                    label: translate("action"),
                                                     name: 'action',
                                                     options: {
                                                         filter: false
                                                     }
                                                 },
                                                 {
-                                                    label: 'User',
+                                                    label: translate("username"),
                                                     name: 'ownerid',
                                                     options: {
                                                         filterOptions: meta.users,
@@ -333,7 +332,7 @@ export class LogsPage extends Component {
                                                                         }
                                                                     }), this.reloadViewContents)
                                                                 }}
-                                                                label="Data inicial"
+                                                                label={translate("initialDate")}
                                                             />
                                                             <DateTimePicker
                                                                 ampm={false}
@@ -347,7 +346,7 @@ export class LogsPage extends Component {
                                                                         }
                                                                     }), this.reloadViewContents)
                                                                 }}
-                                                                label="Data Final"
+                                                                label={translate("finalDate")}
                                                             />
                                                         </div>
                                                     </div>
@@ -373,7 +372,12 @@ export class LogsPage extends Component {
 
 const mapStateToProps = (state) => ({
     meta: state.log.meta,
-    list: state.log.list,
+    list: state.log.list
+    .map(log => ({
+        ...log,
+        "inserted_timestamp": moment(new Date(log.inserted_timestamp * 1000)).toString(),
+        // "severity_level": meta.severities.find(s => s) translate severity to string, but this is php lib hardcoded which sucks
+    })),
 })
 
 
@@ -384,4 +388,4 @@ const mapDispatchToProps = {
     fetchLogs
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(LogsPage))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(LogsPage)))

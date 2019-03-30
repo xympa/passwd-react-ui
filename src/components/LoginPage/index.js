@@ -4,6 +4,8 @@ import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import { Grid, FormControl, InputLabel, FilledInput, Button } from '@material-ui/core';
 import { withSnackbar } from 'notistack';
+import { withLocalize, Translate } from 'react-localize-redux'
+import localization from './localization.json'
 import { performLogin } from '../../actions/AuthenticationActions'
 
 
@@ -50,6 +52,8 @@ export class LoginPage extends Component {
         history: PropTypes.object,
         performLogin: PropTypes.func.isRequired,
         classes: PropTypes.object.isRequired,
+        addTranslation: PropTypes.func.isRequired,
+        translate:PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -60,6 +64,9 @@ export class LoginPage extends Component {
         }
 
         this._attemptLogin = this._attemptLogin.bind(this)
+
+        const { addTranslation}= this.props
+        addTranslation(localization)
     }
 
     _handleChange = name => event => {
@@ -74,7 +81,7 @@ export class LoginPage extends Component {
     }
 
     _attemptLogin() {
-        const { enqueueSnackbar, performLogin } = this.props;
+        const { enqueueSnackbar, performLogin, translate } = this.props;
         const { username, password } = this.state;
 
         performLogin(username, password)
@@ -83,13 +90,13 @@ export class LoginPage extends Component {
                 history.replace('/home');
             })
             .catch(() => {
-                enqueueSnackbar("Wrong Credentials")
+                enqueueSnackbar(translate("badAuth"))
             })
     }
 
     render() {
         const { classes } = this.props;
-        const { username, password } = this.state;
+        const { username, password, translate } = this.state;
 
         return (
             <Grid
@@ -115,7 +122,7 @@ export class LoginPage extends Component {
                         >
                             <Grid item>
                                 <FormControl variant="filled" className={classes.formControl}>
-                                    <InputLabel htmlFor="username">Username</InputLabel>
+                                    <InputLabel htmlFor="username"><Translate id="username" /></InputLabel>
                                     <FilledInput
                                         fullWidth
                                         id="username"
@@ -128,7 +135,7 @@ export class LoginPage extends Component {
                             </Grid>
                             <Grid item>
                                 <FormControl variant="filled" className={classes.formControl}>
-                                    <InputLabel htmlFor="password">Password</InputLabel>
+                                    <InputLabel htmlFor="password"><Translate id="password" /></InputLabel>
                                     <FilledInput
                                         type="password"
                                         id="password"
@@ -158,4 +165,4 @@ const mapDispatchToProps = {
     performLogin
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(LoginPage)))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(withLocalize(LoginPage))))

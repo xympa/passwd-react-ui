@@ -22,7 +22,8 @@ import { withStyles } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountIcon from '@material-ui/icons/Person';
 import MenuIcon from '@material-ui/icons/Menu';
-import { withLocalize } from 'react-localize-redux'
+import { withLocalize, Translate } from 'react-localize-redux'
+import localization from './localization.json'
 
 import { logout } from '../../actions/AuthenticationActions'
 import { changeSearch } from '../../actions/SearchActions'
@@ -106,6 +107,9 @@ const styles = theme => ({
     extendedIcon: {
         marginRight: theme.spacing.unit,
     },
+    highZIndex: {
+        zIndex: 2000
+    }
 });
 
 export class Header extends Component {
@@ -116,6 +120,8 @@ export class Header extends Component {
         classes: PropTypes.object.isRequired,
         logout: PropTypes.func.isRequired,
         onMenuClick: PropTypes.func.isRequired,
+        addTranslation: PropTypes.func.isRequired,
+        translate: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -128,6 +134,9 @@ export class Header extends Component {
         this._searchChanged = _.debounce(this._searchChanged.bind(this), 30);
         this.handleSearchChange = this.handleSearchChange.bind(this)
         this._handleClose = this._handleClose.bind(this)
+
+        const { addTranslation } = this.props
+        addTranslation(localization)
     }
 
     handleSearchChange(event) {
@@ -147,7 +156,7 @@ export class Header extends Component {
     }
 
     render() {
-        const { classes, search, onMenuClick, username, logout, activeLanguage, languages, setActiveLanguage } = this.props;
+        const { classes, search, onMenuClick, username, logout, activeLanguage, languages, setActiveLanguage, translate } = this.props;
         const { accountMenuShowing } = this.state
 
         return (
@@ -164,13 +173,13 @@ export class Header extends Component {
                                 <MenuIcon />
                             </IconButton>
                         </div>
-                        <img className={classes.title} src={require('../../assets/logo-branco.png')} alt="enso logo branco" />
+                        <img className={classes.title} src={require('../../assets/logo-branco.png')} alt="passwd logo" />
                         <div className={classes.search}>
                             <div className={classes.searchIcon}>
                                 <SearchIcon />
                             </div>
                             <InputBase
-                                placeholder="Procurar ..."
+                                placeholder={translate("search")}
                                 value={search}
                                 onChange={this.handleSearchChange}
                                 classes={{
@@ -187,7 +196,10 @@ export class Header extends Component {
                             onClick={() => { this.setState(prevState => ({ accountMenuShowing: !prevState.accountMenuShowing })) }}
                         >
                             <AccountIcon style={{ color: "white", marginRight: "1em" }} />
-                            <Typography style={{ color: "white", textTransform: "capitalize" }}>Hi {username}!</Typography>
+                            <Typography style={{ color: "white", textTransform: "capitalize" }}>
+                                {translate("greeting") + username}
+                                !
+                            </Typography>
                         </Button>
                         <Popper open={accountMenuShowing} placement="bottom-end" anchorEl={this._anchorEl} transition disablePortal>
                             {({ TransitionProps }) => (
@@ -196,16 +208,21 @@ export class Header extends Component {
                                     id="menu-list-grow"
                                     style={{ transformOrigin: 'right top' }}
                                 >
-                                    <Paper>
-                                        <ClickAwayListener onClickAway={this._handleClose}>
+                                    <ClickAwayListener onClickAway={this._handleClose}>
+
+                                        <Paper classes={{root: classes.highZIndex}}>
                                             <MenuList>
-                                                <MenuItem onClick={this._handleClose}>My account</MenuItem>
+                                                <MenuItem onClick={this._handleClose}>
+                                                    <Translate id="myAccount" />
+                                                </MenuItem>
                                                 <MenuItem>
                                                     <FormControl className={classes.formControl}>
-                                                        <InputLabel htmlFor="age-simple">Language</InputLabel>
+                                                        <InputLabel>
+                                                            <Translate id="language" />
+                                                        </InputLabel>
                                                         <Select
                                                             value={activeLanguage.code}
-                                                            onChange={(event) => { setActiveLanguage(event.target.value) }}
+                                                            onChange={(event) => { setActiveLanguage(event.target.value); localStorage.setItem("language", event.target.value) }}
                                                             inputProps={{
                                                                 name: 'lang',
                                                                 id: 'lang',
@@ -220,11 +237,11 @@ export class Header extends Component {
                                                     </FormControl>
                                                 </MenuItem>
                                                 <MenuItem onClick={logout}>
-                                                    Logout
+                                                    <Translate id="logout" />
                                                 </MenuItem>
                                             </MenuList>
-                                        </ClickAwayListener>
-                                    </Paper>
+                                        </Paper>
+                                    </ClickAwayListener>
                                 </Grow>
                             )}
                         </Popper>

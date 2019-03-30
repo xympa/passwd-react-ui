@@ -1,0 +1,38 @@
+{
+    "createMessageModalHeader": [
+        "Insert the details of the new message",
+        "Insira os detalhes da nova mensagem"
+    ],
+    "savingCredential": [
+        "Saving credential...",
+        "A gravar credencial..."
+    ],
+    "receiver": [
+        "Receiver",
+        "Destinatário"
+    ],
+    "ttl": [
+        "Time before destruction",
+        "Tempo de vida"
+    ],
+    "message": [
+        "Message",
+        "Mensagem"
+    ],
+    "youCanAccess": [
+        "You can access the message through the ",
+        "Pode aceder à credencial através da seguinte "
+    ],
+    "link": [
+        " link.",
+        " ligação."
+    ],
+    "chooseLocation": [
+        "Choose location",
+        "Escolher pasta"
+    ],
+    "send": [
+        "Send",
+        "Enviar"
+    ]
+}

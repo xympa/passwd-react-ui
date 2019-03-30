@@ -2,7 +2,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { IconButton, Zoom, Fab, Fade, Divider, Typography } from '@material-ui/core';
+import { IconButton, Zoom, Fab, Fade, Divider, Typography, Tooltip } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home'
 import UpArrowIcon from '@material-ui/icons/ArrowUpward'
 import SettingsIcon from '@material-ui/icons/Settings'
@@ -20,6 +20,8 @@ import { beginCredentialCreation } from '../../actions/CredentialActions'
 import PopupFab from '../PopupFab'
 import { adminFolder, beginCreation as beginFolderCreation } from '../../actions/FolderAdminActions'
 import { measureElement } from '../../Utils'
+import { withLocalize, Translate } from 'react-localize-redux';
+import localization from './localization.json'
 
 const styles = () => ({
     header: {
@@ -48,6 +50,8 @@ export class FolderPage extends Component {
         match: PropTypes.object.isRequired,
         parent: PropTypes.string.isRequired,
         history: PropTypes.object.isRequired,
+        addTranslation: PropTypes.func.isRequired,
+        translate: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -61,6 +65,9 @@ export class FolderPage extends Component {
         this._upButtonHandle = this._upButtonHandle.bind(this)
         this._homeButtonHandle = this._homeButtonHandle.bind(this)
         this.refreshView = this.refreshView.bind(this)
+
+        const { addTranslation } = this.props
+        addTranslation(localization)
     }
 
     componentDidMount() {
@@ -107,23 +114,28 @@ export class FolderPage extends Component {
     }
 
     render() {
-        const { classes, contents, isFetching, openFolderId, beginCredentialCreation, adminFolder, beginFolderCreation , history} = this.props;
+        const { classes, contents, isFetching, openFolderId, beginCredentialCreation, adminFolder, beginFolderCreation, history, translate } = this.props;
         const { width, height } = this.state;
 
         return (
             <div>
                 <div style={{ flexDirection: "column", flex: 1, overflow: "hidden" }}>
                     <div className={classes.header}>
-                    
                         <IconButton disabled={openFolderId === null} color="secondary" style={{ width: 64 }} onClick={this._homeButtonHandle}>
-                            <HomeIcon style={{ fontSize: 32 }} />
+                            <Tooltip title={translate("homeTooltip")} enterDelay={400} placement="bottom-start">
+                                <HomeIcon style={{ fontSize: 32 }} />
+                            </Tooltip>
                         </IconButton>
                         <IconButton disabled={openFolderId === null} color="secondary" style={{ width: 64 }} onClick={this._upButtonHandle}>
-                            <UpArrowIcon style={{ fontSize: 32 }} />
+                            <Tooltip title={translate("parentTooltip")} enterDelay={400} placement="bottom-start">
+                                <UpArrowIcon style={{ fontSize: 32 }} />
+                            </Tooltip>
                         </IconButton>
                         <FolderBreadcrumbs />
                         <IconButton disabled={openFolderId === null} color="secondary" style={{ width: 64 }} onClick={() => { adminFolder() }}>
-                            <SettingsIcon style={{ fontSize: 32 }} />
+                            <Tooltip title={translate("folderAdminTooltip")} enterDelay={400} placement="bottom-start">
+                                <SettingsIcon style={{ fontSize: 32 }} />
+                            </Tooltip>
                         </IconButton>
                     </div>
                     <Divider />
@@ -136,7 +148,7 @@ export class FolderPage extends Component {
                             style={{ outline: 'none' }}
                             noRowsRenderer={() => (
                                 <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexGrow: "1 1 1" }}>
-                                    <Typography variant="h5" align="center">This is folder seems empty... Try adding something :D</Typography>
+                                    <Typography variant="h5" align="center"><Translate id="emptyFolder" /></Typography>
                                 </div>
                             )}
                             rowRenderer={({ index, style }) => {
@@ -148,7 +160,7 @@ export class FolderPage extends Component {
                                             style={{ paddingLeft: 64, paddingRight: 96, ...style }}
                                             key={"folder-" + content.idFolders}
                                             folder={content}
-                                            onClick={() => { history.push('/home/' + content.idFolders)  }}
+                                            onClick={() => { history.push('/home/' + content.idFolders) }}
                                         />
                                     )
                                 else
@@ -168,13 +180,20 @@ export class FolderPage extends Component {
                     unmountOnExit
                 >
                     <PopupFab mainFab={(
-                        <Fab color="primary">
-                            <AddIcon />
-                        </Fab>
+                        <Tooltip title={translate("addContent")} placement="left">
+                            <Fab color="primary">
+                                <AddIcon />
+                            </Fab>
+                        </Tooltip>
+
                     )}
                     >
-                        <Fab key="folder-add" size="small" color="secondary" onClick={() => { beginFolderCreation(openFolderId) }}><FolderIcon /></Fab>
-                        <Fab key="credential-add" size="small" color="secondary" onClick={beginCredentialCreation}><KeyIcon /></Fab>
+                        <Tooltip key="folder-add" title={translate("addFolder")} placement="left">
+                            <Fab size="small" color="secondary" onClick={() => { beginFolderCreation(openFolderId) }}><FolderIcon /></Fab>
+                        </Tooltip>
+                        <Tooltip key="credential-add" title={translate("addCredential")} placement="left">
+                            <Fab size="small" color="secondary" onClick={beginCredentialCreation}><KeyIcon /></Fab>
+                        </Tooltip>
                     </PopupFab>
                 </Zoom>
             </div>
@@ -200,4 +219,4 @@ const mapDispatchToProps = {
     beginFolderCreation
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(FolderPage))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(FolderPage)))

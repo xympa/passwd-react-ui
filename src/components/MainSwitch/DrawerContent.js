@@ -13,6 +13,7 @@ import AdministrationIcon from '@material-ui/icons/Build'
 import FolderManagementIcon from '@material-ui/icons/FolderShared'
 import UserManagementIcon from '@material-ui/icons/SupervisorAccount'
 import LogsIcon from '@material-ui/icons/ListAlt'
+import { withLocalize, Translate } from 'react-localize-redux'
 
 import RootFolderListItem from './RootFolderListItem';
 import { openFolder } from '../../actions/FolderActions';
@@ -38,7 +39,7 @@ const DrawerContent = props => {
             <List>
                 <ListItem button onClick={() => { history.push('/home'); openFolder(null); }}>
                     <ListItemIcon><Avatar className={classes.orangeAvatar}><HomeIcon /></Avatar></ListItemIcon>
-                    <ListItemText primary={<Typography variant="body1">Explorador de credenciais</Typography>} />
+                    <ListItemText primary={<Typography variant="body1"><Translate id="credentialExplorer" /></Typography>} />
                 </ListItem>
                 {
                     rootFolders.map(folder => (
@@ -50,34 +51,34 @@ const DrawerContent = props => {
             <List>
                 <ListItem>
                     <ListItemIcon><Avatar className={classes.orangeAvatar}><MailIcon /></Avatar></ListItemIcon>
-                    <ListItemText primary={<Typography variant="body1">Mensagens</Typography>} />
+                    <ListItemText primary={<Typography variant="body1"><Translate id="messages" /></Typography>} />
                 </ListItem>
                 <HighlightableListItem className={classes.subListItem} button onClick={() => { history.push('/inbox'); }}>
                     <ListItemIcon><InboxIcon color="primary" /></ListItemIcon>
-                    <ListItemText primary={<Typography noWrap variant="body2">Inbox</Typography>} />
+                    <ListItemText primary={<Typography noWrap variant="body2"><Translate id="inbox" /></Typography>} />
                 </HighlightableListItem>
                 <HighlightableListItem className={classes.subListItem} onClick={() => { history.push('/outbox'); }}>
                     <ListItemIcon><OutboxIcon color="primary" /></ListItemIcon>
-                    <ListItemText primary={<Typography noWrap variant="body2">Outbox</Typography>} />
+                    <ListItemText primary={<Typography noWrap variant="body2"><Translate id="outbox" /></Typography>} />
                 </HighlightableListItem>
             </List>
             <Divider />
             <List>
                 <ListItem>
                     <ListItemIcon><Avatar className={classes.orangeAvatar}><AdministrationIcon /></Avatar></ListItemIcon>
-                    <ListItemText primary={<Typography variant="body1">Administração</Typography>} />
+                    <ListItemText primary={<Typography variant="body1"><Translate id="administration" /></Typography>} />
                 </ListItem>
                 <HighlightableListItem className={classes.subListItem} onClick={() => { history.push('/folder-administration'); }}>
                     <ListItemIcon><FolderManagementIcon color="primary" /></ListItemIcon>
-                    <ListItemText primary={<Typography noWrap variant="body2">Gerir Pastas</Typography>} />
+                    <ListItemText primary={<Typography noWrap variant="body2"><Translate id="folderManagement" /></Typography>} />
                 </HighlightableListItem>
                 <HighlightableListItem className={classes.subListItem} onClick={() => { history.push('/user-administration'); }}>
                     <ListItemIcon><UserManagementIcon color="primary" /></ListItemIcon>
-                    <ListItemText primary={<Typography noWrap variant="body2">Utilizadores</Typography>} />
+                    <ListItemText primary={<Typography noWrap variant="body2"><Translate id="userManagement" /></Typography>} />
                 </HighlightableListItem>
                 <HighlightableListItem className={classes.subListItem} onClick={() => { history.push('/logs'); }}>
                     <ListItemIcon><LogsIcon color="primary" /></ListItemIcon>
-                    <ListItemText primary={<Typography noWrap variant="body2">Logs</Typography>} />
+                    <ListItemText primary={<Typography noWrap variant="body2"><Translate id="logExplorer" /></Typography>} />
                 </HighlightableListItem>
             </List>
         </div>
@@ -89,6 +90,8 @@ DrawerContent.propTypes = {
     classes: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired,
     openFolder: PropTypes.func.isRequired,
+    addTranslation: PropTypes.func.isRequired,
+    translate: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = (state) => ({
@@ -100,4 +103,4 @@ const mapDispatchToProps = {
     openFolder
 }
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(withStyles(styles, { withTheme: true })(DrawerContent)))
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(withStyles(styles, { withTheme: true })(withLocalize(DrawerContent))))
