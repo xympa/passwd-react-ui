@@ -344,7 +344,7 @@ export class MessageModal extends Component {
                                                         onChange={this._handleChange('receiver')}
                                                     />
                                                     <Grow in={!fields.receiver.valid}>
-                                                        <FormHelperText>The sender must be a valid email or nothing at all to only generate a link...</FormHelperText>
+                                                        <FormHelperText><Translate id="receiverNotMandatory" /></FormHelperText>
                                                     </Grow>
                                                 </FormControl>
                                             )
@@ -404,7 +404,7 @@ export class MessageModal extends Component {
                     </Fade>
                     <Fade in={!isFetching && sendResult && !choosingCredentialLocation}>
                         <div style={{ display: (sendResult ? "flex" : "none"), flexDirection: "column", position: "absolute" }}>
-                            {sendResult && sendResult.sent && <Typography>Foi enviado um email para o destinatário.</Typography>}
+                            {sendResult && sendResult.sent && <Typography><Translate id="emailSent" /></Typography>}
                             {sendResult && sendResult.externalKey && (
                                 <Typography>
                                     <Translate id="youCanAccess" />

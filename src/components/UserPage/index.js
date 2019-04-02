@@ -2,14 +2,16 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles'
 import { connect } from 'react-redux'
-import { Fade, Typography, Zoom, Fab, Divider } from '@material-ui/core'
+import { Fade, Typography, Zoom, Fab, Divider, Tooltip } from '@material-ui/core'
 import { List } from 'react-virtualized';
 import CreateIcon from '@material-ui/icons/Create'
+import { withLocalize, Translate } from 'react-localize-redux'
 import { fetchUserList } from '../../actions/UserActions'
 import { replaceSearchAction, removeSearchAction } from '../../actions/SearchActions'
 import { measureElement } from '../../Utils'
 import UserListItem from '../UserListItem'
 import UserAdminModal from '../UserAdminModal'
+import localization from './localization.json'
 
 const styles = theme => ({
     fab: {
@@ -35,6 +37,8 @@ export class UserPage extends Component {
         replaceSearchAction: PropTypes.func.isRequired,
         classes: PropTypes.object.isRequired,
         composeMessage: PropTypes.func.isRequired,
+        addTranslation: PropTypes.func.isRequired,
+        translate: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -50,6 +54,9 @@ export class UserPage extends Component {
 
         this.reloadViewContents = this.reloadViewContents.bind(this)
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
+
+        const { addTranslation } = this.props
+        addTranslation(localization)
     }
 
     componentDidMount() {
@@ -72,8 +79,6 @@ export class UserPage extends Component {
     reloadViewContents(resolve) {
         const { fetchUserList } = this.props;
 
-
-
         this.setState({ isFetching: true }, () => {
             fetchUserList()
                 .catch(error => {
@@ -94,14 +99,16 @@ export class UserPage extends Component {
 
         const { isFetching, error, width, height, isCreationModalShowing } = this.state;
 
-        const { users, classes, createUser } = this.props;
+        const { users, classes, translate } = this.props;
 
         console.log(this.props)
 
         return (
             <div>
                 <div className={classes.header}>
-
+                    <Typography variant="h4">
+                        <Translate id="userManagement" />
+                    </Typography>
                 </div>
                 <Divider />
                 <div style={{ flexDirection: "column", flex: 1, overflow: "hidden" }}>
@@ -114,7 +121,7 @@ export class UserPage extends Component {
                             style={{ outline: 'none' }}
                             noRowsRenderer={() => (
                                 <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexGrow: "1 1 1" }}>
-                                    <Typography variant="h5">WHAAAAAT How can there be no users, who are you? D:</Typography>
+                                    <Typography variant="h5"><Translate id="noUsers" /></Typography>
                                 </div>
                             )}
                             rowRenderer={({ index, style }) => (
@@ -129,15 +136,17 @@ export class UserPage extends Component {
                     </Fade>
                 </div>
                 <Zoom in>
-                    <Fab
-                        className={classes.fab}
-                        color="secondary"
-                        onClick={() => {
-                            this.setState({ isCreationModalShowing: true })
-                        }}
-                    >
-                        <CreateIcon />
-                    </Fab>
+                    <Tooltip title={translate("createUser")} placement="left">
+                        <Fab
+                            className={classes.fab}
+                            color="secondary"
+                            onClick={() => {
+                                this.setState({ isCreationModalShowing: true })
+                            }}
+                        >
+                            <CreateIcon />
+                        </Fab>
+                    </Tooltip>
                 </Zoom>
                 <UserAdminModal
                     forCreation
@@ -161,4 +170,4 @@ const mapDispatchToProps = {
     replaceSearchAction,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(UserPage))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(UserPage)))

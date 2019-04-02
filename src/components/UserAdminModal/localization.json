@@ -1,0 +1,30 @@
+{
+    "createUserModalHeader": [
+        "Insert the details of the new user",
+        "Insira os detalhes do novo utilizador"
+    ],
+    "sysadmin": [
+        "System Administrator",
+        "Administrador de Sistema"
+    ],
+    "usernameMandatory": [
+        "Username is mandatory",
+        "O nome de utilizador é obrigatório"
+    ],
+    "badEmail": [
+        "This is not recognized as a valid email",
+        "O email não parece válido"
+    ],
+    "badPassword": [
+        "This password does not meet the security standards",
+        "Esta password não cumpre os requisitos minimos de segurança."
+    ],
+    "email": [
+        "Email",
+        "Email"
+    ],
+    "ldap": [
+        "LDAP",
+        "LDAP"
+    ]
+}

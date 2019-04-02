@@ -56,7 +56,7 @@ class UserListItem extends React.Component {
 
 
     render() {
-        const { classes, style, user, messageId, openMessage } = this.props;
+        const { classes, style, user } = this.props;
         const { isModalOpen, hovered } = this.state
 
         return (
@@ -99,7 +99,7 @@ class UserListItem extends React.Component {
 UserListItem.propTypes = {
     classes: PropTypes.object.isRequired,
     style: PropTypes.object,
-    messageId: PropTypes.string.isRequired,
+    user: PropTypes.object.isRequired,
 }
 
 export default withStyles(styles)(UserListItem)

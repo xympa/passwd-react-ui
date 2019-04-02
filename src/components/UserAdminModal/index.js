@@ -10,10 +10,12 @@ import {
     Button, Zoom, Fade, FormControl, Input, FormControlLabel, InputLabel, Grow,
     FormHelperText, Switch,
 } from '@material-ui/core'
+import { withSnackbar } from 'notistack'
+import { withLocalize, Translate } from 'react-localize-redux'
+import localization from './localization.json'
 import { requestUser, requestUserCreation, requestUserEdit, requestUserRemoval, fetchUserList } from '../../actions/UserActions'
 import { replaceSearchAction, removeSearchAction } from '../../actions/SearchActions'
 import ModalHeader from './Header'
-import { withSnackbar } from 'notistack';
 
 const INITIAL_STATE = {
     isEditing: false,
@@ -59,6 +61,8 @@ class UserAdminModal extends Component {
         requestUserCreation: PropTypes.func.isRequired,
         requestUserEdit: PropTypes.func.isRequired,
         requestUserRemoval: PropTypes.func.isRequired,
+        addTranslation: PropTypes.func.isRequired,
+        translate: PropTypes.func.isRequired,
     }
 
     static defaultProps = {
@@ -73,6 +77,9 @@ class UserAdminModal extends Component {
         this.submitFormForInsert = this.submitFormForInsert.bind(this)
         this.submitFormForUpdate = this.submitFormForUpdate.bind(this)
         this.attemptDelete = this.attemptDelete.bind(this)
+
+        const { addTranslation } = this.props
+        addTranslation(localization)
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -246,10 +253,10 @@ class UserAdminModal extends Component {
         requestUserRemoval(username)
             .then(() => {
                 fetchUserList()
-                .then(() => {
-                    const { onRequestClose } = this.props
-                    onRequestClose()
-                })
+                    .then(() => {
+                        const { onRequestClose } = this.props
+                        onRequestClose()
+                    })
             })
             .catch((error) => {
                 enqueueSnackbar(error.message, {
@@ -260,7 +267,7 @@ class UserAdminModal extends Component {
 
     render() {
         const { isFetching, isEditing, form } = this.state
-        const { forCreation, open, onRequestClose, classes } = this.props
+        const { forCreation, open, onRequestClose, classes, translate } = this.props
 
         return (
             <Dialog open={open} maxWidth="md" fullWidth TransitionComponent={Zoom} disableRestoreFocus disableBackdropClick onEscapeKeyDown={onRequestClose}>
@@ -279,7 +286,7 @@ class UserAdminModal extends Component {
                     <div style={isFetching ? { display: "none" } : { flexDirection: "column", display: "flex" }}>
 
                         <FormControl error={!form.username.valid} disabled={!forCreation} className={classNames(classes.margin, classes.textField)}>
-                            <InputLabel htmlFor="username">Username</InputLabel>
+                            <InputLabel htmlFor="username"><Translate id="username" /></InputLabel>
                             <Input
                                 id="username"
                                 value={form.username.value}
@@ -287,11 +294,11 @@ class UserAdminModal extends Component {
                                 onChange={this._handleChange('username')}
                             />
                             <Grow in={!form.username.valid}>
-                                <FormHelperText>Username is mandatory</FormHelperText>
+                                <FormHelperText><Translate id="usernameMandatory" /></FormHelperText>
                             </Grow>
                         </FormControl>
                         <FormControl error={!form.email.valid} disabled={!isEditing} className={classNames(classes.margin, classes.textField)}>
-                            <InputLabel htmlFor="email">Email</InputLabel>
+                            <InputLabel htmlFor="email"><Translate id="email" /></InputLabel>
                             <Input
                                 id="email"
                                 value={form.email.value}
@@ -299,11 +306,11 @@ class UserAdminModal extends Component {
                                 onChange={this._handleChange('email')}
                             />
                             <Grow in={!form.email.valid}>
-                                <FormHelperText>This is not recognized as a valid email</FormHelperText>
+                                <FormHelperText><Translate id="badEmail" /></FormHelperText>
                             </Grow>
                         </FormControl>
                         <FormControl error={!form.password.valid} disabled={!isEditing} className={classNames(classes.margin, classes.textField)}>
-                            <InputLabel htmlFor="password">Password</InputLabel>
+                            <InputLabel htmlFor="password"><Translate id="password" /></InputLabel>
                             <Input
                                 id="password"
                                 value={form.password.value}
@@ -311,7 +318,7 @@ class UserAdminModal extends Component {
                                 onChange={this._handleChange('password')}
                             />
                             <Grow in={!form.password.valid}>
-                                <FormHelperText>This password does not meet the security standards</FormHelperText>
+                                <FormHelperText><Translate id="badPassword" /></FormHelperText>
                             </Grow>
                         </FormControl>
                         <div style={{ display: "flex" }}>
@@ -331,7 +338,7 @@ class UserAdminModal extends Component {
                                         }}
                                     />
                                 )}
-                                label="LDAP"
+                                label={translate("ldap")}
                             />
                             <FormControlLabel
                                 style={{ flex: 1 }}
@@ -349,7 +356,7 @@ class UserAdminModal extends Component {
                                         }}
                                     />
                                 )}
-                                label="SysAdmin"
+                                label={translate("sysadmin")}
                             />
                         </div>
                     </div>
@@ -358,11 +365,11 @@ class UserAdminModal extends Component {
                     <Fade in={isEditing}>
                         <DialogActions>
                             <Button variant="contained" onClick={this.attemptDelete}>
-                                Delete
+                                <Translate id="delete" />
                             </Button>
                             <div style={{ flex: 1 }} />
                             <Button variant="contained" style={{ justifySelf: "flex-start" }} onClick={this.submitFormForUpdate} color="secondary">
-                                Save
+                                <Translate id="save" />
                             </Button>
                         </DialogActions>
                     </Fade>
@@ -370,7 +377,7 @@ class UserAdminModal extends Component {
                         <Fade in>
                             <DialogActions>
                                 <Button variant="contained" onClick={this.submitFormForInsert}>
-                                    Create
+                                    <Translate id="create" />
                                 </Button>
                             </DialogActions>
                         </Fade>
@@ -394,4 +401,4 @@ const mapDispatchToProps = {
     replaceSearchAction,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(UserAdminModal)))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(withLocalize(UserAdminModal))))

@@ -34,5 +34,13 @@
     "send": [
         "Send",
         "Enviar"
+    ],
+    "emailSent": [
+        "An email has been dispatched to the receiver.",
+        "Foi enviado um email para o destinatário."
+    ],
+    "receiverNotMandatory": [
+        "The sender must be a valid email or nothing at all to only generate a link...",
+        "O destinatário tem de ser um e-mail válido, ou nada para apenas gerar um link..."
     ]
 }

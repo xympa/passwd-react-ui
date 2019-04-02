@@ -33,7 +33,7 @@
     ],
     "closeModal": [
         "Close dialog",
-        "Fchar diálogo"
+        "Fechar diálogo"
     ],
     "delete": [
         "Delete",
@@ -98,5 +98,35 @@
     "composeMessage": [
         "Compose message...",
         "Compor mensagem..."
-    ]
+    ],
+    "serverErrors": {
+        "401": [
+            "Your session is not valid!",
+            "A sua sessão não é válida!"
+        ],
+        "403": [
+            "You don't have the permissions to execute that action!",
+            "Não tem permissões para executar essa ação!"
+        ],
+        "404": [
+            "The requested resource wasn't found on the server...",
+            "O recurso pedido não foi encontrado pelo servidor..."
+        ],
+        "406": [
+            "The server thought the received data wasn't acceptable, maybe there was an error with the submited form.",
+            "O servidor declarou que os dados recebidos não era aceitáveis, talvez exista um erro com o formulário enviado."
+        ],
+        "500": [
+            "The server encountered an internal error :(",
+            "O servidor encontrou um erro interno :("
+        ],
+        "default": [
+            "An unkown error occurred... Code: ",
+            "Ocorreu um erro de servidor desconhecido... Código: "
+        ],
+        "connectionCut": [
+            "The server terminated the connection in an unexptected way, please check your computer's internet connection...",
+            "O servidor terminou a ligação de forma inesperada sem oferecer qualquer resposta, verique a sua ligação à internet..."
+        ]
+    }
 }

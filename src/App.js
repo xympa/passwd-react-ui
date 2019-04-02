@@ -17,7 +17,7 @@ import axios from 'axios'
 import MainSwitch from './components/MainSwitch';
 import reducers from './reducers';
 import { useHashRouter } from './AppConfig'
-import { LocalizeProvider } from 'react-localize-redux';
+import { LocalizeProvider, getTranslate } from 'react-localize-redux';
 import { Tooltip } from '@material-ui/core';
 
 
@@ -89,26 +89,19 @@ axios.interceptors.response.use(function (response) {
     return response;
 }, (error) => {
     // Do something with response error
-
+    console.log("INTERCEPTED AN ERROR RESPONSE", store.getState())
+    const translate = getTranslate(store.getState().localize)
     if (error.response) {
         switch (error.response.status) {
             case 401:
-                error.message = "A sua sessão não é válida!"
-                break;
             case 403:
-                error.message = "Não tem permissões para executar essa ação!"
-                break;
             case 404:
-                error.message = "O recurso pedido não foi encontrado pelo servidor..."
-                break;
             case 406:
-                error.message = "O servidor declarou que os dados recebidos não era aceitáveis, talvez exista um erro com o formulário enviado."
-                break;
             case 500:
-                error.message = "O servidor encontrou um erro interno :("
+                error.message = translate(`serverErrors.${error.response.status}`)
                 break;
             default:
-                error.message = "Ocorreu um erro de servidor desconhecido... Código: " + error.response.status;
+                error.message = translate("serverErrors.default") + error.response.status;
                 break;
         }
     }
@@ -116,7 +109,7 @@ axios.interceptors.response.use(function (response) {
         // The request was made but no response was received
         // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
         // http.ClientRequest in node.js
-        error.message = "O servidor terminou a ligação de forma inesperada sem oferecer qualquer resposta..."
+        error.message = translate("serverErrors.conenctionCut")
     }
 
     return Promise.reject(error);
@@ -125,21 +118,22 @@ axios.interceptors.response.use(function (response) {
 const Router = useHashRouter ? HashRouter : BrowserRouter;
 
 const App = () => (
-    <LocalizeProvider>
-        <MuiThemeProvider theme={theme}>
-            <MuiPickersUtilsProvider utils={MomentUtils}>
-                <SnackbarProvider maxSnack={3}>
-                    <Provider store={store}>
+    <MuiThemeProvider theme={theme}>
+        <MuiPickersUtilsProvider utils={MomentUtils}>
+            <SnackbarProvider maxSnack={3}>
+                <Provider store={store}>
+                    <LocalizeProvider store={store}>
                         <PersistGate loading={(<div>LoadingState</div>)} persistor={persistor}>
                             <Router>
                                 <MainSwitch />
                             </Router>
                         </PersistGate>
-                    </Provider>
-                </SnackbarProvider>
-            </MuiPickersUtilsProvider>
-        </MuiThemeProvider>
-    </LocalizeProvider>
+                    </LocalizeProvider>
+
+                </Provider>
+            </SnackbarProvider>
+        </MuiPickersUtilsProvider>
+    </MuiThemeProvider>
 )
 
 

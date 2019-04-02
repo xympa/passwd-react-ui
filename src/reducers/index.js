@@ -1,4 +1,5 @@
 import { combineReducers } from "redux";
+import { localizeReducer } from 'react-localize-redux'
 import authenticationReducer from "./AuthenticationReducer";
 import FolderReducer from "./FolderReducer";
 import SearchReducer from "./SearchReducer";
@@ -19,5 +20,6 @@ export default combineReducers({
    rootFolders: RootFolderReducer,
    messages: MessageReducer,
    log: LogReducer,
-   user: UserReducer
+   user: UserReducer,
+   localize: localizeReducer
 });
