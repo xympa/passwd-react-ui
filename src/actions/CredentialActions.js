@@ -1,28 +1,23 @@
 import axios from 'axios'
+import { getTranslate } from 'react-localize-redux'
 import { REST_BASE } from '../AppConfig'
 import { CLOSED_CREDENTIAL, FETCHED_CREDENTIAL, OPENED_CREDENTIAL, CREDENTIAL_TOGGLE_EDIT_MODE, CREDENTIAL_SET_FETCHING, CREDENTIAL_BEGIN_CREATION } from './actionTypes'
 import { networkDecode, networkEncode } from '../EnsoSharedBridge';
 import { fetchFolderContents } from './FolderActions'
+import { store } from '../App';
 
 const parse406Error = (error) => {
+    const translate = getTranslate(store.getState().localize)
     switch (error.response && error.response.status === 406 && error.response.data) {
         case 1:
-            error.message = "O url é inválido";
-            break;
         case 2:
-            error.message = "O titulo é inválido";
-            break;
         case 3:
-            error.message = "Já existe uma credencial com esse titulo";
-            break;
         case 4:
-            error.message = "A password é obrigatória";
-            break;
         case 5:
-            error.message = "O servidor não reconhece a pasta onde está a tentar criar a credencial";
+            error.message = translate(`validationErrors.credential.${error.response.data}`);
             break;
         default:
-            error.message = "406 com resposta " + JSON.stringify(error.response.data, null, 2);
+            error.message = translate("validationErrors.default406") + JSON.stringify(error.response.data, null, 2);
     }
 
     return Promise.reject(error);

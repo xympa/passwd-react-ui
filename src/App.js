@@ -40,7 +40,8 @@ const theme = createMuiTheme({
             "main": "rgba(19, 56, 73, 1)",
             "dark": "rgba(21, 51, 68, 1)",
             "contrastText": "#fff"
-        }, "secondary":
+        },
+        "secondary":
         {
             "light": "#ff4081", "main": "rgba(255, 93, 38, 1)",
             "dark": "#c51162", "contrastText": "#fff"
@@ -78,7 +79,7 @@ const persistConfig = {
 const pReducer = persistReducer(persistConfig, reducers);
 
 const createStoreWithMiddleware = applyMiddleware(thunk)(createStore);
-const store = createStoreWithMiddleware(pReducer);
+export const store = createStoreWithMiddleware(pReducer);
 
 export const persistor = persistStore(store);
 

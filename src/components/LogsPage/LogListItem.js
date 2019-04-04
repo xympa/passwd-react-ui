@@ -1,10 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { ListItem, Avatar, ListItemText, Typography, Chip } from '@material-ui/core';
-import { Textfit } from 'react-textfit'
-import FolderIcon from '@material-ui/icons/Folder'
-import KeyIcon from '@material-ui/icons/VpnKey'
-import { withRouter } from 'react-router-dom'
+import { ListItem, Avatar, ListItemText, Typography } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles'
 import LogsIcon from '@material-ui/icons/ListAlt'
 import { measureElement } from '../../Utils';

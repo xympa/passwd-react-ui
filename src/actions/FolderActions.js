@@ -1,22 +1,22 @@
 import axios from 'axios'
+import { getTranslate } from 'react-localize-redux';
 import { networkDecode } from '../EnsoSharedBridge';
 import { REST_BASE } from '../AppConfig'
 import { FETCHED_FOLDER_CONTENTS, FETCHED_FOLDER_PATH, OPEN_FOLDER, FINISHED_FETCHING_FOLDER, FETCHED_FOLDER_INFO, STARTED_FETCHING_FOLDER } from './actionTypes'
-import { setRootFolders } from './RootFolderActions';
+import { setRootFolders } from './RootFolderActions'
+import { store } from '../App';
 
 const parse406Error = (error) => {
+    console.log(store.getState())
+    const translate = getTranslate(store.getState().localize)
     switch (error.response && error.response.status === 406 && error.response.data) {
         case 1:
-            error.message = "Já existe uma pasta com esse nome.";
-            break;
         case 2:
-            error.message = "O nome é um atributo obrigatório.";
-            break;
         case 3:
-            error.message = "Tentou atribuir permissões a um utilizador inexistente.";
+            error.message = translate(`validationErrors.folder.${error.response.data}`)
             break;
         default:
-            error.message = "406 com resposta " + JSON.stringify(error.response.data, null, 2);
+            error.message = translate("validationErrors.default406") + JSON.stringify(error.response.data, null, 2);
     }
 
     return Promise.reject(error);
@@ -141,12 +141,12 @@ export const fetchRootFolders = () => (dispatch, getState) => {
         })
         .then(response => {
             return new Promise(resolve => {
-                    dispatch(updateFolderContents({
-                        folders: response.data,
-                        credentials: []
-                    }));
+                dispatch(updateFolderContents({
+                    folders: response.data,
+                    credentials: []
+                }));
 
-                    resolve(true)
+                resolve(true)
             })
         })
         .catch(() => { })

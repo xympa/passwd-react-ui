@@ -128,5 +128,87 @@
             "The server terminated the connection in an unexptected way, please check your computer's internet connection...",
             "O servidor terminou a ligação de forma inesperada sem oferecer qualquer resposta, verique a sua ligação à internet..."
         ]
+    },
+    "validationErrors": {
+        "default406": [
+            "406 with response ",
+            "406 com resposta "
+        ],
+        "credential": {
+            "1": [
+                "Invalid url",
+                "Url inválida"
+            ],
+            "2": [
+                "Invalid title",
+                "Titulo inválido"
+            ],
+            "3": [
+                "There is already a credential with that title",
+                "Já existe uma credencial com esse titulo"
+            ],
+            "4": [
+                "The password is a mandatory field",
+                "A senha é um campo obrigatório"
+            ],
+            "5": [
+                "The server does not recognize the folder where you trying to save this credential",
+                "O servidor não reconhece a pasta onde está a tentar gravar esta credencial"
+            ]
+        },
+        "folder": {
+            "1": [
+                "A folder with that name already exists",
+                "Já existe uma pasta com esse nome"
+            ],
+            "2": [
+                "The name attribute is mandatory",
+                "O nome é um atributo obrigatório"
+            ],
+            "3": [
+                "You are trying to give permissions to an inexistent user",
+                "Tentou atribuir permissões a um utilizador inexistente"
+            ]
+        },
+        "message": {
+            "6": [
+                "The receivin user does not exist",
+                "O utilizador destinatário não existe"
+            ],
+            "7": [
+                "You are trying to share an inexistent credential",
+                "Está a tentar partilhar uma credencial inexistente"
+            ],
+            "8": [
+                "Invalid time to live",
+                "Tempo de auto-destruição inválido"
+            ],
+            "9": [
+                "The provided mail is invalid",
+                "O email submetido é inválido"
+            ]
+        },
+        "user": {
+            "2": [
+                "Invalid LDAP",
+                "LDAP inválido"
+            ],
+            "3": [
+                "Invalid sysadmin",
+                "sysadmin inválido "
+            ],
+            "4": [
+                "The username is a mandatory field",
+                "O nome de utilizador é um campo obrigatório"
+            ],
+            "5": [
+                "The username already exists, please choose another one",
+                "O username fornecido já existe, por favor use outro"
+            ],
+            "6": [
+                "The password is a mandatory field",
+                "A senha é um campo obrigatório"
+            ]
+        }
     }
 }

@@ -201,6 +201,7 @@ export class FolderAdministrationModal extends Component {
                 name: fields.name.sanitizedValue
             }, this._parsePermissions())
                 .catch((error) => {
+                    console.log(error)
                     enqueueSnackbar(error.message, {
                         variant: "error"
                     })

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getTranslate } from 'react-localize-redux'
 import {
     SET_INBOX, SET_MESSAGE_MODAL_OPEN, SET_MESSAGE_MODAL_FETCHING, SET_BASE_CREDENTIAL_INFO, SET_OUTBOX,
     SET_MESSAGE_MODAL_EDITING, SET_MESSAGE_MODAL_USER_LIST, SET_MESSAGE_MODAL_CREATING, SET_MESSAGE_INFO, SET_SEND_RESULT,
@@ -7,39 +8,29 @@ import {
 import { REST_BASE } from '../AppConfig'
 import { requestCredentialInfo } from './CredentialActions'
 import { requestUserList } from './UserActions'
-import { networkEncode, networkDecode } from '../EnsoSharedBridge';
+import { networkEncode, networkDecode } from '../EnsoSharedBridge'
+import { store } from '../App';
+
 
 const parse406Error = (error) => {
+    const translate = getTranslate(store.getState().localize)
+
     switch (error.response && error.response.status === 406 && error.response.data) {
         case 1:
-            error.message = "O url é inválido";
-            break;
         case 2:
-            error.message = "O titulo é inválido";
-            break;
         case 3:
-            error.message = "Já existe uma credencial com esse titulo";
-            break;
         case 4:
-            error.message = "A password é obrigatória";
-            break;
         case 5:
-            error.message = "O servidor não reconhece a pasta onde está a tentar criar a credencial";
+            error.message = translate(`validationErrors.credential.${error.response.data}`);
             break;
         case 6:
-            error.message = "O utilizador destinatário não existe";
-            break;
         case 7:
-            error.message = "Está a tentar partilhar uma credencial inexistente";
-            break;
         case 8:
-            error.message = "Tempo de auto-destruição inválido";
-            break;
         case 9:
-            error.message = "O email submetido é inválido";
+            error.message = translate(`validationErrors.credential.${error.response.data}`);
             break;
         default:
-            error.message = "406 com resposta " + JSON.stringify(error.response.data, null, 2);
+            error.message = translate("validationErrors.default406") + JSON.stringify(error.response.data, null, 2);
     }
 
     return Promise.reject(error);

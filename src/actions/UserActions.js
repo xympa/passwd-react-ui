@@ -1,6 +1,29 @@
 import axios from 'axios'
+import { getTranslate } from 'react-localize-redux'
 import { REST_BASE } from '../AppConfig'
 import { USER_ADMIN_SET_USER_LIST, USER_ADMIN_SET_FETCHING } from './actionTypes';
+import { store } from '../App';
+
+const parse406Error = (error) => {
+    const translate = getTranslate(store.getState().localize)
+    switch (error.response && error.response.status === 406 && error.response.data) {
+        case 1:
+
+            error.message = translate(`validationErrors.message.9`);
+            break;
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+            error.message = translate(`validationErrors.user.${error.response.data}`);
+            break;
+        default:
+            error.message = translate("validationErrors.default406") + JSON.stringify(error.response.data, null, 2);
+    }
+
+    return Promise.reject(error);
+}
 
 const setUserList = list => ({
     type: USER_ADMIN_SET_USER_LIST,
@@ -26,6 +49,7 @@ export const requestUserList = (useSearch = false) => (dispatch, getState) => {
                 search: useSearch ? getState().search.value : ''
             }
         })
+        .catch(parse406Error)
 }
 
 export const requestUser = usernameToFetch => (dispatch, getState) => {
@@ -42,6 +66,7 @@ export const requestUser = usernameToFetch => (dispatch, getState) => {
                 username: usernameToFetch
             }
         })
+        .catch(parse406Error)
 }
 
 export const fetchUserList = () => (dispatch) => new Promise(resolve => {
@@ -71,6 +96,7 @@ export const requestUserCreation = user => (dispatch, getState) => {
                 ...user
             }
         })
+        .catch(parse406Error)
 }
 
 export const requestUserEdit = user => (dispatch, getState) => {
@@ -88,6 +114,7 @@ export const requestUserEdit = user => (dispatch, getState) => {
                 ...user
             }
         })
+        .catch(parse406Error)
 }
 
 export const requestUserRemoval = usernameToDelete => (dispatch, getState) => {
@@ -105,4 +132,5 @@ export const requestUserRemoval = usernameToDelete => (dispatch, getState) => {
                 username: usernameToDelete
             }
         })
+        .catch(parse406Error)
 }
