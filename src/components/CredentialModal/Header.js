@@ -8,7 +8,6 @@ import OpenLockIcon from '@material-ui/icons/LockOpen'
 import { IconButton, Typography, Tooltip } from '@material-ui/core'
 import { withStyles } from '@material-ui/core/styles'
 import { Translate, withLocalize } from 'react-localize-redux'
-import { closeCredential, toggleEditMode } from '../../actions/CredentialActions'
 import { composeMessage } from '../../actions/MessageActions'
 
 const styles = theme => ({
@@ -65,14 +64,9 @@ Header.propTypes = {
 }
 
 const mapStateToProps = (state) => ({
-    isEditing: state.credential.isEditing,
-    isCreating: state.credential.isCreating,
-    openId: state.credential.openCredential,
 })
 
 const mapDispatchToProps = {
-    closeCredential,
-    toggleEditMode,
     composeMessage
 }
 

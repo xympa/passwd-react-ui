@@ -7,6 +7,7 @@ import { CookieStorage } from 'redux-persist-cookie-storage';
 import { MuiPickersUtilsProvider } from 'material-ui-pickers';
 import Cookies from 'cookies-js';
 import { createStore, applyMiddleware } from "redux";
+import storage from 'redux-persist/lib/storage' 
 import thunk from 'redux-thunk';
 import { Provider } from "react-redux";
 import { SnackbarProvider } from 'notistack';
@@ -71,7 +72,8 @@ const theme = createMuiTheme({
 
 const persistConfig = {
     key: "root",
-    storage: new CookieStorage(Cookies/*, options */),
+    // storage: new CookieStorage(Cookies/*, options */),
+    storage,
     stateReconciler: autoMergeLevel2,
     whitelist: ['authentication']
 }
@@ -130,7 +132,6 @@ const App = () => (
                             </Router>
                         </PersistGate>
                     </LocalizeProvider>
-
                 </Provider>
             </SnackbarProvider>
         </MuiPickersUtilsProvider>

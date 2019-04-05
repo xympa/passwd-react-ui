@@ -1,9 +1,7 @@
 import axios from 'axios'
 import { getTranslate } from 'react-localize-redux'
 import { REST_BASE } from '../AppConfig'
-import { CLOSED_CREDENTIAL, FETCHED_CREDENTIAL, OPENED_CREDENTIAL, CREDENTIAL_TOGGLE_EDIT_MODE, CREDENTIAL_SET_FETCHING, CREDENTIAL_BEGIN_CREATION } from './actionTypes'
 import { networkDecode, networkEncode } from '../EnsoSharedBridge';
-import { fetchFolderContents } from './FolderActions'
 import { store } from '../App';
 
 const parse406Error = (error) => {
@@ -17,18 +15,11 @@ const parse406Error = (error) => {
             error.message = translate(`validationErrors.credential.${error.response.data}`);
             break;
         default:
-            error.message = translate("validationErrors.default406") + JSON.stringify(error.response.data, null, 2);
+            // error.message = translate("validationErrors.default406") + JSON.stringify(error, null, 2);
     }
 
     return Promise.reject(error);
 }
-
-export const fetchCredential = id => dispatch => {
-    return dispatch(requestCredentialInfo(id))
-        .then(response => {
-            dispatch(setOpenCredentialInfo(response.data));
-        })
-};
 
 export const requestCredentialInfo = id => (dispatch, getState) => {
 
@@ -45,54 +36,15 @@ export const requestCredentialInfo = id => (dispatch, getState) => {
                 credentialId: id
             }
         })
-        .catch(parse406Error)
+        .then(response => Promise.resolve({
+            ...response.data,
+            password: networkDecode(response.data.password)
+        }))
+        .catch (parse406Error)
 }
 
-const setOpenCredentialInfo = info => ({
-    type: FETCHED_CREDENTIAL,
-    payload: {
-        ...info,
-        password: networkDecode(info.password)
-    }
-});
 
-const setOpenCredential = (id) => ({
-    type: OPENED_CREDENTIAL,
-    payload: id
-})
-
-export const openCredential = id => dispatch => {
-    dispatch(setOpenCredential(id))
-    return dispatch(fetchCredential(id))
-
-}
-
-export const closeCredential = () => dispatch => {
-    dispatch(({
-        type: CLOSED_CREDENTIAL
-    }))
-}
-
-export const toggleEditMode = () => dispatch => {
-    dispatch({
-        type: CREDENTIAL_TOGGLE_EDIT_MODE
-    })
-}
-
-export const setFetching = (bool) => dispatch => {
-    dispatch({
-        type: CREDENTIAL_SET_FETCHING,
-        payload: bool
-    })
-}
-
-export const beginCredentialCreation = () => dispatch => {
-    dispatch({
-        type: CREDENTIAL_BEGIN_CREATION
-    })
-}
-
-const requestCredentialUpdate = credential => (dispatch, getState) => {
+export const requestCredentialUpdate = credential => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
     const { idCredentials, belongsToFolder, } = getState().credential.data
 
@@ -116,20 +68,7 @@ const requestCredentialUpdate = credential => (dispatch, getState) => {
             }
         })
         .catch(parse406Error)
-
 }
-
-export const updateCredential = credential => (dispatch, getState) => {
-    dispatch({ type: CREDENTIAL_SET_FETCHING, payload: true });
-
-    return dispatch(requestCredentialUpdate(credential)).then(() => {
-        return Promise.all([
-            dispatch(fetchCredential(getState().credential.data.idCredentials)),
-            dispatch(fetchFolderContents())
-        ])
-    })
-}
-
 
 export const requestCredentialDeletion = () => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
@@ -152,19 +91,11 @@ export const requestCredentialDeletion = () => (dispatch, getState) => {
 
 }
 
-export const deleteCredential = () => dispatch => {
-    return dispatch(requestCredentialDeletion()).then(() => {
-        dispatch(closeCredential());
-        return dispatch(fetchFolderContents())
-    })
-}
-
-export const requestCredentialInsertion = credential => (dispatch, getState) => {
+export const requestCredentialInsertion = (credential, belongsTo) => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
-    const belongsToFolder = getState().folder.folderInfo.idFolders
 
-    if (belongsToFolder === null)
-        return Promise.reject("Attempted to create a credential in root");
+    if (belongsTo === null)
+        return Promise.reject({ message: "Attempted to create a credential in root"});
 
     var url = `${REST_BASE}credential/`;
     return axios(
@@ -176,7 +107,7 @@ export const requestCredentialInsertion = credential => (dispatch, getState) => 
                 sessionkey: sessionKey,
 
                 //Credential params
-                belongsTo: belongsToFolder,
+                belongsTo,
                 title: credential.title,
                 username: credential.username,
                 description: credential.description,
@@ -186,16 +117,4 @@ export const requestCredentialInsertion = credential => (dispatch, getState) => 
         })
         .catch(parse406Error)
 
-}
-
-export const insertCredential = credential => dispatch => {
-    dispatch({ type: CREDENTIAL_SET_FETCHING, payload: true });
-
-    return dispatch(requestCredentialInsertion(credential))
-        .then((response) => {
-            return Promise.all([
-                dispatch(openCredential(response.data)),
-                dispatch(fetchFolderContents())
-            ])
-        })
 }

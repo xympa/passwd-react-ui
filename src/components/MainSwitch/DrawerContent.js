@@ -16,7 +16,6 @@ import LogsIcon from '@material-ui/icons/ListAlt'
 import { withLocalize, Translate } from 'react-localize-redux'
 
 import RootFolderListItem from './RootFolderListItem';
-import { openFolder } from '../../actions/FolderActions';
 import HighlightableListItem from '../HighlightableListItem';
 
 const styles = theme => ({
@@ -32,12 +31,12 @@ const styles = theme => ({
 });
 
 const DrawerContent = props => {
-    const { rootFolders, classes, history, openFolder } = props;
+    const { rootFolders, classes, history } = props;
 
     return (
         <div>
             <List>
-                <ListItem button onClick={() => { history.push('/home'); openFolder(null); }}>
+                <ListItem button onClick={() => { history.push('/home'); }}>
                     <ListItemIcon><Avatar className={classes.orangeAvatar}><HomeIcon /></Avatar></ListItemIcon>
                     <ListItemText primary={<Typography variant="body1"><Translate id="credentialExplorer" /></Typography>} />
                 </ListItem>
@@ -89,7 +88,6 @@ DrawerContent.propTypes = {
     rootFolders: PropTypes.array.isRequired,
     classes: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired,
-    openFolder: PropTypes.func.isRequired,
     addTranslation: PropTypes.func.isRequired,
     translate: PropTypes.func.isRequired,
 }
@@ -100,7 +98,6 @@ const mapStateToProps = (state) => ({
 
 
 const mapDispatchToProps = {
-    openFolder
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(withStyles(styles, { withTheme: true })(withLocalize(DrawerContent))))

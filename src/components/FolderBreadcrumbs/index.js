@@ -70,7 +70,6 @@ export class FolderBreadcrumbs extends Component {
 }
 
 const mapStateToProps = (state) => ({
-    path: state.folder.path,
     search: state.search.value
 })
 

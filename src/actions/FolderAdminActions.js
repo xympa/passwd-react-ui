@@ -1,5 +1,5 @@
 import { SET_ADMIN_FOLDER, ADMIN_FOLDER_FETCHED, CLOSED_FOLDER_ADMIN, ADMIN_FOLDER_USER_LIST_FETCHED, FOLDER_ADMIN_SET_FETCHING, FOLDER_ADMIN_SET_EDIT_MODE, FOLDER_BEGIN_CREATION } from './actionTypes'
-import { fetchFolderInfo, requestFolderUpdate, requestFolderCreation, updateContents, goToParent, requestFolderDeletion } from './FolderActions'
+import { fetchFolderInfo, requestFolderUpdate, requestFolderCreation, requestFolderDeletion } from './FolderActions'
 import { requestUserList } from './UserActions'
 
 const setAdminFolder = (id) => ({
@@ -48,7 +48,6 @@ export const deleteFolder = () => (dispatch, getState) => {
 
     return dispatch(requestFolderDeletion(idFolders)).then(() => {
         dispatch(closeFolderAdmin());
-        dispatch(goToParent());
     })
 }
 
@@ -70,7 +69,6 @@ export const createFolder = (folder, permissions) => (dispatch, getState) => {
     dispatch(folderAdminSetFetching(true));
 
     return dispatch(requestFolderCreation({ ...folder, parent: getState().folderAdmin.parentFolder }, permissions)).then(() => {
-        dispatch(updateContents())
         dispatch(closeFolderAdmin())
     })
 }

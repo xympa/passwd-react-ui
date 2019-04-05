@@ -12,13 +12,11 @@ import globalTranslations from './globalTranslations.json'
 import LoginPage from '../LoginPage'
 import { checkAuthValidity } from '../../actions/AuthenticationActions'
 import Header from '../Header'
-import CredentialModal from '../CredentialModal'
 import FolderPage from '../FolderPage'
 import FolderAdministrationModal from '../FolderAdministrationModal';
 import DrawerContent from './DrawerContent';
 import InboxView from '../InboxView'
 import OutboxView from '../OutboxView'
-import { openFolder } from '../../actions/FolderActions'
 import MessageModal from '../MessageModal/MessageModal'
 import FolderAdminView from '../FolderAdminView';
 import LogsPage from '../LogsPage';
@@ -86,7 +84,6 @@ export class MainSwitch extends Component {
 
         this.state = {
             width: window.innerWidth,
-            height: window.innerHeight,
             mobileOpen: false,
         }
 
@@ -107,10 +104,9 @@ export class MainSwitch extends Component {
 
     componentDidMount() {
 
-        const { checkAuthValidity, sessionKey, username, openFolder } = this.props;
+        const { checkAuthValidity, sessionKey, username } = this.props;
 
         checkAuthValidity(username, sessionKey)
-        openFolder(null)
 
         window.addEventListener('resize', this.updateWindowDimensions);
         this.updateWindowDimensions();
@@ -121,7 +117,7 @@ export class MainSwitch extends Component {
     }
 
     updateWindowDimensions() {
-        this.setState({ width: window.innerWidth, height: window.innerHeight });
+        this.setState({ width: window.innerWidth });
     }
 
     toggleMobileDrawer() {
@@ -129,7 +125,7 @@ export class MainSwitch extends Component {
     }
 
     render() {
-        const { classes, isLoggedIn, history, theme, rootFolders } = this.props;
+        const { classes, isLoggedIn, history, theme } = this.props;
         const { width, mobileOpen } = this.state;
 
         if (!isLoggedIn)
@@ -174,7 +170,6 @@ export class MainSwitch extends Component {
                         <Route path="/logs" render={() => (<LogsPage />)} />
                         <Route path="/user-administration" render={() => (<UserPage />)} />
                     </Switch>
-                    <CredentialModal />
                     <FolderAdministrationModal />
                     <MessageModal />
                 </main>
@@ -193,7 +188,6 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = {
     checkAuthValidity,
-    openFolder
 }
 
 

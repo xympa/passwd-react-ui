@@ -13,7 +13,7 @@ After that I thought a lot could be done still to make it seem more robust and t
 All work on this project was done in my free time.
 
 # Installation instructions
-Requires `npm` and `yarn` installed in your system.
+Requires `nodejs` and `yarn` installed in your system.
 
 ```bash
 git clone #this repo

@@ -7,21 +7,22 @@ import HomeIcon from '@material-ui/icons/Home'
 import UpArrowIcon from '@material-ui/icons/ArrowUpward'
 import SettingsIcon from '@material-ui/icons/Settings'
 import AddIcon from '@material-ui/icons/Add'
+import { withLocalize, Translate } from 'react-localize-redux';
+import { withSnackbar } from 'notistack';
 import FolderIcon from '@material-ui/icons/Folder'
 import KeyIcon from '@material-ui/icons/VpnKey'
 import { withStyles } from '@material-ui/core/styles'
 import { List } from 'react-virtualized'
-import { openFolder, fetchFolderContents, updateContents } from '../../actions/FolderActions'
+import { openFolder, requestFolderContents, requestFolderInfo, requestFolderPath } from '../../actions/FolderActions'
 import { replaceSearchAction, removeSearchAction } from '../../actions/SearchActions'
 import FolderListItem from '../FolderListItem';
 import CredentialListItem from '../CredentialListItem'
 import FolderBreadcrumbs from '../FolderBreadcrumbs'
-import { beginCredentialCreation } from '../../actions/CredentialActions'
 import PopupFab from '../PopupFab'
 import { adminFolder, beginCreation as beginFolderCreation } from '../../actions/FolderAdminActions'
 import { measureElement } from '../../Utils'
-import { withLocalize, Translate } from 'react-localize-redux';
 import localization from './localization.json'
+import CredentialModal from '../CredentialModal';
 
 const styles = () => ({
     header: {
@@ -32,57 +33,63 @@ const styles = () => ({
     }
 });
 
-
+const INITIAL_STATE = {
+    width: 0,
+    height: 0,
+    isFetching: false,
+    contents: [],
+    creationModalOpen: false,
+    path: []
+}
 
 export class FolderPage extends Component {
     static propTypes = {
-        openFolder: PropTypes.func,
         replaceSearchAction: PropTypes.func.isRequired,
-        updateContents: PropTypes.func.isRequired,
         removeSearchAction: PropTypes.func.isRequired,
         classes: PropTypes.object.isRequired,
-        contents: PropTypes.arrayOf(PropTypes.object),
-        isFetching: PropTypes.bool.isRequired,
-        openFolderId: PropTypes.any,
-        beginCredentialCreation: PropTypes.func.isRequired,
         adminFolder: PropTypes.func.isRequired,
-        beginFolderCreation: PropTypes.func.isRequired,
         match: PropTypes.object.isRequired,
-        parent: PropTypes.string.isRequired,
         history: PropTypes.object.isRequired,
         addTranslation: PropTypes.func.isRequired,
         translate: PropTypes.func.isRequired,
+        requestFolderContents: PropTypes.func.isRequired,
+        requestFolderInfo: PropTypes.func.isRequired,
+        enqueueSnackbar: PropTypes.func.isRequired,
     }
 
     constructor(props) {
         super(props)
 
         this.state = {
-            width: window.innerWidth, height: window.innerHeight,
+            ...INITIAL_STATE,
+            width: window.innerWidth,
+            height: window.innerHeight,
         }
 
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
         this._upButtonHandle = this._upButtonHandle.bind(this)
         this._homeButtonHandle = this._homeButtonHandle.bind(this)
         this.refreshView = this.refreshView.bind(this)
+        this._closeModal = this._closeModal.bind(this)
 
         const { addTranslation } = this.props
         addTranslation(localization)
     }
 
     componentDidMount() {
-        const { replaceSearchAction, updateContents, openFolder, match } = this.props;
+        const { replaceSearchAction} = this.props;
 
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
-        replaceSearchAction(updateContents);
-        openFolder(match.params.id || null);
+        replaceSearchAction(this.refreshView);
+        this.refreshView()
     }
 
     componentDidUpdate(prevProps) {
-        const { match, openFolder } = this.props;
+        const { match } = this.props;
         if (prevProps.match.params.id != match.params.id)
-            openFolder(match.params.id || null);
+            this.refreshView()
+
     }
 
 
@@ -102,37 +109,70 @@ export class FolderPage extends Component {
     }
 
     _upButtonHandle() {
-        const { history, parent } = this.props;
+        const { history } = this.props
+        const { parent } = this.state
         history.push(`/home/${parent || ''}`)
     }
 
-    refreshView(resolve, reject) {
-        const { openFolder, match } = this.props;
-        openFolder(match.params.id)
-            .then(resolve)
-            .catch(reject)
+    refreshView() {
+        const { match, requestFolderContents, enqueueSnackbar, requestFolderInfo, requestFolderPath } = this.props;
+
+        this.setState({
+            isFetching: true
+        }, () => {
+            Promise.all([requestFolderContents(match.params.id), requestFolderInfo(match.params.id), requestFolderPath(match.params.id)])
+                .then(([contents, folderInfo, path]) => {
+                    if (contents)
+                        this.setState({
+                            contents: [...contents.folders, ...contents.credentials],
+                            openModals: contents.credentials.map(c => ({ id: c.idCredentials, open: false })),
+                            parent: folderInfo.folderInfo.parent || null,
+                            path
+                        })
+                })
+                .catch((error) => {
+                    enqueueSnackbar(error.message, {
+                        variant: "error"
+                    })
+                })
+                .then(() => {
+                    this.setState({ isFetching: false })
+                })
+        })
+    }
+
+    _closeModal() {
+        this.setState(prevState => ({
+            creationModalOpen: false,
+            openModals: prevState.openModals
+                .map(m => ({
+                    ...m,
+                    open: false
+                }))
+        }))
     }
 
     render() {
-        const { classes, contents, isFetching, openFolderId, beginCredentialCreation, adminFolder, beginFolderCreation, history, translate } = this.props;
-        const { width, height } = this.state;
+        const { classes, adminFolder, history, match, translate } = this.props;
+        const { width, height, contents, openModals, isFetching, creationModalOpen, path } = this.state;
+        const openFolderId = match.params.id
 
         return (
             <div>
                 <div style={{ flexDirection: "column", flex: 1, overflow: "hidden" }}>
                     <div className={classes.header}>
-                        <IconButton disabled={openFolderId === null} color="secondary" style={{ width: 64 }} onClick={this._homeButtonHandle}>
+                        <IconButton disabled={!openFolderId} color="secondary" style={{ width: 64 }} onClick={this._homeButtonHandle}>
                             <Tooltip title={translate("homeTooltip")} enterDelay={400} placement="bottom-start">
                                 <HomeIcon style={{ fontSize: 32 }} />
                             </Tooltip>
                         </IconButton>
-                        <IconButton disabled={openFolderId === null} color="secondary" style={{ width: 64 }} onClick={this._upButtonHandle}>
+                        <IconButton disabled={!openFolderId} color="secondary" style={{ width: 64 }} onClick={this._upButtonHandle}>
                             <Tooltip title={translate("parentTooltip")} enterDelay={400} placement="bottom-start">
                                 <UpArrowIcon style={{ fontSize: 32 }} />
                             </Tooltip>
                         </IconButton>
-                        <FolderBreadcrumbs />
-                        <IconButton disabled={openFolderId === null} color="secondary" style={{ width: 64 }} onClick={() => { adminFolder() }}>
+                        <FolderBreadcrumbs path={path} />
+                        <IconButton disabled={!openFolderId} color="secondary" style={{ width: 64 }} onClick={() => { adminFolder() }}>
                             <Tooltip title={translate("folderAdminTooltip")} enterDelay={400} placement="bottom-start">
                                 <SettingsIcon style={{ fontSize: 32 }} />
                             </Tooltip>
@@ -169,6 +209,18 @@ export class FolderPage extends Component {
                                             style={{ paddingLeft: 64, paddingRight: 96, ...style }}
                                             key={"credential-" + content.idCredentials}
                                             credential={content}
+                                            modalOpen={openModals.find(m => m.id == content.idCredentials).open}
+                                            openCredential={id => {
+                                                this.setState({
+                                                    creationModalOpen: false,
+                                                    openModals: openModals
+                                                        .map(m => ({
+                                                            ...m,
+                                                            open: m.id == id ? true : false
+                                                        }))
+                                                })
+                                            }}
+                                            closeModal={this._closeModal}
                                         />
                                     )
                             }}
@@ -192,31 +244,42 @@ export class FolderPage extends Component {
                             <Fab size="small" color="secondary" onClick={() => { beginFolderCreation(openFolderId) }}><FolderIcon /></Fab>
                         </Tooltip>
                         <Tooltip key="credential-add" title={translate("addCredential")} placement="left">
-                            <Fab size="small" color="secondary" onClick={beginCredentialCreation}><KeyIcon /></Fab>
+                            <Fab
+                                size="small"
+                                color="secondary"
+                                onClick={() => {
+                                    this.setState({
+                                        creationModalOpen: true,
+                                        openModals: openModals
+                                            .map(m => ({
+                                                ...m,
+                                                open: false
+                                            }))
+                                    })
+                                }}
+                            >
+                                <KeyIcon />
+                            </Fab>
                         </Tooltip>
                     </PopupFab>
                 </Zoom>
+                <CredentialModal forCreation open={creationModalOpen} belongsTo={openFolderId} closeModal={this._closeModal} />
             </div>
         )
     }
 }
 
-const mapStateToProps = (state) => ({
-    contents: [...state.folder.contents.credentials, ...state.folder.contents.folders],
-    openFolderId: state.folder.openId,
-    isFetching: state.folder.isFetching,
-    parent: state.folder.folderInfo && state.folder.folderInfo.parent || null
+const mapStateToProps = () => ({
 })
 
 const mapDispatchToProps = {
-    openFolder,
     removeSearchAction,
     replaceSearchAction,
-    fetchFolderContents,
-    updateContents,
-    beginCredentialCreation,
     adminFolder,
-    beginFolderCreation
+    requestFolderContents,
+    requestFolderInfo,
+    requestFolderPath
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(FolderPage)))
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(withSnackbar(FolderPage))))

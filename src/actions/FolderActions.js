@@ -2,7 +2,7 @@ import axios from 'axios'
 import { getTranslate } from 'react-localize-redux';
 import { networkDecode } from '../EnsoSharedBridge';
 import { REST_BASE } from '../AppConfig'
-import { FETCHED_FOLDER_CONTENTS, FETCHED_FOLDER_PATH, OPEN_FOLDER, FINISHED_FETCHING_FOLDER, FETCHED_FOLDER_INFO, STARTED_FETCHING_FOLDER } from './actionTypes'
+import { OPEN_FOLDER, FINISHED_FETCHING_FOLDER, FETCHED_FOLDER_INFO, STARTED_FETCHING_FOLDER } from './actionTypes'
 import { setRootFolders } from './RootFolderActions'
 import { store } from '../App';
 
@@ -85,11 +85,9 @@ export const requestFolderCreation = (folder, permissions) => (dispatch, getStat
 
 }
 
-export const fetchFolderContents = () => (dispatch, getState) => {
+export const requestFolderContents = (id) => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
     const search = getState().search.value;
-    const { openId } = getState().folder
-
     var url = `${REST_BASE}folders/`;
 
     return axios(
@@ -99,28 +97,35 @@ export const fetchFolderContents = () => (dispatch, getState) => {
             params: {
                 authusername: username,
                 sessionkey: sessionKey,
-                folderId: openId,
+                folderId: id,
                 search: search
             }
         })
         .then(response => {
             return new Promise(resolve => {
                 if (response.data.search === getState().search.value) {
-                    dispatch(updateFolderContents({
+
+                    const cleanContents = {
                         ...response.data,
+                        // folders: response.data.folders,
                         credentials: response.data.credentials.map(cred => ({ ...cred, password: networkDecode(cred.password) }))
-                    }));
+                    }
 
-                    if (openId === null)
-                        dispatch(setRootFolders(response.data.folders));
+                    if (id === null)
+                        dispatch(setRootFolders(cleanContents.folders));
 
-                    resolve(true)
+                    resolve(cleanContents)
                 } else {
-                    resolve(false)
+                    resolve(null)
                 }
             })
         })
-        .catch(() => { })
+        .catch(parse406Error)
+}
+
+export const fetchFolderContents = () => (dispatch, getState) => {
+
+
 }
 
 export const fetchRootFolders = () => (dispatch, getState) => {
@@ -141,18 +146,14 @@ export const fetchRootFolders = () => (dispatch, getState) => {
         })
         .then(response => {
             return new Promise(resolve => {
-                dispatch(updateFolderContents({
-                    folders: response.data,
-                    credentials: []
-                }));
-
+//Fetch root folders
                 resolve(true)
             })
         })
         .catch(() => { })
 }
 
-export const fetchFolderPath = () => (dispatch, getState) => {
+export const requestFolderPath = (folderId) => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
 
     var url = `${REST_BASE}folder/getPath/`;
@@ -163,29 +164,27 @@ export const fetchFolderPath = () => (dispatch, getState) => {
             params: {
                 authusername: username,
                 sessionkey: sessionKey,
-                folderId: getState().folder.openId,
+                folderId,
             }
         })
+        .then(response => response.data)
+        .catch(parse406Error)
 };
 
-export const fetchFolderInfo = (id) => (dispatch, getState) => {
-
-
-    if (getState().folder.openId == null && !id)
+export const requestFolderInfo = (id) => (dispatch, getState) => {
+    if (!id)
         return new Promise(resolve => {
-            dispatch(updateFolderInfo({
+            const mockFolder = {
                 folderInfo: {
                     idFolders: null
                 },
                 permissions: []
-            }))
-            resolve();
+            }
+            resolve(mockFolder);
         })
 
     const { username, sessionKey } = getState().authentication;
 
-    if (!id)
-        id = getState().folder.openId
     var url = `${REST_BASE}folder/`;
     return axios(
         {
@@ -197,22 +196,13 @@ export const fetchFolderInfo = (id) => (dispatch, getState) => {
                 folderId: id,
             }
         })
+        .then(response => response.data)
+        .catch(parse406Error)
+}
+
+export const fetchFolderInfo = (id) => (dispatch, getState) => {
+    return dispatch(requestFolderInfo(id))
 };
-
-const updateFolderContents = contents => ({
-    type: FETCHED_FOLDER_CONTENTS,
-    payload: contents
-});
-
-const updateFolderPath = path => ({
-    type: FETCHED_FOLDER_PATH,
-    payload: path
-});
-
-export const setOpenfolder = id => ({
-    type: OPEN_FOLDER,
-    payload: id
-})
 
 export const finishFetchingFolder = () => ({
     type: FINISHED_FETCHING_FOLDER,
@@ -226,47 +216,6 @@ export const updateFolderInfo = info => ({
 export const startFetchingFolder = () => ({
     type: STARTED_FETCHING_FOLDER
 })
-
-export const goToParent = () => (dispatch, getState) => {
-    const { folderInfo, openId } = getState().folder;
-
-    if (openId != null)
-        dispatch(openFolder(folderInfo.parent))
-}
-
-export const updateContents = () => dispatch => {
-    dispatch(startFetchingFolder())
-
-    dispatch(fetchFolderContents()).then(didUpdateContents => {
-        if (didUpdateContents)
-            dispatch(finishFetchingFolder())
-    })
-}
-
-export const openFolder = folderId => dispatch => {
-    dispatch(setOpenfolder(folderId))
-    dispatch(startFetchingFolder())
-
-    return Promise
-        .all([
-            dispatch(fetchFolderContents()),
-            dispatch(fetchFolderPath()).then(response => {
-                dispatch(updateFolderPath(response.data));
-                return Promise.resolve()
-            }),
-            dispatch(fetchFolderInfo()).then(response => {
-                if (response) dispatch(updateFolderInfo(response.data));
-                return Promise.resolve()
-            })
-        ])
-        .then(() => {
-            console.log("all good")
-            dispatch(finishFetchingFolder());
-        })
-        .catch((error) => {
-            console.log("ooops ", error)
-        })
-}
 
 export const fetchAdministrationFolders = () => (dispatch) => {
     dispatch(startFetchingFolder())

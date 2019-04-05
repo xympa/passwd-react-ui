@@ -209,7 +209,6 @@ export class Header extends Component {
                                     style={{ transformOrigin: 'right top' }}
                                 >
                                     <ClickAwayListener onClickAway={this._handleClose}>
-
                                         <Paper classes={{root: classes.highZIndex}}>
                                             <MenuList>
                                                 <MenuItem onClick={this._handleClose}>

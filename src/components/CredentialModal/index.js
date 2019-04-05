@@ -4,12 +4,22 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { CircularProgress, Dialog, DialogContent, DialogTitle, DialogActions, Button, Zoom, Fade } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles'
+import { Translate, withLocalize } from 'react-localize-redux'
 import { withSnackbar } from 'notistack';
 import CredentialForm from './Form'
 import ModalHeader from './Header'
-import { updateCredential, deleteCredential, insertCredential, setFetching } from '../../actions/CredentialActions'
-import { Translate, withLocalize } from 'react-localize-redux';
+import { requestCredentialInfo, requestCredentialDeletion, requestCredentialInsertion, requestCredentialUpdate } from '../../actions/CredentialActions'
 
+
+const INITIAL_STATE = {
+    isEditing: false,
+    isShowing: false,
+    user: null,
+    isFetching: true,
+    form: {
+
+    }
+}
 
 const styles = () => ({
 
@@ -17,29 +27,33 @@ const styles = () => ({
 
 export class CredentialModal extends Component {
     static propTypes = {
-        isFetching: PropTypes.bool.isRequired,
-        openId: PropTypes.oneOfType([
+        credentialId: PropTypes.oneOfType([
             PropTypes.number,
             PropTypes.string
         ]),
-        isEditing: PropTypes.bool.isRequired,
-        updateCredential: PropTypes.func.isRequired,
-        deleteCredential: PropTypes.func.isRequired,
-        insertCredential: PropTypes.func.isRequired,
-        isCreating: PropTypes.bool.isRequired,
+        requestCredentialDeletion: PropTypes.func.isRequired,
+        requestCredentialInsertion: PropTypes.func.isRequired,
+        requestCredentialUpdate: PropTypes.func.isRequired,
         enqueueSnackbar: PropTypes.func.isRequired,
-        setFetching: PropTypes.func.isRequired,
-        credential: PropTypes.object,
         translate: PropTypes.func.isRequired,
+        open: PropTypes.bool.isRequired,
+        requestCredentialInfo: PropTypes.func.isRequired,
+        forCreation: PropTypes.bool,
+        closeModal: PropTypes.func.isRequired,
+        belongsTo: PropTypes.oneOfType([
+            PropTypes.number,
+            PropTypes.string
+        ]),
+    }
+
+    static defaultProps = {
+        forCreation: false
     }
 
     constructor(props) {
         super(props)
 
-        this.state = {
-            isShowing: false,
-            form: {}
-        }
+        this.state = INITIAL_STATE
 
         this.submitFormForUpdate = this.submitFormForUpdate.bind(this)
         this.submitFormForInsert = this.submitFormForInsert.bind(this)
@@ -48,34 +62,62 @@ export class CredentialModal extends Component {
 
 
     componentDidUpdate(prevProps) {
-        const { openId, isCreating } = this.props;
+        const { requestCredentialInfo, open, credentialId } = this.props
 
-        if (openId !== prevProps.openId || isCreating !== prevProps.isCreating)
-            // eslint-disable-next-line react/no-did-update-set-state
-            this.setState({ isShowing: openId !== null || isCreating })
+        if (prevProps.open !== open) {
+            if (open && credentialId)
+                // eslint-disable-next-line react/no-did-update-set-state
+                this.setState({ isFetching: true }, () => {
+                    requestCredentialInfo(credentialId)
+                        .then(credential => {
+                            this.setState({
+                                credential,
+                                isFetching: false,
+                            })
+                        })
+                        .catch(error => {
+                            console.log(error)
+                        })
+                })
+            else if (open)
+                this.setState({
+                    isEditing: true,
+                    isFetching: false
+                })
+            else
+                // eslint-disable-next-line react/no-did-update-set-state
+                this.setState(INITIAL_STATE)
+        }
     }
 
     submitFormForUpdate() {
-        const { updateCredential, enqueueSnackbar, setFetching, translate } = this.props;
+        const { requestCredentialUpdate, enqueueSnackbar, translate } = this.props;
         const { form } = this.state;
 
         const valid = Object.keys(form).filter(field => !form[field].valid).length === 0
 
-        if (valid)
-            updateCredential({
-                description: form.description.sanitizedValue,
-                username: form.username.sanitizedValue,
-                title: form.title.sanitizedValue,
-                password: form.password.sanitizedValue,
-                url: form.url.sanitizedValue,
-            })
-                .catch((error) => {
-                    enqueueSnackbar(error.message, {
-                        variant: "error"
-                    })
-                    setFetching(false)
-
+        if (valid) {
+            this.setState({
+                isFetching: true
+            }, () => {
+                requestCredentialUpdate({
+                    description: form.description.sanitizedValue,
+                    username: form.username.sanitizedValue,
+                    title: form.title.sanitizedValue,
+                    password: form.password.sanitizedValue,
+                    url: form.url.sanitizedValue,
                 })
+                    .catch((error) => {
+                        enqueueSnackbar(error.message, {
+                            variant: "error"
+                        })
+                    })
+                    .then(() => {
+                        this.setState({ isFetching: false })
+                    })
+
+            })
+        }
         else {
             enqueueSnackbar(translate("badForm"), {
                 variant: "error"
@@ -84,25 +126,34 @@ export class CredentialModal extends Component {
     }
 
     submitFormForInsert() {
-        const { insertCredential, enqueueSnackbar, setFetching, translate } = this.props;
+        const { requestCredentialInsertion, enqueueSnackbar, translate } = this.props;
         const { form } = this.state;
 
         const valid = Object.keys(form).filter(field => !form[field].valid).length === 0
 
-        if (valid)
-            insertCredential({
-                description: form.description.sanitizedValue,
-                username: form.username.sanitizedValue,
-                title: form.title.sanitizedValue,
-                password: form.password.sanitizedValue,
-                url: form.url.sanitizedValue,
-            })
-                .catch((error) => {
-                    enqueueSnackbar(error.message, {
-                        variant: "error"
-                    })
-                    setFetching(false)
+        if (valid) {
+            this.setState({
+                isFetching: true
+            }, () => {
+                requestCredentialInsertion({
+                    description: form.description.sanitizedValue,
+                    username: form.username.sanitizedValue,
+                    title: form.title.sanitizedValue,
+                    password: form.password.sanitizedValue,
+                    url: form.url.sanitizedValue,
                 })
+                    .catch((error) => {
+                        console.log(error)
+                        enqueueSnackbar(error.message, {
+                            variant: "error"
+                        })
+                    })
+                    .then(() => {
+                        this.setState({ isFetching: false })
+
+                    })
+            })
+        }
         else {
             enqueueSnackbar(translate("badForm"), {
                 variant: "error"
@@ -111,24 +162,42 @@ export class CredentialModal extends Component {
     }
 
     attemptDelete() {
-        const { deleteCredential, enqueueSnackbar, setFetching } = this.props;
-        deleteCredential()
-            .catch((error) => {
-                enqueueSnackbar(error.message, {
-                    variant: "error"
+        const { requestCredentialDeletion, enqueueSnackbar, credentialId } = this.props;
+
+        this.setState({
+            isFetching: true
+        }, () => {
+            requestCredentialDeletion(credentialId)
+                .catch((error) => {
+                    enqueueSnackbar(error.message, {
+                        variant: "error"
+                    })
                 })
-                setFetching(false)
-            })
+                .then(() => {
+                    this.setState({ isFetching: false })
+
+                })
+        })
+
     }
 
     render() {
-        const { isShowing } = this.state;
-        const { isFetching, isEditing, isCreating, credential } = this.props;
+        const { credential, isFetching, isEditing } = this.state;
+        const { forCreation, open, closeModal } = this.props;
 
         return (
-            <Dialog open={isShowing} maxWidth="lg" TransitionComponent={Zoom}>
+            <Dialog open={open} disableBackdropClick disableRestoreFocus maxWidth="lg" TransitionComponent={Zoom}>
                 <DialogTitle>
-                    {!isFetching && <ModalHeader />}
+                    {!isFetching && (
+                        <ModalHeader
+                            closeCredential={closeModal}
+                            isEditing={isEditing}
+                            isCreating={forCreation}
+                            toggleEditMode={() => {
+                                this.setState(prevState => ({ isEditing: !prevState.isEditing }))
+                            }}
+                        />
+                    )}
                 </DialogTitle>
                 <DialogContent>
                     {isFetching && <CircularProgress />}
@@ -136,7 +205,7 @@ export class CredentialModal extends Component {
                         <CredentialForm isEditing={isEditing} credential={credential} onFormChanged={(form) => { this.setState({ form: form }); }} />
                     </div>
                 </DialogContent>
-                {!isCreating ? (
+                {!forCreation ? (
                     <Fade in={isEditing}>
                         <DialogActions>
                             <Button variant="contained" onClick={this.attemptDelete}>
@@ -162,19 +231,13 @@ export class CredentialModal extends Component {
     }
 }
 
-const mapStateToProps = (state) => ({
-    credential: state.credential.data,
-    openId: state.credential.openCredential,
-    isFetching: state.credential.fetchingCredential,
-    isEditing: state.credential.isEditing || state.credential.isCreating,
-    isCreating: state.credential.isCreating
-})
+const mapStateToProps = () => ({})
 
 const mapDispatchToProps = {
-    updateCredential,
-    deleteCredential,
-    insertCredential,
-    setFetching
+    requestCredentialDeletion,
+    requestCredentialInfo,
+    requestCredentialInsertion,
+    requestCredentialUpdate
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(withLocalize(CredentialModal))))
