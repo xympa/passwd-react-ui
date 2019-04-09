@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
 import CloseIcon from '@material-ui/icons/Close'
 import LockIcon from '@material-ui/icons/Lock'
 import { Translate, withLocalize } from 'react-localize-redux'
@@ -8,7 +7,6 @@ import OpenLockIcon from '@material-ui/icons/LockOpen'
 import { IconButton, Typography, Tooltip } from '@material-ui/core'
 import { withStyles } from '@material-ui/core/styles'
 import localization from './localization.json'
-import { closeAdmin, toggleEditMode } from '../../actions/FolderAdminActions'
 
 const styles = theme => ({
     margin: {
@@ -69,16 +67,4 @@ class Header extends React.PureComponent {
     }
 }
 
-
-
-const mapStateToProps = (state) => ({
-    isEditing: state.folderAdmin.isEditing,
-    isCreating: state.folderAdmin.isCreating
-})
-
-const mapDispatchToProps = {
-    closeAdmin,
-    toggleEditMode
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(Header)))
+export default withStyles(styles)(withLocalize(Header))

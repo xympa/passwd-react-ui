@@ -5,6 +5,8 @@ import FolderIcon from '@material-ui/icons/Folder'
 import { withLocalize, Translate } from 'react-localize-redux'
 import { withStyles } from '@material-ui/core/styles'
 import localization from './localization.json'
+import FolderAdministrationModal from '../FolderAdministrationModal'
+
 
 const styles = theme => ({
     avatar: {
@@ -33,8 +35,10 @@ class FolderListItem extends React.Component {
         folder: PropTypes.object.isRequired,
         onClick: PropTypes.func,
         style: PropTypes.object,
-        translate: PropTypes.func.isRequired,
         addTranslation: PropTypes.func.isRequired,
+        onRequestRefresh: PropTypes.func.isRequired,
+        folderModalOpen: PropTypes.bool.isRequired,
+        closeModal: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -50,35 +54,43 @@ class FolderListItem extends React.Component {
 
 
     render() {
-        const { classes, folder, style, onClick, translate } = this.props;
-        const { hovered} = this.state
+        const { classes, folder, style, onClick, folderModalOpen, onRequestRefresh, closeModal } = this.props;
+        const { hovered } = this.state
 
         return (
-            <ListItem
-                style={{ ...style }}
-                button
-                onClick={onClick}
-                onMouseEnter={() => { this.setState({ hovered: true }) }}
-                onMouseLeave={() => { this.setState({ hovered: false }) }}
-                selected={hovered}
-            >
-                <Avatar className={classes.avatar}>
-                    <FolderIcon style={{ height: 32, width: 32 }} />
-                </Avatar>
-                <ListItemText
-                    style={{ flex: 1 }}
-                    primary={<Typography>{folder.name}</Typography>}
-                    secondary={(
-                        <Typography variant="caption" noWrap>
-                            {folder.folderChildren}
-                            <Translate id="foldersContained" />
-                            {"; "}
-                            {folder.credentialChildren}
-                            <Translate id="credentialsContained" />
-                        </Typography>
-                    )}
+            <div>
+                <ListItem
+                    style={{ ...style }}
+                    button
+                    onClick={onClick}
+                    onMouseEnter={() => { this.setState({ hovered: true }) }}
+                    onMouseLeave={() => { this.setState({ hovered: false }) }}
+                    selected={hovered}
+                >
+                    <Avatar className={classes.avatar}>
+                        <FolderIcon style={{ height: 32, width: 32 }} />
+                    </Avatar>
+                    <ListItemText
+                        style={{ flex: 1 }}
+                        primary={<Typography>{folder.name}</Typography>}
+                        secondary={(
+                            <Typography variant="caption" noWrap>
+                                {folder.folderChildren}
+                                <Translate id="foldersContained" />
+                                {"; "}
+                                {folder.credentialChildren}
+                                <Translate id="credentialsContained" />
+                            </Typography>
+                        )}
+                    />
+                </ListItem>
+                <FolderAdministrationModal
+                    folderId={folder.idFolders}
+                    open={folderModalOpen}
+                    closeModal={closeModal}
+                    onRequestRefresh={onRequestRefresh}
                 />
-            </ListItem>
+            </div>
         )
     }
 }

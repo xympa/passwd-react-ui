@@ -15,12 +15,6 @@ import localization from './localization.json'
 import { openCredential } from '../../actions/CredentialActions'
 import CredentialModal from '../CredentialModal';
 
-const translateToString = (translate, id) => {
-    return translate(({ translate }) => {
-        return translate(id)
-    })
-}
-
 const styles = theme => ({
     avatar: {
         height: 64,

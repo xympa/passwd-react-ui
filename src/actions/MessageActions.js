@@ -59,6 +59,8 @@ export const requestInbox = () => (dispatch, getState) => {
                 sessionkey: sessionKey,
             }
         })
+        .then(response => Promise.resolve(response.data))
+        .catch(parse406Error)
 }
 
 export const requestOutbox = () => (dispatch, getState) => {
@@ -76,6 +78,8 @@ export const requestOutbox = () => (dispatch, getState) => {
                 sessionkey: sessionKey,
             }
         })
+        .then(response => Promise.resolve(response.data))
+        .catch(parse406Error)
 }
 
 const requestInternalMessageSubmission = (credential, message) => (dispatch, getState) => {
@@ -203,7 +207,6 @@ const requestSaveMessage = (messageId, credential, targetFolder) => (dispatch, g
         })
         .catch(parse406Error)
 }
-
 const setInbox = list => ({
     type: SET_INBOX,
     payload: list
@@ -213,7 +216,6 @@ const setOutbox = list => ({
     type: SET_OUTBOX,
     payload: list
 })
-
 const setEditing = list => ({
     type: SET_MESSAGE_MODAL_EDITING,
     payload: list
@@ -221,7 +223,7 @@ const setEditing = list => ({
 
 export const fetchInbox = () => dispatch => {
     return dispatch(requestInbox())
-        .then(({ data }) => new Promise(resolve => {
+        .then(data => new Promise(resolve => {
             dispatch(setInbox(data));
             resolve();
         }))
@@ -229,12 +231,11 @@ export const fetchInbox = () => dispatch => {
 
 export const fetchOutbox = () => dispatch => {
     return dispatch(requestOutbox())
-        .then(({ data }) => new Promise(resolve => {
+        .then(data => new Promise(resolve => {
             dispatch(setOutbox(data));
             resolve();
         }))
 }
-
 const setOpen = bool => ({
     type: SET_MESSAGE_MODAL_OPEN,
     payload: bool
@@ -252,7 +253,7 @@ const setBaseCredentialInfo = info => ({
     type: SET_BASE_CREDENTIAL_INFO,
     payload: {
         ...info,
-        password: networkDecode(info.password)
+        // password: networkDecode(info.password)y
     }
 })
 
@@ -325,13 +326,13 @@ export const composeMessage = (baseCredential = null) => dispatch => {
     dispatch(setOpen(true))
 
     return dispatch(requestUserList())
-        .then(({ data }) => {
-            dispatch(setUserList(data))
+        .then(userList => {
+            dispatch(setUserList(userList))
 
             if (baseCredential)
                 return dispatch(requestCredentialInfo(baseCredential))
-                    .then(({ data }) => {
-                        dispatch(setBaseCredentialInfo(data))
+                    .then(credential => {
+                        dispatch(setBaseCredentialInfo(credential))
                         dispatch(setFetching(false))
                     })
             else {

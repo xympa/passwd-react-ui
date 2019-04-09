@@ -2,7 +2,6 @@ import axios from 'axios'
 import { getTranslate } from 'react-localize-redux';
 import { networkDecode } from '../EnsoSharedBridge';
 import { REST_BASE } from '../AppConfig'
-import { OPEN_FOLDER, FINISHED_FETCHING_FOLDER, FETCHED_FOLDER_INFO, STARTED_FETCHING_FOLDER } from './actionTypes'
 import { setRootFolders } from './RootFolderActions'
 import { store } from '../App';
 
@@ -36,6 +35,10 @@ export const requestFolderDeletion = id => (dispatch, getState) => {
                 folderId: id,
             }
         })
+        .then(response => new Promise(resolve => {
+            dispatch(requestFolderContents()) // Deleting a folder might cause a repopulation of the drawer folders, fetchRootFolders
+            resolve(response.data) // pass request data along
+        }))
         .catch(parse406Error)
 }
 
@@ -59,6 +62,10 @@ export const requestFolderUpdate = (folder, permissions) => (dispatch, getState)
                 permissions: permissions
             }
         })
+        .then(response => new Promise(resolve => {
+            dispatch(requestFolderContents()) //A change in folder permissions might cause a repopulation of the drawer folders, fetchRootFolders
+            resolve(response.data) // pass request data along
+        }))
         .catch(parse406Error)
 
 }
@@ -81,8 +88,12 @@ export const requestFolderCreation = (folder, permissions) => (dispatch, getStat
                 permissions: permissions
             }
         })
+        .then(response => new Promise(resolve => {
+            if (!folder.parent)
+                dispatch(requestFolderContents()) // Root folder created, cause a repopulation of the drawer folders, fetchRootFolders
+            resolve(response.data) // pass request data along
+        }))
         .catch(parse406Error)
-
 }
 
 export const requestFolderContents = (id) => (dispatch, getState) => {
@@ -111,7 +122,7 @@ export const requestFolderContents = (id) => (dispatch, getState) => {
                         credentials: response.data.credentials.map(cred => ({ ...cred, password: networkDecode(cred.password) }))
                     }
 
-                    if (id === null)
+                    if (!id && response.data.search === "")
                         dispatch(setRootFolders(cleanContents.folders));
 
                     resolve(cleanContents)
@@ -123,12 +134,7 @@ export const requestFolderContents = (id) => (dispatch, getState) => {
         .catch(parse406Error)
 }
 
-export const fetchFolderContents = () => (dispatch, getState) => {
-
-
-}
-
-export const fetchRootFolders = () => (dispatch, getState) => {
+export const requestRootFolders = () => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
     const search = getState().search.value;
 
@@ -144,13 +150,8 @@ export const fetchRootFolders = () => (dispatch, getState) => {
                 search: search
             }
         })
-        .then(response => {
-            return new Promise(resolve => {
-//Fetch root folders
-                resolve(true)
-            })
-        })
-        .catch(() => { })
+        .then(response => Promise.resolve(response.data))
+        .catch(parse406Error)
 }
 
 export const requestFolderPath = (folderId) => (dispatch, getState) => {
@@ -198,31 +199,4 @@ export const requestFolderInfo = (id) => (dispatch, getState) => {
         })
         .then(response => response.data)
         .catch(parse406Error)
-}
-
-export const fetchFolderInfo = (id) => (dispatch, getState) => {
-    return dispatch(requestFolderInfo(id))
-};
-
-export const finishFetchingFolder = () => ({
-    type: FINISHED_FETCHING_FOLDER,
-})
-
-export const updateFolderInfo = info => ({
-    type: FETCHED_FOLDER_INFO,
-    payload: info
-})
-
-export const startFetchingFolder = () => ({
-    type: STARTED_FETCHING_FOLDER
-})
-
-export const fetchAdministrationFolders = () => (dispatch) => {
-    dispatch(startFetchingFolder())
-
-    return dispatch(fetchRootFolders()).then(() => {
-        dispatch(finishFetchingFolder());
-    })
-
-
 }

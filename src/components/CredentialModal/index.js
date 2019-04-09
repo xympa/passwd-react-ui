@@ -13,8 +13,6 @@ import { requestCredentialInfo, requestCredentialDeletion, requestCredentialInse
 
 const INITIAL_STATE = {
     isEditing: false,
-    isShowing: false,
-    user: null,
     isFetching: true,
     form: {
 
@@ -44,6 +42,7 @@ export class CredentialModal extends Component {
             PropTypes.number,
             PropTypes.string
         ]),
+        openCredential: PropTypes.func.isRequired,
     }
 
     static defaultProps = {
@@ -58,35 +57,21 @@ export class CredentialModal extends Component {
         this.submitFormForUpdate = this.submitFormForUpdate.bind(this)
         this.submitFormForInsert = this.submitFormForInsert.bind(this)
         this.attemptDelete = this.attemptDelete.bind(this)
+        this._handleCredentialLoad = this._handleCredentialLoad.bind(this)
+    }
+
+    componentDidMount() {
+        this._handleCredentialLoad()
     }
 
 
+
+
     componentDidUpdate(prevProps) {
-        const { requestCredentialInfo, open, credentialId } = this.props
+        const { open } = this.props
 
         if (prevProps.open !== open) {
-            if (open && credentialId)
-                // eslint-disable-next-line react/no-did-update-set-state
-                this.setState({ isFetching: true }, () => {
-                    requestCredentialInfo(credentialId)
-                        .then(credential => {
-                            this.setState({
-                                credential,
-                                isFetching: false,
-                            })
-                        })
-                        .catch(error => {
-                            console.log(error)
-                        })
-                })
-            else if (open)
-                this.setState({
-                    isEditing: true,
-                    isFetching: false
-                })
-            else
-                // eslint-disable-next-line react/no-did-update-set-state
-                this.setState(INITIAL_STATE)
+            this._handleCredentialLoad()
         }
     }
 
@@ -126,7 +111,7 @@ export class CredentialModal extends Component {
     }
 
     submitFormForInsert() {
-        const { requestCredentialInsertion, enqueueSnackbar, translate } = this.props;
+        const { requestCredentialInsertion, enqueueSnackbar, translate, belongsTo, openCredential } = this.props;
         const { form } = this.state;
 
         const valid = Object.keys(form).filter(field => !form[field].valid).length === 0
@@ -141,16 +126,16 @@ export class CredentialModal extends Component {
                     title: form.title.sanitizedValue,
                     password: form.password.sanitizedValue,
                     url: form.url.sanitizedValue,
-                })
+                }, belongsTo)
+                    .then(newId => {
+                        openCredential(newId)
+                    })
                     .catch((error) => {
                         console.log(error)
                         enqueueSnackbar(error.message, {
                             variant: "error"
                         })
-                    })
-                    .then(() => {
                         this.setState({ isFetching: false })
-
                     })
             })
         }
@@ -181,9 +166,36 @@ export class CredentialModal extends Component {
 
     }
 
+    _handleCredentialLoad() {
+        const { requestCredentialInfo, open, credentialId } = this.props
+
+        if (open && credentialId)
+            // eslint-disable-next-line react/no-did-update-set-state
+            this.setState({ isFetching: true }, () => {
+                requestCredentialInfo(credentialId)
+                    .then(credential => {
+                        this.setState({
+                            credential,
+                            isFetching: false,
+                        })
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            })
+        else if (open)
+            this.setState({
+                isEditing: true,
+                isFetching: false
+            })
+        else
+            // eslint-disable-next-line react/no-did-update-set-state
+            this.setState(INITIAL_STATE)
+    }
+
     render() {
         const { credential, isFetching, isEditing } = this.state;
-        const { forCreation, open, closeModal } = this.props;
+        const { forCreation, open, closeModal, credentialId } = this.props;
 
         return (
             <Dialog open={open} disableBackdropClick disableRestoreFocus maxWidth="lg" TransitionComponent={Zoom}>
@@ -196,6 +208,7 @@ export class CredentialModal extends Component {
                             toggleEditMode={() => {
                                 this.setState(prevState => ({ isEditing: !prevState.isEditing }))
                             }}
+                            credentialId={credentialId}
                         />
                     )}
                 </DialogTitle>
@@ -218,7 +231,7 @@ export class CredentialModal extends Component {
                         </DialogActions>
                     </Fade>
                 ) : (
-                        <Fade in>
+                        <Fade in={!isFetching}>
                             <DialogActions>
                                 <Button variant="contained" onClick={this.submitFormForInsert}>
                                     <Translate id="create" />

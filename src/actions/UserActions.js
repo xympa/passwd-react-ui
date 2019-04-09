@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { getTranslate } from 'react-localize-redux'
 import { REST_BASE } from '../AppConfig'
-import { USER_ADMIN_SET_USER_LIST, USER_ADMIN_SET_FETCHING } from './actionTypes';
 import { store } from '../App';
 
 const parse406Error = (error) => {
@@ -25,16 +24,6 @@ const parse406Error = (error) => {
     return Promise.reject(error);
 }
 
-const setUserList = list => ({
-    type: USER_ADMIN_SET_USER_LIST,
-    payload: list
-})
-
-const setIsFetching = bool => ({
-    type: USER_ADMIN_SET_FETCHING,
-    payload: bool
-})
-
 export const requestUserList = (useSearch = false) => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
 
@@ -49,6 +38,7 @@ export const requestUserList = (useSearch = false) => (dispatch, getState) => {
                 search: useSearch ? getState().search.value : ''
             }
         })
+        .then(response => Promise.resolve(response.data))
         .catch(parse406Error)
 }
 
@@ -68,18 +58,6 @@ export const requestUser = usernameToFetch => (dispatch, getState) => {
         })
         .catch(parse406Error)
 }
-
-export const fetchUserList = () => (dispatch) => new Promise(resolve => {
-    dispatch(setIsFetching(true))
-
-    dispatch(requestUserList())
-        .then(({ data }) => {
-            dispatch(setUserList(data))
-
-            dispatch(setIsFetching(false))
-            resolve()
-        })
-})
 
 export const requestUserCreation = user => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;

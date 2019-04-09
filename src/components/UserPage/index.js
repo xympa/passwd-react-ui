@@ -6,12 +6,19 @@ import { Fade, Typography, Zoom, Fab, Divider, Tooltip } from '@material-ui/core
 import { List } from 'react-virtualized';
 import CreateIcon from '@material-ui/icons/Create'
 import { withLocalize, Translate } from 'react-localize-redux'
-import { fetchUserList } from '../../actions/UserActions'
+import { requestUserList } from '../../actions/UserActions'
 import { replaceSearchAction, removeSearchAction } from '../../actions/SearchActions'
 import { measureElement } from '../../Utils'
 import UserListItem from '../UserListItem'
 import UserAdminModal from '../UserAdminModal'
 import localization from './localization.json'
+
+const INITIAL_STATE = {
+    isFetching: true,
+    error: undefined,
+    isCreationModalShowing: false,
+    userList: []
+}
 
 const styles = theme => ({
     fab: {
@@ -31,25 +38,20 @@ const styles = theme => ({
 
 export class UserPage extends Component {
     static propTypes = {
-        messages: PropTypes.array.isRequired,
-        fetchOutbox: PropTypes.func.isRequired,
         removeSearchAction: PropTypes.func.isRequired,
-        replaceSearchAction: PropTypes.func.isRequired,
         classes: PropTypes.object.isRequired,
-        composeMessage: PropTypes.func.isRequired,
         addTranslation: PropTypes.func.isRequired,
         translate: PropTypes.func.isRequired,
+        requestUserList: PropTypes.func.isRequired,
     }
 
     constructor(props) {
         super(props)
 
         this.state = {
-            isFetching: true,
-            error: undefined,
+            ...INITIAL_STATE,
             width: window.innerWidth,
             height: window.innerHeight,
-            isCreationModalShowing: false
         }
 
         this.reloadViewContents = this.reloadViewContents.bind(this)
@@ -60,9 +62,10 @@ export class UserPage extends Component {
     }
 
     componentDidMount() {
+        const { replaceSearchAction } = this.props
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
-        // replaceSearchAction()
+        replaceSearchAction(this.reloadViewContents)
         this.reloadViewContents()
     }
 
@@ -77,13 +80,20 @@ export class UserPage extends Component {
     }
 
     reloadViewContents(resolve) {
-        const { fetchUserList } = this.props;
+        const { requestUserList } = this.props;
 
         this.setState({ isFetching: true }, () => {
-            fetchUserList()
+            requestUserList(true)
+                .then(userList => {
+                    this.setState({
+                        isFetching: false,
+                        userList
+                    })
+                })
                 .catch(error => {
                     this.setState({
-                        error: error
+                        error: error,
+                        isFetching: false
                     });
                 })
                 .then(() => {
@@ -97,11 +107,9 @@ export class UserPage extends Component {
 
     render() {
 
-        const { isFetching, error, width, height, isCreationModalShowing } = this.state;
+        const { isFetching, error, width, height, isCreationModalShowing, userList } = this.state;
 
-        const { users, classes, translate } = this.props;
-
-        console.log(this.props)
+        const { classes, translate } = this.props;
 
         return (
             <div>
@@ -114,7 +122,7 @@ export class UserPage extends Component {
                 <div style={{ flexDirection: "column", flex: 1, overflow: "hidden" }}>
                     <Fade in={!isFetching}>
                         <List
-                            rowCount={users.length}
+                            rowCount={userList.length}
                             rowHeight={96}
                             height={height - 129}
                             width={width}
@@ -126,10 +134,11 @@ export class UserPage extends Component {
                             )}
                             rowRenderer={({ index, style }) => (
                                 <UserListItem
-                                    user={users[index]}
+                                    user={userList[index]}
                                     style={{ paddingLeft: 64, paddingRight: 96, ...style }}
                                     received={false}
-                                    key={users[index].usernmae}
+                                    key={userList[index].usernmae}
+                                    onRequestRefresh={this.reloadViewContents}
                                 />
                             )}
                         />
@@ -154,6 +163,7 @@ export class UserPage extends Component {
                     onRequestClose={() => {
                         this.setState({ isCreationModalShowing: false })
                     }}
+                    onRequestRefresh={this.reloadViewContents}
                 />
             </div>
         )
@@ -161,11 +171,10 @@ export class UserPage extends Component {
 }
 
 const mapStateToProps = (state) => ({
-    users: state.user.list
 })
 
 const mapDispatchToProps = {
-    fetchUserList,
+    requestUserList,
     removeSearchAction,
     replaceSearchAction,
 }

@@ -56,7 +56,7 @@ class UserListItem extends React.Component {
 
 
     render() {
-        const { classes, style, user } = this.props;
+        const { classes, style, user, onRequestRefresh } = this.props;
         const { isModalOpen, hovered } = this.state
 
         return (
@@ -90,6 +90,7 @@ class UserListItem extends React.Component {
                     onRequestClose={() => {
                       this.closeModal()
                     }}
+                    onRequestRefresh={onRequestRefresh}
                 />
             </div>
         )

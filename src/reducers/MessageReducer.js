@@ -20,17 +20,16 @@ const INITIAL_STATE = {
 
 export default (state = INITIAL_STATE, action) => {
     switch (action.type) {
-
         case types.SET_INBOX:
-            return {
-                ...state,
-                inbox: action.payload
-            }
-        case types.SET_OUTBOX:
-            return {
-                ...state,
-                outbox: action.payload
-            }
+        return {
+            ...state,
+            inbox: action.payload
+        }
+    case types.SET_OUTBOX:
+        return {
+            ...state,
+            outbox: action.payload
+        }
         case types.SET_MESSAGE_MODAL_OPEN:
             return {
                 ...state,

@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { withRouter} from 'react-router-dom'
 import { Button } from '@material-ui/core';
+import { withLocalize } from 'react-localize-redux';
 import RightArrowIcon from '@material-ui/icons/ArrowRight'
 import SearchIcon from '@material-ui/icons/Search';
 import { withStyles } from '@material-ui/core/styles'
 import localization from './localization.json'
-import { withLocalize } from 'react-localize-redux';
 
 const styles = () => ({
     root: {
@@ -29,6 +30,7 @@ export class FolderBreadcrumbs extends Component {
         search: PropTypes.string.isRequired,
         translate: PropTypes.func.isRequired,
         addTranslation: PropTypes.func.isRequired,
+        history: PropTypes.object.isRequired,
     }
 
     constructor(props) {
@@ -40,7 +42,7 @@ export class FolderBreadcrumbs extends Component {
 
     render() {
 
-        const { classes, path, search, translate } = this.props;
+        const { classes, path, search, translate, history } = this.props;
 
         return (
             <div className={classes.root}>
@@ -50,7 +52,14 @@ export class FolderBreadcrumbs extends Component {
                         iter++;
                         return (
                             <div className={classes.breadcrumb} key={element.parent + "-" + element.name}>
-                                <Button disabled={iter === path.length}>{element.name}</Button>
+                                <Button
+                                    disabled={iter === path.length}
+                                    onClick={() => {
+                                        history.push('/home/' + path[path.length - iter +1].parent) //hehehe flip the array, we're looking at it from the wrong perspective
+                                    }}
+                                >
+                                    {element.name}
+                                </Button>
                                 {iter !== path.length && <RightArrowIcon />}
                             </div>
                         )
@@ -76,4 +85,4 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(FolderBreadcrumbs)))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(withRouter(FolderBreadcrumbs))))

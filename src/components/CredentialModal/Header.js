@@ -18,7 +18,7 @@ const styles = theme => ({
 })
 
 const Header = (props) => {
-    const { closeCredential, isEditing, classes, toggleEditMode, isCreating, openId, composeMessage, translate } = props;
+    const { closeCredential, isEditing, classes, toggleEditMode, isCreating, credentialId, composeMessage, translate } = props;
 
     return (
         <div style={{ display: "flex", flex: 0, flexWrap: "nowrap" }}>
@@ -30,7 +30,7 @@ const Header = (props) => {
                         </IconButton>
                     </Tooltip>
                     <Tooltip title={translate("shareCredential")}>
-                        <IconButton aria-label={translate("shareCredential")} className={classes.margin} onClick={() => { composeMessage(openId) }}>
+                        <IconButton aria-label={translate("shareCredential")} className={classes.margin} onClick={() => { composeMessage(credentialId) }}>
                             <ShareIcon color="secondary" />
                         </IconButton>
                     </Tooltip>
@@ -56,11 +56,12 @@ Header.propTypes = {
     classes: PropTypes.object.isRequired,
     toggleEditMode: PropTypes.func.isRequired,
     isCreating: PropTypes.bool.isRequired,
-    openId: PropTypes.oneOfType([
+    credentialId: PropTypes.oneOfType([
         PropTypes.number,
         PropTypes.string
     ]),
     composeMessage: PropTypes.func.isRequired,
+    translate: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = (state) => ({

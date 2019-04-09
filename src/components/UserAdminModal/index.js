@@ -13,7 +13,7 @@ import {
 import { withSnackbar } from 'notistack'
 import { withLocalize, Translate } from 'react-localize-redux'
 import localization from './localization.json'
-import { requestUser, requestUserCreation, requestUserEdit, requestUserRemoval, fetchUserList } from '../../actions/UserActions'
+import { requestUser, requestUserCreation, requestUserEdit, requestUserRemoval } from '../../actions/UserActions'
 import { replaceSearchAction, removeSearchAction } from '../../actions/SearchActions'
 import ModalHeader from './Header'
 
@@ -170,7 +170,7 @@ class UserAdminModal extends Component {
     }
 
     submitFormForUpdate() {
-        const { requestUserEdit, enqueueSnackbar } = this.props;
+        const { requestUserEdit, enqueueSnackbar, onRequestClose, onRequestRefresh } = this.props;
         const { form } = this.state;
 
         const valid = Object.keys(form).filter(field => typeof form[field] === 'object' && !form[field].valid).length === 0
@@ -188,9 +188,11 @@ class UserAdminModal extends Component {
                     sysadmin: form.sysadmin,
                 })
                     .then(() => {
-                        this.setState({
-                            isEditing: false
-                        })
+                        // this.setState({
+                        //     isEditing: false
+                        // })
+                        onRequestRefresh()
+onRequestClose()
                         enqueueSnackbar("Utilizador editado com sucesso", {
                             variant: "success"
                         })
@@ -214,7 +216,7 @@ class UserAdminModal extends Component {
     }
 
     submitFormForInsert() {
-        const { requestUserCreation, enqueueSnackbar, onRequestClose, fetchUserList } = this.props;
+        const { requestUserCreation, enqueueSnackbar, onRequestClose, onRequestRefresh } = this.props;
         const { form } = this.state;
 
         const valid = Object.keys(form).filter(field => typeof form[field] === 'object' && !form[field].valid).length === 0
@@ -231,7 +233,7 @@ class UserAdminModal extends Component {
                     sysadmin: form.sysadmin,
                 })
                     .then(() => {
-                        fetchUserList()
+                        onRequestRefresh()
                         onRequestClose()
                     })
                     .catch((error) => {
@@ -397,7 +399,6 @@ const mapDispatchToProps = {
     requestUserEdit,
     requestUserRemoval,
     removeSearchAction,
-    fetchUserList,
     replaceSearchAction,
 }
 

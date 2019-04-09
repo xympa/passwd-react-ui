@@ -8,11 +8,23 @@ import { withSnackbar } from 'notistack'
 import Validator from 'validator'
 import { Translate, withLocalize } from 'react-localize-redux'
 import classNames from 'classnames'
+import { withRouter } from 'react-router-dom'
 import ModalHeader from './Header'
 import PermissionListItem from './PermissionListItem'
-import { updateFolder, createFolder, setFetching, deleteFolder } from '../../actions/FolderAdminActions'
 import AutoComplete from '../MaterialAutocomplete'
 import localization from './localization.json'
+import { requestFolderCreation, requestFolderDeletion, requestFolderUpdate, requestFolderInfo } from '../../actions/FolderActions';
+import { requestCredentialInsertion } from '../../actions/CredentialActions';
+import { requestUserList } from '../../actions/UserActions';
+
+const INITIAL_STATE = {
+    isEditing: false,
+    isFetching: true,
+    fields: {
+
+    },
+    userList: []
+}
 
 const StyledDialog = withStyles(() => ({
     paper: {
@@ -32,32 +44,35 @@ const styles = theme => ({
 
 export class FolderAdministrationModal extends Component {
     static propTypes = {
-        isFetching: PropTypes.bool.isRequired,
-        openId: PropTypes.oneOfType([
+        folderId: PropTypes.oneOfType([
             PropTypes.number,
             PropTypes.string
         ]),
-        isEditing: PropTypes.bool.isRequired,
-        updateFolder: PropTypes.func.isRequired,
-        deleteFolder: PropTypes.func.isRequired,
-        createFolder: PropTypes.func.isRequired,
-        isCreating: PropTypes.bool.isRequired,
+        parent: PropTypes.oneOfType([
+            PropTypes.number,
+            PropTypes.string
+        ]),
+        history: PropTypes.object.isRequired,
+        forCreation: PropTypes.bool,
+        open: PropTypes.bool.isRequired,
         enqueueSnackbar: PropTypes.func.isRequired,
-        setFetching: PropTypes.func.isRequired,
-        users: PropTypes.array.isRequired,
-        permissions: PropTypes.array.isRequired,
-        folder: PropTypes.object,
+        requestFolderCreation: PropTypes.func.isRequired,
+        requestFolderDeletion: PropTypes.func.isRequired,
+        requestFolderInfo: PropTypes.func.isRequired,
+        requestFolderUpdate: PropTypes.func.isRequired,
+        requestUserList: PropTypes.func.isRequired,
         classes: PropTypes.object.isRequired,
         translate: PropTypes.func.isRequired,
         addTranslation: PropTypes.func.isRequired,
+        closeModal: PropTypes.func.isRequired,
+        onRequestRefresh: PropTypes.func.isRequired,
     }
 
     constructor(props) {
         super(props)
 
         this.state = {
-            isShowing: false,
-            formPermissions: [],
+            ...INITIAL_STATE,
             fields: {
                 name: this._handleChange('name', '')()
             },
@@ -69,25 +84,23 @@ export class FolderAdministrationModal extends Component {
         this.submitFormForUpdate = this.submitFormForUpdate.bind(this)
         this.submitFormForInsert = this.submitFormForInsert.bind(this)
         this.attemptDelete = this.attemptDelete.bind(this)
+        this._handleFolderLoad = this._handleFolderLoad.bind(this)
 
         const { addTranslation } = this.props
         addTranslation(localization)
     }
 
+    componentDidMount() {
+        this._handleFolderLoad()
+    }
+
+
     componentDidUpdate(prevProps) {
-        const { openId, folder, isCreating, permissions } = this.props;
+        const { open } = this.props
 
-        if (openId !== prevProps.openId || isCreating !== prevProps.isCreating)
-            // eslint-disable-next-line react/no-did-update-set-state
-            this.setState({ isShowing: openId !== null || isCreating });
-
-        if (permissions !== prevProps.permissions)
-            // eslint-disable-next-line react/no-did-update-set-state
-            this.setState({ formPermissions: permissions });
-
-        if (folder !== prevProps.folder)
-            // eslint-disable-next-line react/no-did-update-set-state
-            this.setState({ fields: { name: this._handleChange('name', (folder ? folder.name : ''))() } })
+        if (prevProps.open !== open) {
+            this._handleFolderLoad()
+        }
     }
 
     onAdminChanged(username, isAdmin) {
@@ -146,14 +159,72 @@ export class FolderAdministrationModal extends Component {
         };
     }
 
+    _handleFolderLoad() {
+        const { requestFolderInfo, open, folderId, requestUserList, parent } = this.props
+
+        if (open && folderId)
+            // eslint-disable-next-line react/no-did-update-set-state
+            this.setState({ isFetching: true }, () => {
+                Promise.all([requestFolderInfo(folderId), requestUserList()])
+                    .then(([folder, userList]) => {
+                        this.setState({
+                            folder,
+                            userList,
+                            fields: {
+                                name: this._handleChange('name', folder.folderInfo.name)()
+                            },
+                            formPermissions: folder.permissions,
+                            isFetching: false,
+                        })
+                    })
+                    .catch(error => {
+                        this.setState({ isFetching: false })
+                    })
+            })
+        else if (open)
+            // eslint-disable-next-line react/no-did-update-set-state
+            this.setState({ isFetching: true }, () => {
+                Promise.all([requestFolderInfo(parent), requestUserList()])
+                    .then(([folder, userList]) => {
+                        this.setState({
+                            userList,
+                            fields: {
+                                name: this._handleChange('name', '')()
+                            },
+                            formPermissions: folder.permissions,
+                            isFetching: false,
+                            isEditing: true
+                        })
+                    })
+                    .catch(error => {
+                        this.setState({ isFetching: false })
+                    })
+            })
+        else
+            // eslint-disable-next-line react/no-did-update-set-state
+            this.setState({
+                ...INITIAL_STATE,
+                fields: {
+                    name: this._handleChange('name', '')()
+                },
+            })
+    }
+
     attemptDelete() {
-        const { deleteFolder, enqueueSnackbar, setFetching } = this.props;
-        deleteFolder()
-            .catch((error) => {
+        const { requestFolderDeletion, enqueueSnackbar, folderId, onRequestRefresh } = this.props;
+        requestFolderDeletion(folderId)
+        .then(() => {
+            onRequestRefresh()
+        })    
+        .catch((error) => {
                 enqueueSnackbar(error.message, {
                     variant: "error"
                 })
-                setFetching(false)
+            })
+            .then(() => {
+                this.setState({
+                    isFetching: false
+                })
             })
     }
 
@@ -167,21 +238,28 @@ export class FolderAdministrationModal extends Component {
     }
 
     submitFormForUpdate() {
-        const { updateFolder, enqueueSnackbar, setFetching, translate } = this.props;
-        const { fields } = this.state;
+        const { requestFolderUpdate, enqueueSnackbar, translate, folderId, onRequestRefresh } = this.props;
+        const { fields, folder } = this.state;
 
         const valid = Object.keys(fields).filter(field => !fields[field].valid).length === 0
 
         if (valid)
-            updateFolder({
-                name: fields.name.sanitizedValue
+            requestFolderUpdate({
+                name: fields.name.sanitizedValue,
+                id: folderId,
+                parent: folder.folderInfo.parent
             }, this._parsePermissions())
                 .catch((error) => {
                     enqueueSnackbar(error.message, {
                         variant: "error"
                     })
-                    setFetching(false)
 
+                })
+                .then(() => {
+                    this.setState({
+                        isFetching: false
+                    })
+                    onRequestRefresh()
                 })
         else {
             enqueueSnackbar(translate("badForm"), {
@@ -191,28 +269,35 @@ export class FolderAdministrationModal extends Component {
     }
 
     submitFormForInsert() {
-        const { createFolder, enqueueSnackbar, setFetching, translate } = this.props;
+        const { requestFolderCreation, enqueueSnackbar, translate, parent, history } = this.props;
         const { fields } = this.state;
 
         const valid = Object.keys(fields).filter(field => !fields[field].valid).length === 0
 
         if (valid)
-            createFolder({
-                name: fields.name.sanitizedValue
+            requestFolderCreation({
+                name: fields.name.sanitizedValue,
+                parent,
             }, this._parsePermissions())
+                .then(newFolderId => {
+                    history.push('/home/' + newFolderId)
+                })
                 .catch((error) => {
-                    console.log(error)
                     enqueueSnackbar(error.message, {
                         variant: "error"
                     })
-                    setFetching(false)
+                })
+                .then(() => {
+                    this.setState({
+                        isFetching: false
+                    })
                 })
         else {
             enqueueSnackbar(translate("badForm"), {
                 variant: "error"
             })
         }
-    }
+    } title
 
     addPermission(perm) {
         const { openId } = this.props;
@@ -222,13 +307,22 @@ export class FolderAdministrationModal extends Component {
     }
 
     render() {
-        const { isShowing, formPermissions, fields } = this.state;
-        const { isFetching, isEditing, isCreating, users, classes, translate } = this.props;
+        const { formPermissions, fields, isFetching, isEditing, userList } = this.state;
+        const { forCreation, classes, translate, open, closeModal } = this.props;
 
         return (
-            <StyledDialog open={isShowing} maxWidth="md" TransitionComponent={Zoom} fullWidth style={{ overflow: "visible" }} disableRestoreFocus>
+            <StyledDialog open={open} maxWidth="md" TransitionComponent={Zoom} fullWidth style={{ overflow: "visible" }} disableRestoreFocus>
                 <DialogTitle>
-                    {!isFetching && <ModalHeader />}
+                    {!isFetching && (
+                        <ModalHeader
+                            closeAdmin={closeModal}
+                            isEditing={isEditing}
+                            toggleEditMode={() => {
+                                this.setState(prevState => ({ isEditing: !prevState.isEditing }))
+                            }}
+                            isCreating={forCreation ? true : false}
+                        />
+                    )}
                 </DialogTitle>
                 <DialogContent style={{ overflow: "visible" }}>
                     {isFetching && <CircularProgress />}
@@ -246,7 +340,7 @@ export class FolderAdministrationModal extends Component {
                             </Grow>
                         </FormControl>
                         <AutoComplete
-                            suggestions={users
+                            suggestions={userList
                                 .filter(user => !formPermissions.map(perm => perm.userId).includes(user.username))
                                 .map(user => ({ value: user.username, label: user.username }))
                             }
@@ -273,7 +367,7 @@ export class FolderAdministrationModal extends Component {
                         </List>
                     </div>
                 </DialogContent>
-                {!isCreating ? (
+                {!forCreation ? (
                     <Fade in={isEditing}>
                         <DialogActions>
                             <Button variant="contained" onClick={this.attemptDelete}>
@@ -286,7 +380,7 @@ export class FolderAdministrationModal extends Component {
                         </DialogActions>
                     </Fade>
                 ) : (
-                        <Fade in>
+                        <Fade in={!isFetching}>
                             <DialogActions>
                                 <Button variant="contained" onClick={this.submitFormForInsert}>
                                     <Translate id="create" />
@@ -300,20 +394,23 @@ export class FolderAdministrationModal extends Component {
 }
 
 const mapStateToProps = (state) => ({
-    folder: state.folderAdmin.data && state.folderAdmin.data.folderInfo,
-    permissions: state.folderAdmin.data && state.folderAdmin.data.permissions,
-    users: state.folderAdmin.userList,
-    openId: state.folderAdmin.openFolder,
-    isFetching: state.folderAdmin.isFetching,
-    isEditing: state.folderAdmin.isEditing || state.folderAdmin.isCreating,
-    isCreating: state.folderAdmin.isCreating
+    // folder: state.folderAdmin.data && state.folderAdmin.data.folderInfo,
+    // permissions: state.folderAdmin.data && state.folderAdmin.data.permissions,
+    // users: state.folderAdmin.userList,
+    // openId: state.folderAdmin.openFolder,
+    // isFetching: state.folderAdmin.isFetching,
+    // isEditing: state.folderAdmin.isEditing || state.folderAdmin.isCreating,
+    // isCreating: state.folderAdmin.isCreating
 })
 
 const mapDispatchToProps = {
-    updateFolder,
-    deleteFolder,
-    createFolder,
-    setFetching
+    requestFolderCreation,
+    requestCredentialInsertion,
+    requestFolderDeletion,
+    requestFolderUpdate,
+    requestFolderInfo,
+    requestUserList
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(withLocalize(FolderAdministrationModal))))
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(withLocalize(withRouter(FolderAdministrationModal)))))

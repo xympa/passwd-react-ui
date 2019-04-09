@@ -3,12 +3,11 @@ import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 import { PersistGate } from 'redux-persist/lib/integration/react';
 import { persistStore, persistReducer } from 'redux-persist';
-import { CookieStorage } from 'redux-persist-cookie-storage';
 import { MuiPickersUtilsProvider } from 'material-ui-pickers';
-import Cookies from 'cookies-js';
 import { createStore, applyMiddleware } from "redux";
 import storage from 'redux-persist/lib/storage' 
 import thunk from 'redux-thunk';
+import { LocalizeProvider, getTranslate } from 'react-localize-redux';
 import { Provider } from "react-redux";
 import { SnackbarProvider } from 'notistack';
 import { BrowserRouter, HashRouter } from 'react-router-dom';
@@ -18,8 +17,7 @@ import axios from 'axios'
 import MainSwitch from './components/MainSwitch';
 import reducers from './reducers';
 import { useHashRouter } from './AppConfig'
-import { LocalizeProvider, getTranslate } from 'react-localize-redux';
-import { Tooltip } from '@material-ui/core';
+
 
 
 const theme = createMuiTheme({
@@ -92,7 +90,6 @@ axios.interceptors.response.use(function (response) {
     return response;
 }, (error) => {
     // Do something with response error
-    console.log("INTERCEPTED AN ERROR RESPONSE", store.getState())
     const translate = getTranslate(store.getState().localize)
     if (error.response) {
         switch (error.response.status) {

@@ -1,30 +1,5 @@
 import axios from 'axios'
-import { SET_LOG_META, SET_LOG_FETCHING, SET_LOG_LIST, APPEND_LOG_LIST } from './actionTypes';
 import { REST_BASE } from '../AppConfig'
-
-const setLogMeta = (meta) => ({
-    type: SET_LOG_META,
-    payload: meta
-})
-
-export const setIsFetching = (bool) => dispatch => new Promise(resolve => {
-    dispatch({
-        type: SET_LOG_FETCHING,
-        payload: bool
-    })
-
-    resolve();
-}) 
-
-const setLogList = (list) => ({
-    type: SET_LOG_LIST,
-    payload: list
-})
-const appendToLogList = (list) => ({
-    type: APPEND_LOG_LIST,
-    payload: list
-})
-
 
 export const requestLogMeta = () => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
@@ -40,16 +15,10 @@ export const requestLogMeta = () => (dispatch, getState) => {
                 sessionkey: sessionKey,
             }
         })
+        .then(response => Promise.resolve(response.data))
 }
 
-export const fetchLogMeta = () => (dispatch, getState) => {
-    return dispatch(requestLogMeta())
-        .then(({ data }) => {
-            dispatch(setLogMeta(data))
-        })
-}
-
-const requestLogs = (filters) => (dispatch, getState) => {
+export const requestLogs = (filters) => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
     const search = getState().search.value;
 
@@ -66,15 +35,5 @@ const requestLogs = (filters) => (dispatch, getState) => {
                 ...filters,
             }
         })
-}
-
-export const fetchLogs = (filters) => (dispatch, getState) => {
-    return dispatch(requestLogs(filters))
-        .then(({ data }) => {
-            console.log(filters)
-            if (filters.startIndex == 0)
-                dispatch(setLogList(data))
-            else
-                dispatch(appendToLogList(data))
-        })
+        .then(response => Promise.resolve(response.data))
 }

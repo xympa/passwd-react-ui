@@ -94,7 +94,7 @@ export const requestCredentialDeletion = () => (dispatch, getState) => {
 export const requestCredentialInsertion = (credential, belongsTo) => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
 
-    if (belongsTo === null)
+    if (!belongsTo)
         return Promise.reject({ message: "Attempted to create a credential in root"});
 
     var url = `${REST_BASE}credential/`;
@@ -115,6 +115,7 @@ export const requestCredentialInsertion = (credential, belongsTo) => (dispatch, 
                 url: credential.url
             }
         })
+        .then(response => Promise.resolve(response.data))
         .catch(parse406Error)
 
 }

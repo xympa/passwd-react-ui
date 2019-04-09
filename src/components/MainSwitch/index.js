@@ -21,11 +21,11 @@ import MessageModal from '../MessageModal/MessageModal'
 import FolderAdminView from '../FolderAdminView';
 import LogsPage from '../LogsPage';
 import UserPage from '../UserPage';
+import { requestFolderContents } from '../../actions/FolderActions.js';
 
 const drawerWidth = 240;
 
 const styles = theme => ({
-
     root: {
         minHeight: "calc(100vh - 64px)",
         display: "flex",
@@ -104,9 +104,12 @@ export class MainSwitch extends Component {
 
     componentDidMount() {
 
-        const { checkAuthValidity, sessionKey, username } = this.props;
+        const { checkAuthValidity, sessionKey, username, requestFolderContents, history } = this.props;
 
         checkAuthValidity(username, sessionKey)
+        const match = matchPath(history.location.pathname, { path: "/home/:id?", exact: true })
+        if(!match || match && match.params.id) //If mounted on a specific folder, request root to populate drawer
+            requestFolderContents();
 
         window.addEventListener('resize', this.updateWindowDimensions);
         this.updateWindowDimensions();
@@ -170,7 +173,6 @@ export class MainSwitch extends Component {
                         <Route path="/logs" render={() => (<LogsPage />)} />
                         <Route path="/user-administration" render={() => (<UserPage />)} />
                     </Switch>
-                    <FolderAdministrationModal />
                     <MessageModal />
                 </main>
             </div>
@@ -188,6 +190,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = {
     checkAuthValidity,
+    requestFolderContents
 }
 
 
