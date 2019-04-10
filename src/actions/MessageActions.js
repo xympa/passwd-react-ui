@@ -225,7 +225,7 @@ export const fetchInbox = () => dispatch => {
     return dispatch(requestInbox())
         .then(data => new Promise(resolve => {
             dispatch(setInbox(data));
-            resolve();
+            resolve(data);
         }))
 }
 
@@ -233,7 +233,7 @@ export const fetchOutbox = () => dispatch => {
     return dispatch(requestOutbox())
         .then(data => new Promise(resolve => {
             dispatch(setOutbox(data));
-            resolve();
+            resolve(data);
         }))
 }
 const setOpen = bool => ({
@@ -383,4 +383,30 @@ export const saveCredential = (messageId, credential, targetFolder) => dispatch 
                     dispatch(closeModal())
                 })
         })
+}
+
+export const deleteMessage = (id) => (dispatch, getState) => {
+    dispatch(setFetching(true))
+    return dispatch(requestMessageDeletion(id))
+        .then(() => {
+            dispatch(closeModal())
+        })
+}
+
+const requestMessageDeletion = id => (dispatch, getState) => {
+    const { username, sessionKey } = getState().authentication;
+
+    var url = `${REST_BASE}message/`;
+    return axios(
+        {
+            url: url,
+            method: 'delete',
+            params: {
+                authusername: username,
+                sessionkey: sessionKey,
+                //Credential params
+                messageId: id,
+            }
+        })
+        .catch(parse406Error)
 }

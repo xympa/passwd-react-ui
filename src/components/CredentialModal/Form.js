@@ -311,6 +311,16 @@ export class Form extends Component {
                                         <OpenIcon color="primary" />
                                     </IconButton>
                                 </Tooltip>
+                                <CopyToClipboard
+                                    text={fields.url.sanitizedValue}
+                                    onCopy={() => { enqueueSnackbar(translate("urlCopied")) }}
+                                >
+                                    <Tooltip title={translate("copyUrlTooltip")}>
+                                        <IconButton aria-label={translate("copyUrlTooltip")}>
+                                            <CopyIcon color="primary" />
+                                        </IconButton>
+                                    </Tooltip>
+                                </CopyToClipboard>
                             </InputAdornment>
                         )}
                     />

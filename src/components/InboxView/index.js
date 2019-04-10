@@ -134,7 +134,7 @@ export class InboxView extends Component {
                 </div>
                 <Zoom in>
                     <Tooltip title={translate("composeMessage")} placement="left">
-                        <Fab className={classes.fab} color="secondary" onClick={() => { composeMessage() }}>
+                        <Fab className={classes.fab} color="primary" onClick={() => { composeMessage() }}>
                             <CreateIcon />
                         </Fab>
                     </Tooltip>

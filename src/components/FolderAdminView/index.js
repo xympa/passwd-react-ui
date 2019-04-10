@@ -154,7 +154,7 @@ export class FolderAdminView extends Component {
                 <Zoom in={!isFetching}>
                     <Tooltip title={translate("createFolder")}>
                         <Fab
-                            color="secondary"
+                            color="primary"
                             className={classes.fab}
                             onClick={() => {
                                 this.setState({

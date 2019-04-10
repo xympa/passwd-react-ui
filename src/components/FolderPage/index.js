@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import { IconButton, Zoom, Fab, Fade, Divider, Typography, Tooltip } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home'
 import UpArrowIcon from '@material-ui/icons/ArrowUpward'
+import LockOutlineIcon from '@material-ui/icons/LockOutlined'
 import SettingsIcon from '@material-ui/icons/Settings'
 import AddIcon from '@material-ui/icons/Add'
 import { withLocalize, Translate } from 'react-localize-redux';
@@ -24,13 +25,18 @@ import localization from './localization.json'
 import CredentialModal from '../CredentialModal';
 import FolderAdministrationModal from '../FolderAdministrationModal';
 
-const styles = () => ({
+const styles = (theme) => ({
     header: {
         display: "flex",
         height: 64,
         paddingLeft: 64,
         paddingRight: 64
-    }
+    },
+    fab: {
+        position: 'absolute',
+        bottom: theme.spacing.unit * 4,
+        right: theme.spacing.unit * 4,
+    },
 });
 
 const INITIAL_STATE = {
@@ -49,7 +55,6 @@ export class FolderPage extends Component {
         replaceSearchAction: PropTypes.func.isRequired,
         removeSearchAction: PropTypes.func.isRequired,
         classes: PropTypes.object.isRequired,
-        adminFolder: PropTypes.func.isRequired,
         match: PropTypes.object.isRequired,
         history: PropTypes.object.isRequired,
         addTranslation: PropTypes.func.isRequired,
@@ -57,6 +62,7 @@ export class FolderPage extends Component {
         requestFolderContents: PropTypes.func.isRequired,
         requestFolderInfo: PropTypes.func.isRequired,
         enqueueSnackbar: PropTypes.func.isRequired,
+        requestFolderPath: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -132,6 +138,7 @@ export class FolderPage extends Component {
                             contents: [...contents.folders, ...contents.credentials],
                             openModals: contents.credentials.map(c => ({ id: c.idCredentials, open: preOpenCred == c.idCredentials ? true : false })),
                             parent: folderInfo.folderInfo.parent || null,
+                            canAdminFolder: folderInfo.isCurrentUserAdmin,
                             creationModalOpen: false,
                             folderModalOpen: false,
                             folderCreationModalOpen: false,
@@ -181,26 +188,26 @@ export class FolderPage extends Component {
     }
 
     render() {
-        const { classes, adminFolder, history, match, translate } = this.props;
-        const { width, height, contents, openModals, isFetching, creationModalOpen, path, folderModalOpen, folderCreationModalOpen } = this.state;
+        const { classes, history, match, translate } = this.props;
+        const { width, height, contents, openModals, isFetching, creationModalOpen, path, folderModalOpen, folderCreationModalOpen, canAdminFolder } = this.state;
         const openFolderId = match.params.id
 
         return (
             <div>
                 <div style={{ flexDirection: "column", flex: 1, overflow: "hidden" }}>
                     <div className={classes.header}>
-                        <IconButton disabled={!openFolderId} color="secondary" style={{ width: 64 }} onClick={this._homeButtonHandle}>
+                        <IconButton disabled={!openFolderId || isFetching} color="secondary" style={{ width: 64 }} onClick={this._homeButtonHandle}>
                             <Tooltip title={translate("homeTooltip")} enterDelay={400} placement="bottom-start">
                                 <HomeIcon style={{ fontSize: 32 }} />
                             </Tooltip>
                         </IconButton>
-                        <IconButton disabled={!openFolderId} color="secondary" style={{ width: 64 }} onClick={this._upButtonHandle}>
+                        <IconButton disabled={!openFolderId || isFetching} color="secondary" style={{ width: 64 }} onClick={this._upButtonHandle}>
                             <Tooltip title={translate("parentTooltip")} enterDelay={400} placement="bottom-start">
                                 <UpArrowIcon style={{ fontSize: 32 }} />
                             </Tooltip>
                         </IconButton>
                         <FolderBreadcrumbs path={path} />
-                        <IconButton disabled={!openFolderId} color="secondary" style={{ width: 64 }} onClick={this._openFolderModal}>
+                        <IconButton disabled={!openFolderId || canAdminFolder || isFetching} color="secondary" style={{ width: 64 }} onClick={this._openFolderModal}>
                             <Tooltip title={translate("folderAdminTooltip")} enterDelay={400} placement="bottom-start">
                                 <SettingsIcon style={{ fontSize: 32 }} />
                             </Tooltip>
@@ -244,15 +251,15 @@ export class FolderPage extends Component {
                                             key={"credential-" + content.idCredentials}
                                             credential={content}
                                             modalOpen={openModals.find(m => m.id == content.idCredentials).open}
-                                            openCredential={id => {
+                                            onClick={() => {
                                                 this.setState({
                                                     folderCreationModalOpen: false,
                                                     folderModalOpen: false,
-                                                    creationModalOpen: false,
+                                                    creationModalOpen: true,
                                                     openModals: openModals
                                                         .map(m => ({
                                                             ...m,
-                                                            open: m.id == id ? true : false
+                                                            open: false
                                                         }))
                                                 })
                                             }}
@@ -267,55 +274,77 @@ export class FolderPage extends Component {
                     in={openFolderId !== null}
                     unmountOnExit
                 >
-                    <PopupFab mainFab={(
-                        <Tooltip title={translate("addContent")} placement="left">
-                            <Fab color="primary">
-                                <AddIcon />
-                            </Fab>
-                        </Tooltip>
-                    )}
-                    >
-                        <Tooltip key="folder-add" title={translate("addFolder")} placement="left">
-                            <Fab
-                                size="small"
-                                color="secondary"
-                                onClick={() => {
-                                    this.setState({
-                                        folderCreationModalOpen: true,
-                                        folderModalOpen: false,
-                                        creationModalOpen: false,
-                                        openModals: openModals
-                                            .map(m => ({
-                                                ...m,
-                                                open: false
-                                            }))
-                                    })
-                                }}
+                    {canAdminFolder ? (
+                        <Fab
+                            className={classes.fab}
+                            color="primary"
+                            onClick={() => {
+                                this.setState({
+                                    folderCreationModalOpen: true,
+                                    folderModalOpen: false,
+                                    creationModalOpen: false,
+                                    openModals: openModals
+                                        .map(m => ({
+                                            ...m,
+                                            open: false
+                                        }))
+                                })
+                            }}
+                        >
+                            <LockOutlineIcon />
+                        </Fab>
+                    ) : (
+                            <PopupFab mainFab={(
+                                <Tooltip title={translate("addContent")} placement="left">
+                                    <Fab color="primary">
+                                        <AddIcon />
+                                    </Fab>
+                                </Tooltip>
+                            )}
                             >
-                                <FolderIcon />
-                            </Fab>
-                        </Tooltip>
-                        <Tooltip key="credential-add" title={translate("addCredential")} placement="left">
-                            <Fab
-                                size="small"
-                                color="secondary"
-                                onClick={() => {
-                                    this.setState({
-                                        folderCreationModalOpen: false,
-                                        folderModalOpen: false,
-                                        creationModalOpen: true,
-                                        openModals: openModals
-                                            .map(m => ({
-                                                ...m,
-                                                open: false
-                                            }))
-                                    })
-                                }}
-                            >
-                                <KeyIcon />
-                            </Fab>
-                        </Tooltip>
-                    </PopupFab>
+                                <Tooltip key="folder-add" title={translate("addFolder")} placement="left">
+                                    <Fab
+                                        size="small"
+                                        color="secondary"
+                                        onClick={() => {
+                                            this.setState({
+                                                folderCreationModalOpen: true,
+                                                folderModalOpen: false,
+                                                creationModalOpen: false,
+                                                openModals: openModals
+                                                    .map(m => ({
+                                                        ...m,
+                                                        open: false
+                                                    }))
+                                            })
+                                        }}
+                                    >
+                                        <FolderIcon />
+                                    </Fab>
+                                </Tooltip>
+                                <Tooltip key="credential-add" title={translate("addCredential")} placement="left">
+                                    <Fab
+                                        size="small"
+                                        color="secondary"
+                                        onClick={() => {
+                                            this.setState({
+                                                folderCreationModalOpen: false,
+                                                folderModalOpen: false,
+                                                creationModalOpen: true,
+                                                openModals: openModals
+                                                    .map(m => ({
+                                                        ...m,
+                                                        open: false
+                                                    }))
+                                            })
+                                        }}
+                                    >
+                                        <KeyIcon />
+                                    </Fab>
+                                </Tooltip>
+                            </PopupFab>
+                        )
+                    }
                 </Zoom>
                 <CredentialModal
                     forCreation
@@ -346,7 +375,7 @@ const mapDispatchToProps = {
     replaceSearchAction,
     requestFolderContents,
     requestFolderInfo,
-    requestFolderPath
+    requestFolderPath,
 }
 
 

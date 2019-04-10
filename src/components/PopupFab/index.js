@@ -52,7 +52,7 @@ export class index extends Component {
         return (
             <div className={classes.fab} onClick={this.togglePop}>
                 {mainFab}
-                <Fade in={poppedUp}>
+                <Fade in={poppedUp} unmountOnExit> 
                     <div className={classes.popupBase}>
                         {
                             children.map(node => (

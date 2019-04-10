@@ -130,7 +130,10 @@ export class LogsPage extends Component {
             ])
                 .then(([meta, logs]) => {
                     this.setState({
-                        logs,
+                        logs:logs.map(l => ({
+                            ...l,
+                            inserted_timestamp: moment(l.inserted_timestamp * 1000).format("DD/MM/YYYY hh:mm:ss")
+                        })),
                         meta,
                         isFetching: false
                     }, () => {
@@ -182,7 +185,10 @@ export class LogsPage extends Component {
                     this.setState(prevState => ({
                         logs: [
                             ...prevState.logs,
-                            ...logs
+                            ...logs.map(l => ({
+                                ...l,
+                                inserted_timestamp: moment(l.inserted_timestamp).format("dd/MM/YYYY hh:mm:ss")
+                            }))
                         ],
                         isFetching: false,
                         isNextPageLoading: false,

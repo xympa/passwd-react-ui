@@ -18,7 +18,7 @@ import localization from './localization.json'
 import CredentialForm from '../CredentialModal/Form'
 import ModalHeader from './Header'
 import UserAutoComplete from '../MaterialAutocomplete'
-import { sendMessage, setFetching, getFrontServerPath, moveToCredentialLocationStep, saveCredential } from '../../actions/MessageActions'
+import { sendMessage, setFetching, getFrontServerPath, moveToCredentialLocationStep, saveCredential, deleteMessage } from '../../actions/MessageActions'
 
 const timeToDieOptions = [
     {
@@ -51,10 +51,12 @@ const styles = theme => ({
         marginLeft: theme.spacing.unit
     },
     timeToDieRoot: {
-        flex: "0 1 40%"
+        // flex: "0 1 40%"
+        flex: 1,
     },
     isExternalRoot: {
-        flex: "0 1 33%"
+        // flex: "0 1 33%"
+        flex: 1,
     },
     unsetDimensions: {
         padding: 0
@@ -82,6 +84,7 @@ export class MessageModal extends Component {
         readonly: PropTypes.bool,
         addTranslation: PropTypes.func.isRequired,
         translate: PropTypes.func.isRequired,
+        deleteMessage: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -107,6 +110,7 @@ export class MessageModal extends Component {
         }
 
         this.sendMessage = this.sendMessage.bind(this)
+        this.attemptDelete = this.attemptDelete.bind(this)
 
         const { addTranslation } = this.props
         addTranslation(localization)
@@ -255,6 +259,18 @@ export class MessageModal extends Component {
         }
     }
 
+    attemptDelete() {
+        const { enqueueSnackbar, deleteMessage, messageInfo, translate } = this.props;
+
+        deleteMessage(messageInfo.idMessages)
+            .catch((error) => {
+                enqueueSnackbar(error.message, {
+                    variant: "error"
+                })
+                setFetching(false)
+            })
+    }
+
     renderFolderTree(node, inital = false) {
         if (!node)
             return null;
@@ -297,7 +313,7 @@ export class MessageModal extends Component {
         const { isExternal, fields, timeToDie } = this.state;
         const { isFetching, isOpen, credential, isCreating, isEditing, users, classes, sendResult,
             folderTree, choosingCredentialLocation, moveToCredentialLocationStep, readonly, translate } = this.props;
-        console.log(this.state)
+        console.log(this.props)
 
         return (
             <Dialog open={isOpen} maxWidth="lg" fullWidth TransitionComponent={Zoom}>
@@ -355,14 +371,12 @@ export class MessageModal extends Component {
                                             <Translate id="ttl" />
                                         </InputLabel>
                                         <Select
-                                            style={{ width: 150 }}
                                             value={timeToDie}
                                             onChange={event => {
                                                 this.setState({ timeToDie: event.target.value });
                                             }}
                                             input={<Input name="time-to-die" id="time-to-die" />}
                                             name="time-to-die"
-                                            className={classes.selectEmpty}
                                         >
                                             {
                                                 timeToDieOptions.map(option => (
@@ -422,15 +436,18 @@ export class MessageModal extends Component {
                     </Slide>
                 </DialogContent>
                 {
-                    !readonly && (
-                        !isCreating ? (
-                            <Fade in={isEditing}>
-                                <DialogActions>
+                    !isCreating ? (
+                        <Fade in={isEditing || readonly}>
+                            <DialogActions>
+                                {(readonly || isEditing) && (
                                     <Button variant="contained" onClick={this.attemptDelete}>
                                         <Translate id="delete" />
                                     </Button>
-                                    <div style={{ flex: 1 }} />
-                                    {!choosingCredentialLocation ? (
+                                )
+                                }
+                                <div style={{ flex: 1 }} />
+                                {!readonly && (
+                                    !choosingCredentialLocation ? (
                                         <Button variant="contained" style={{ justifySelf: "flex-start" }} onClick={moveToCredentialLocationStep} color="secondary">
                                             <Translate id="chooseLocation" />
                                         </Button>
@@ -441,19 +458,19 @@ export class MessageModal extends Component {
                                                 <Translate id="credential" />
                                             </Button>
                                         )
-                                    }
+                                )
+                                }
+                            </DialogActions>
+                        </Fade>
+                    ) : (
+                            <Fade in>
+                                <DialogActions>
+                                    <Button variant="contained" onClick={this.sendMessage}>
+                                        <Translate id="send" />
+                                    </Button>
                                 </DialogActions>
                             </Fade>
-                        ) : (
-                                <Fade in>
-                                    <DialogActions>
-                                        <Button variant="contained" onClick={this.sendMessage}>
-                                            <Translate id="send" />
-                                        </Button>
-                                    </DialogActions>
-                                </Fade>
-                            )
-                    )
+                        )
                 }
             </Dialog>
         )
@@ -478,7 +495,8 @@ const mapDispatchToProps = {
     sendMessage,
     setFetching,
     moveToCredentialLocationStep,
-    saveCredential
+    saveCredential,
+    deleteMessage
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(withLocalize(MessageModal))))

@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Divider, List, ListItem, ListItemIcon, ListItemText, Typography, Avatar } from '@material-ui/core'
+import { Divider, List, ListItem, ListItemIcon, ListItemText, Typography, Avatar, BottomNavigationAction } from '@material-ui/core'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import { withStyles } from '@material-ui/core/styles'
@@ -31,7 +31,7 @@ const styles = theme => ({
 });
 
 const DrawerContent = props => {
-    const { rootFolders, classes, history } = props;
+    const { rootFolders, classes, history, actions } = props;
 
     return (
         <div>
@@ -62,24 +62,28 @@ const DrawerContent = props => {
                 </HighlightableListItem>
             </List>
             <Divider />
-            <List>
-                <ListItem>
-                    <ListItemIcon><Avatar className={classes.orangeAvatar}><AdministrationIcon /></Avatar></ListItemIcon>
-                    <ListItemText primary={<Typography variant="body1"><Translate id="administration" /></Typography>} />
-                </ListItem>
-                <HighlightableListItem className={classes.subListItem} onClick={() => { history.push('/folder-administration'); }}>
-                    <ListItemIcon><FolderManagementIcon color="primary" /></ListItemIcon>
-                    <ListItemText primary={<Typography noWrap variant="body2"><Translate id="folderManagement" /></Typography>} />
-                </HighlightableListItem>
-                <HighlightableListItem className={classes.subListItem} onClick={() => { history.push('/user-administration'); }}>
-                    <ListItemIcon><UserManagementIcon color="primary" /></ListItemIcon>
-                    <ListItemText primary={<Typography noWrap variant="body2"><Translate id="userManagement" /></Typography>} />
-                </HighlightableListItem>
-                <HighlightableListItem className={classes.subListItem} onClick={() => { history.push('/logs'); }}>
-                    <ListItemIcon><LogsIcon color="primary" /></ListItemIcon>
-                    <ListItemText primary={<Typography noWrap variant="body2"><Translate id="logExplorer" /></Typography>} />
-                </HighlightableListItem>
-            </List>
+            {
+                actions.includes("accessSysAdminArea") && (
+                    <List>
+                        <ListItem>
+                            <ListItemIcon><Avatar className={classes.orangeAvatar}><AdministrationIcon /></Avatar></ListItemIcon>
+                            <ListItemText primary={<Typography variant="body1"><Translate id="administration" /></Typography>} />
+                        </ListItem>
+                        <HighlightableListItem className={classes.subListItem} onClick={() => { history.push('/folder-administration'); }}>
+                            <ListItemIcon><FolderManagementIcon color="primary" /></ListItemIcon>
+                            <ListItemText primary={<Typography noWrap variant="body2"><Translate id="folderManagement" /></Typography>} />
+                        </HighlightableListItem>
+                        <HighlightableListItem className={classes.subListItem} onClick={() => { history.push('/user-administration'); }}>
+                            <ListItemIcon><UserManagementIcon color="primary" /></ListItemIcon>
+                            <ListItemText primary={<Typography noWrap variant="body2"><Translate id="userManagement" /></Typography>} />
+                        </HighlightableListItem>
+                        <HighlightableListItem className={classes.subListItem} onClick={() => { history.push('/logs'); }}>
+                            <ListItemIcon><LogsIcon color="primary" /></ListItemIcon>
+                            <ListItemText primary={<Typography noWrap variant="body2"><Translate id="logExplorer" /></Typography>} />
+                        </HighlightableListItem>
+                    </List>
+                )
+            }
         </div>
     )
 }
@@ -88,12 +92,12 @@ DrawerContent.propTypes = {
     rootFolders: PropTypes.array.isRequired,
     classes: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired,
-    addTranslation: PropTypes.func.isRequired,
-    translate: PropTypes.func.isRequired,
+    actions: PropTypes.array.isRequired,
 }
 
 const mapStateToProps = (state) => ({
-    rootFolders: state.rootFolders.list
+    rootFolders: state.rootFolders.list,
+    actions: state.authentication.actions
 })
 
 

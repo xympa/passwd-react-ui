@@ -35,6 +35,10 @@
         "Close dialog",
         "Fechar diálogo"
     ],
+    "credential": [
+        "Credential",
+        "credencial"
+    ],
     "delete": [
         "Delete",
         "Remover"

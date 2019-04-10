@@ -15,6 +15,14 @@
         "Copy password to clipboard",
         "Copiar senha para a área de transferência"
     ],
+    "copyUrlTooltip": [
+        "Copy Url to clipboard",
+        "Copiar o url para a áarea de transferência"
+    ],
+    "urlCopied": [
+        "Url copied to clipboard successfuly",
+        "O url foi copiada para a área de transferência com sucesso"
+    ],
     "hidePassword": [
         "Hide password",
         "Esconder senha"

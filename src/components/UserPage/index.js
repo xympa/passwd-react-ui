@@ -148,7 +148,7 @@ export class UserPage extends Component {
                     <Tooltip title={translate("createUser")} placement="left">
                         <Fab
                             className={classes.fab}
-                            color="secondary"
+                            color="primary"
                             onClick={() => {
                                 this.setState({ isCreationModalShowing: true })
                             }}

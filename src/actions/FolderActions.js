@@ -179,7 +179,8 @@ export const requestFolderInfo = (id) => (dispatch, getState) => {
                 folderInfo: {
                     idFolders: null
                 },
-                permissions: []
+                permissions: [],
+                isCurrentUserAdmin: false
             }
             resolve(mockFolder);
         })
@@ -197,6 +198,9 @@ export const requestFolderInfo = (id) => (dispatch, getState) => {
                 folderId: id,
             }
         })
-        .then(response => response.data)
+        .then(response => ({
+            ...response.data,
+            isCurrentUserAdmin: response.data.permissions.find(p => p.userId == getState().authentication.username).hasAdmin == "1"
+        }))
         .catch(parse406Error)
 }
