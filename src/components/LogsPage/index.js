@@ -4,6 +4,7 @@ import { withStyles, MuiThemeProvider, createMuiTheme } from '@material-ui/core/
 import { connect } from 'react-redux'
 import { DateTimePicker } from "material-ui-pickers";
 import moment from 'moment'
+import _ from 'lodash'
 import { Fade, CircularProgress, Divider } from '@material-ui/core'
 import MUIDataTable from 'mui-datatables'
 import { withLocalize } from 'react-localize-redux'
@@ -94,9 +95,13 @@ export class LogsPage extends Component {
     }
 
     componentDidMount() {
+        const { replaceSearchAction} = this.props
+        
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
-        replaceSearchAction(this.reloadViewContents)
+        replaceSearchAction(_.throttle(this.reloadViewContents, 200, {
+            trailing: true
+        }))
         this.reloadViewContents()
 
     }
@@ -323,7 +328,6 @@ export class LogsPage extends Component {
                                             }
                                         },
                                         customFooter: () => (
-
                                             <div style={{ height: 64, display: "flex", flexDirection: "column" }} ref={ref => { this._footerRef = ref }}>
                                                 <Divider />
                                                 <div style={{ display: "flex", alignItems: "center", flex: 1 }}>
