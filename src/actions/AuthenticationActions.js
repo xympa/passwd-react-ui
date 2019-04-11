@@ -16,8 +16,8 @@ export const checkAuthValidity = (username, sessionkey) => dispatch => {
                 sessionkey: sessionkey
             }
         })
-        .then(() => { dispatch({ type: CHECK_AUTH, payload: true }) })
-        .catch(() => { dispatch({ type: CHECK_AUTH, payload: false }) })
+        .then(({data}) => { dispatch({ type: CHECK_AUTH, payload: data == 1 }); return Promise.resolve(data == 1); })
+        .catch(() => { dispatch({ type: CHECK_AUTH, payload: false }); return Promise.resolve(false); })
 };
 
 export const performLogin = (username, password) => dispatch => {

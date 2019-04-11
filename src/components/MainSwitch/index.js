@@ -104,16 +104,26 @@ export class MainSwitch extends Component {
 
     componentDidMount() {
 
-        const { checkAuthValidity, sessionKey, username, requestFolderContents, history } = this.props;
-
+        const { checkAuthValidity, sessionKey, username, requestFolderContents, history, isLoggedIn } = this.props;
         checkAuthValidity(username, sessionKey)
-        const match = matchPath(history.location.pathname, { path: "/home/:id?", exact: true })
-        if(!match || match && match.params.id) //If mounted on a specific folder, request root to populate drawer
-            requestFolderContents();
+            .then(isLoggedIn => {
+                const match = matchPath(history.location.pathname, { path: "/home/:id?", exact: true })
+                if ((!match || match && match.params.id) && isLoggedIn) //If mounted on a specific folder, request root to populate drawer
+                    requestFolderContents();
+            })
 
         window.addEventListener('resize', this.updateWindowDimensions);
         this.updateWindowDimensions();
     }
+
+    componentDidUpdate(prevProps, prevState) {
+        const { requestFolderContents, history, isLoggedIn } = this.props;
+
+        const match = matchPath(history.location.pathname, { path: "/home/:id?", exact: true })
+        if ((!match || match && match.params.id) && isLoggedIn && (prevProps.isLoggedIn !== isLoggedIn)) //If mounted on a specific folder, request root to populate drawer
+            requestFolderContents();
+    }
+
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.updateWindowDimensions);
