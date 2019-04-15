@@ -11,20 +11,20 @@
         "Username is mandatory",
         "O nome de utilizador é obrigatório"
     ],
-    "badEmail": [
-        "This is not recognized as a valid email",
-        "O email não parece válido"
-    ],
-    "badPassword": [
-        "This password does not meet the security standards",
-        "Esta password não cumpre os requisitos minimos de segurança."
-    ],
-    "email": [
-        "Email",
-        "Email"
-    ],
     "ldap": [
         "LDAP",
         "LDAP"
+    ],
+    "userCreated": [
+        "User created successfuly",
+        "Utilizador criado com sucesso"
+    ],
+    "userUpdated": [
+        "User updated successfuly",
+        "Utilizador actualizado com sucesso"
+    ],
+    "userDeleted": [
+        "User deleted successfuly",
+        "Utilizador eliminado com sucesso"
     ]
 }

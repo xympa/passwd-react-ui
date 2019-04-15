@@ -10,7 +10,6 @@ const INITIAL_STATE = {
 const AuthReducer = (state = INITIAL_STATE, action) => {
     switch (action.type) {
         case types.PERFORM_LOGIN:
-        console.log("loggedin")
             return {
                 ...state,
                 validity: action.payload.isValid,
@@ -19,12 +18,10 @@ const AuthReducer = (state = INITIAL_STATE, action) => {
                 actions: action.payload.actions
             };
         case types.CHECK_AUTH:
-            console.log("checked auth");
             return {
                 ...state, validity: action.payload
             };
         case types.LOGOUT:
-            console.log("logout");
             return {
                 ...INITIAL_STATE
             };

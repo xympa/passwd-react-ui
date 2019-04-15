@@ -64,9 +64,6 @@ export class CredentialModal extends Component {
         this._handleCredentialLoad()
     }
 
-
-
-
     componentDidUpdate(prevProps) {
         const { open } = this.props
 
@@ -92,6 +89,11 @@ export class CredentialModal extends Component {
                     password: form.password.sanitizedValue,
                     url: form.url.sanitizedValue,
                 })
+                    .then(() => {
+                        enqueueSnackbar(translate("credentialUpdated"), {
+                            variant: "success"
+                        })
+                    })
                     .catch((error) => {
                         enqueueSnackbar(error.message, {
                             variant: "error"
@@ -100,7 +102,6 @@ export class CredentialModal extends Component {
                     .then(() => {
                         this.setState({ isFetching: false })
                     })
-
             })
         }
         else {
@@ -128,10 +129,12 @@ export class CredentialModal extends Component {
                     url: form.url.sanitizedValue,
                 }, belongsTo)
                     .then(newId => {
+                        enqueueSnackbar(translate("credentialCreated"), {
+                            variant: "success"
+                        })
                         openCredential(newId)
                     })
                     .catch((error) => {
-                        console.log(error)
                         enqueueSnackbar(error.message, {
                             variant: "error"
                         })
@@ -147,12 +150,17 @@ export class CredentialModal extends Component {
     }
 
     attemptDelete() {
-        const { requestCredentialDeletion, enqueueSnackbar, credentialId } = this.props;
+        const { requestCredentialDeletion, enqueueSnackbar, credentialId, translate } = this.props;
 
         this.setState({
             isFetching: true
         }, () => {
             requestCredentialDeletion(credentialId)
+                .then(() => {
+                    enqueueSnackbar(translate("credentialDeleted"), {
+                        variant: "success"
+                    })
+                })
                 .catch((error) => {
                     enqueueSnackbar(error.message, {
                         variant: "error"

@@ -6,17 +6,17 @@ import { setRootFolders } from './RootFolderActions'
 import { store } from '../App';
 
 const parse406Error = (error) => {
-    console.log(store.getState())
     const translate = getTranslate(store.getState().localize)
-    switch (error.response && error.response.status === 406 && error.response.data) {
-        case 1:
-        case 2:
-        case 3:
-            error.message = translate(`validationErrors.folder.${error.response.data}`)
-            break;
-        default:
-            error.message = translate("validationErrors.default406") + JSON.stringify(error.response.data, null, 2);
-    }
+    if (error.response && error.response.status === 406)
+        switch (error.response.data) {
+            case 1:
+            case 2:
+            case 3:
+                error.message = translate(`validationErrors.folder.${error.response.data}`)
+                break;
+            default:
+                error.message = translate("validationErrors.default406") + JSON.stringify(error.response.data, null, 2);
+        }
 
     return Promise.reject(error);
 }

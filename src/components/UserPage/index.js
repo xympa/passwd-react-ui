@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles'
 import { connect } from 'react-redux'
-import { Fade, Typography, Zoom, Fab, Divider, Tooltip } from '@material-ui/core'
+import { Scrollbars } from 'react-custom-scrollbars'
+import { Fade, Typography, Zoom, Fab, Divider, Tooltip, CircularProgress } from '@material-ui/core'
 import { List } from 'react-virtualized';
 import CreateIcon from '@material-ui/icons/Create'
 import { withLocalize, Translate } from 'react-localize-redux'
@@ -43,6 +44,7 @@ export class UserPage extends Component {
         addTranslation: PropTypes.func.isRequired,
         translate: PropTypes.func.isRequired,
         requestUserList: PropTypes.func.isRequired,
+        isLoggedIn: PropTypes.bool.isRequired,
     }
 
     constructor(props) {
@@ -62,17 +64,31 @@ export class UserPage extends Component {
     }
 
     componentDidMount() {
-        const { replaceSearchAction } = this.props
+        const { replaceSearchAction, isLoggedIn } = this.props
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
         replaceSearchAction(this.reloadViewContents)
-        this.reloadViewContents()
+
+        if (isLoggedIn)
+            this.reloadViewContents()
+    }
+
+    componentDidUpdate(prevProps) {
+        const { isLoggedIn } = this.props;
+        if (isLoggedIn && prevProps.isLoggedIn !== isLoggedIn)
+            this.reloadViewContents()
     }
 
     componentWillUnmount() {
         const { removeSearchAction } = this.props;
         removeSearchAction();
         window.removeEventListener('resize', this.updateWindowDimensions);
+    }
+
+
+    handleScroll = ({ target }) => {
+        const { scrollTop } = target;
+        this._list.scrollToPosition(scrollTop);
     }
 
     updateWindowDimensions() {
@@ -111,6 +127,8 @@ export class UserPage extends Component {
 
         const { classes, translate } = this.props;
 
+        const isSm = window.innerWidth <= 600
+
         return (
             <div>
                 <div className={classes.header}>
@@ -120,28 +138,42 @@ export class UserPage extends Component {
                 </div>
                 <Divider />
                 <div style={{ flexDirection: "column", flex: 1, overflow: "hidden" }}>
+                    <Fade in={isFetching}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: height - 136, position: "absolute", width: width }}>
+                            <CircularProgress />
+                        </div>
+                    </Fade>
                     <Fade in={!isFetching}>
-                        <List
-                            rowCount={userList.length}
-                            rowHeight={96}
-                            height={height - 129}
-                            width={width}
-                            style={{ outline: 'none' }}
-                            noRowsRenderer={() => (
-                                <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexGrow: "1 1 1" }}>
-                                    <Typography variant="h5"><Translate id="noUsers" /></Typography>
-                                </div>
-                            )}
-                            rowRenderer={({ index, style }) => (
-                                <UserListItem
-                                    user={userList[index]}
-                                    style={{ paddingLeft: 64, paddingRight: 96, ...style }}
-                                    received={false}
-                                    key={userList[index].usernmae}
-                                    onRequestRefresh={this.reloadViewContents}
-                                />
-                            )}
-                        />
+                        <Scrollbars style={{ width, height: height - 138 }} onScroll={this.handleScroll}>
+                            <List
+                                rowCount={userList.length}
+                                rowHeight={96}
+                                height={height - 129}
+                                width={width}
+                                ref={ref => (this._list = ref)}
+                                style={{
+                                    outline: 'none',
+                                    overflowX: false,
+                                    overflowY: false,
+                                }}
+                                noRowsRenderer={() => (
+                                    <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexGrow: "1 1 1" }}>
+                                        <Typography variant="h5"><Translate id="noUsers" /></Typography>
+                                    </div>
+                                )}
+                                rowRenderer={({ index, style }) => (
+                                    <UserListItem
+                                        user={userList[index]}
+                                        style={isSm ? style :
+                                            { paddingLeft: 64, paddingRight: 96, ...style }
+                                        }
+                                        received={false}
+                                        key={userList[index].usernmae}
+                                        onRequestRefresh={this.reloadViewContents}
+                                    />
+                                )}
+                            />
+                        </Scrollbars>
                     </Fade>
                 </div>
                 <Zoom in>
@@ -171,6 +203,7 @@ export class UserPage extends Component {
 }
 
 const mapStateToProps = (state) => ({
+    isLoggedIn: state.authentication.validity
 })
 
 const mapDispatchToProps = {

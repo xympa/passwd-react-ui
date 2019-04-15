@@ -63,6 +63,9 @@ class UserAdminModal extends Component {
         requestUserRemoval: PropTypes.func.isRequired,
         addTranslation: PropTypes.func.isRequired,
         translate: PropTypes.func.isRequired,
+        onRequestRefresh: PropTypes.func.isRequired,
+        enqueueSnackbar: PropTypes.func.isRequired,
+        classes: PropTypes.object.isRequired,
     }
 
     static defaultProps = {
@@ -170,7 +173,7 @@ class UserAdminModal extends Component {
     }
 
     submitFormForUpdate() {
-        const { requestUserEdit, enqueueSnackbar, onRequestClose, onRequestRefresh } = this.props;
+        const { requestUserEdit, enqueueSnackbar, onRequestClose, onRequestRefresh, translate } = this.props;
         const { form } = this.state;
 
         const valid = Object.keys(form).filter(field => typeof form[field] === 'object' && !form[field].valid).length === 0
@@ -188,12 +191,9 @@ class UserAdminModal extends Component {
                     sysadmin: form.sysadmin,
                 })
                     .then(() => {
-                        // this.setState({
-                        //     isEditing: false
-                        // })
                         onRequestRefresh()
-onRequestClose()
-                        enqueueSnackbar("Utilizador editado com sucesso", {
+                        onRequestClose()
+                        enqueueSnackbar(translate("userEdited"), {
                             variant: "success"
                         })
                     })
@@ -216,7 +216,7 @@ onRequestClose()
     }
 
     submitFormForInsert() {
-        const { requestUserCreation, enqueueSnackbar, onRequestClose, onRequestRefresh } = this.props;
+        const { requestUserCreation, enqueueSnackbar, onRequestClose, onRequestRefresh, translate } = this.props;
         const { form } = this.state;
 
         const valid = Object.keys(form).filter(field => typeof form[field] === 'object' && !form[field].valid).length === 0
@@ -233,6 +233,9 @@ onRequestClose()
                     sysadmin: form.sysadmin,
                 })
                     .then(() => {
+                        enqueueSnackbar(translate("userCreated"), {
+                            variant: "success"
+                        })
                         onRequestRefresh()
                         onRequestClose()
                     })
@@ -243,7 +246,7 @@ onRequestClose()
                     })
             })
         else {
-            enqueueSnackbar('Some fields look invalid please check the form again', {
+            enqueueSnackbar(translate("badForm"), {
                 variant: "error"
             })
         }
@@ -251,14 +254,14 @@ onRequestClose()
 
 
     attemptDelete() {
-        const { requestUserRemoval, enqueueSnackbar, username, fetchUserList } = this.props;
+        const { requestUserRemoval, enqueueSnackbar, username, onRequestClose, onRequestRefresh, translate } = this.props;
         requestUserRemoval(username)
             .then(() => {
-                fetchUserList()
-                    .then(() => {
-                        const { onRequestClose } = this.props
-                        onRequestClose()
-                    })
+                enqueueSnackbar(translate("userDeleted"), {
+                    variant: "success"
+                })
+                onRequestRefresh()
+                onRequestClose()
             })
             .catch((error) => {
                 enqueueSnackbar(error.message, {

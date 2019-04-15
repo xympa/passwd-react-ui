@@ -15,23 +15,24 @@ import { store } from '../App';
 const parse406Error = (error) => {
     const translate = getTranslate(store.getState().localize)
 
-    switch (error.response && error.response.status === 406 && error.response.data) {
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-            error.message = translate(`validationErrors.credential.${error.response.data}`);
-            break;
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-            error.message = translate(`validationErrors.credential.${error.response.data}`);
-            break;
-        default:
-            error.message = translate("validationErrors.default406") + JSON.stringify(error.response.data, null, 2);
-    }
+    if (error.response && error.response.status === 406)
+        switch (error.response.data) {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                error.message = translate(`validationErrors.credential.${error.response.data}`);
+                break;
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+                error.message = translate(`validationErrors.credential.${error.response.data}`);
+                break;
+            default:
+                error.message = translate("validationErrors.default406") + JSON.stringify(error.response.data, null, 2);
+        }
 
     return Promise.reject(error);
 }

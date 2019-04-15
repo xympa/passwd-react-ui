@@ -30,5 +30,17 @@
     "removePermissionTooltip": [
         "Remove permission",
         "Remover permissão"
+    ],
+    "folderCreated": [
+        "Folder created successfuly",
+        "Pasta criada com sucesso"
+    ],
+    "folderUpdated": [
+        "Folder updated successfuly",
+        "Pasta actualizada com sucesso"
+    ],
+    "folderDeleted": [
+        "Folder deleted successfuly",
+        "Pasta eliminada com sucesso"
     ]
 }

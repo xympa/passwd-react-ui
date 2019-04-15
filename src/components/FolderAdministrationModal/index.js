@@ -211,12 +211,15 @@ export class FolderAdministrationModal extends Component {
     }
 
     attemptDelete() {
-        const { requestFolderDeletion, enqueueSnackbar, folderId, onRequestRefresh } = this.props;
+        const { requestFolderDeletion, enqueueSnackbar, folderId, onRequestRefresh, translate } = this.props;
         requestFolderDeletion(folderId)
-        .then(() => {
-            onRequestRefresh()
-        })    
-        .catch((error) => {
+            .then(() => {
+                enqueueSnackbar(translate("folderDeleted"), {
+                    variant: "success"
+                })
+                onRequestRefresh()
+            })
+            .catch((error) => {
                 enqueueSnackbar(error.message, {
                     variant: "error"
                 })
@@ -249,6 +252,12 @@ export class FolderAdministrationModal extends Component {
                 id: folderId,
                 parent: folder.folderInfo.parent
             }, this._parsePermissions())
+                .then(() => {
+                    onRequestRefresh()
+                    enqueueSnackbar(translate("folderUpdated"), {
+                        variant: "success"
+                    })
+                })
                 .catch((error) => {
                     enqueueSnackbar(error.message, {
                         variant: "error"
@@ -259,7 +268,6 @@ export class FolderAdministrationModal extends Component {
                     this.setState({
                         isFetching: false
                     })
-                    onRequestRefresh()
                 })
         else {
             enqueueSnackbar(translate("badForm"), {
@@ -280,6 +288,9 @@ export class FolderAdministrationModal extends Component {
                 parent,
             }, this._parsePermissions())
                 .then(newFolderId => {
+                    enqueueSnackbar(translate("folderCreated"), {
+                        variant: "success"
+                    })
                     history.push('/home/' + newFolderId)
                 })
                 .catch((error) => {

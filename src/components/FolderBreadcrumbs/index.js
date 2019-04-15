@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { withRouter} from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Button } from '@material-ui/core';
 import { withLocalize } from 'react-localize-redux';
 import RightArrowIcon from '@material-ui/icons/ArrowRight'
@@ -30,7 +30,6 @@ export class FolderBreadcrumbs extends Component {
         search: PropTypes.string.isRequired,
         translate: PropTypes.func.isRequired,
         addTranslation: PropTypes.func.isRequired,
-        history: PropTypes.object.isRequired,
     }
 
     constructor(props) {
@@ -42,24 +41,32 @@ export class FolderBreadcrumbs extends Component {
 
     render() {
 
-        const { classes, path, search, translate, history } = this.props;
+        const { classes, path, search, translate } = this.props;
 
         return (
             <div className={classes.root}>
                 {(() => {
-                    var iter = 0;
-                    return path.map(element => {
-                        iter++;
+                    return path.map((element, iter) => {
+                        console.log(element.name, path[path.length - iter - 1].parent)
+
+                        const button = (
+                            <Button disabled={iter === path.length - 1}>
+                                {element.name}
+                            </Button>
+                        );
+
+                        let renderContent = iter === path.length - 1 ? button : (
+                            <Link
+                                style={{ textDecoration: "none" }}
+                                to={iter === path.length - 1 ? undefined : '/home/' + path[path.length - iter - 1].parent /*hehehe flip the array, we're looking at it from the wrong perspective*/}
+                            >
+                                {button}
+                            </Link>
+                        );
+
                         return (
                             <div className={classes.breadcrumb} key={element.parent + "-" + element.name}>
-                                <Button
-                                    disabled={iter === path.length}
-                                    onClick={() => {
-                                        history.push('/home/' + path[path.length - iter +1].parent) //hehehe flip the array, we're looking at it from the wrong perspective
-                                    }}
-                                >
-                                    {element.name}
-                                </Button>
+                                {renderContent}
                                 {iter !== path.length && <RightArrowIcon />}
                             </div>
                         )
@@ -85,4 +92,4 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(withRouter(FolderBreadcrumbs))))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(FolderBreadcrumbs)))

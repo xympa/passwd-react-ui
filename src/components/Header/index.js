@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import _ from 'lodash'
+import {hotkeys} from 'react-keyboard-shortcuts'
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
@@ -27,6 +28,7 @@ import localization from './localization.json'
 
 import { logout } from '../../actions/AuthenticationActions'
 import { changeSearch } from '../../actions/SearchActions'
+import EditSelfModal from './EditSelfModal';
 
 const styles = theme => ({
     root: {
@@ -109,6 +111,9 @@ const styles = theme => ({
     },
     highZIndex: {
         zIndex: 2000
+    },
+    largeItem: {
+        height: 48
     }
 });
 
@@ -123,6 +128,13 @@ export class Header extends Component {
         addTranslation: PropTypes.func.isRequired,
         translate: PropTypes.func.isRequired,
     }
+
+    hot_keys = {
+        'alt+s': { // combo from mousetrap
+          priority: 1,
+          handler: this._focusAndSelectSearch.bind(this),
+        },
+      }
 
     constructor(props) {
         super(props);
@@ -144,6 +156,10 @@ export class Header extends Component {
         this._searchChanged(event);
     }
 
+    _focusAndSelectSearch(){
+        this._searchRef.select()
+    }
+
     _searchChanged(event) {
         const { changeSearch } = this.props;
         changeSearch(event.target.value);
@@ -157,7 +173,7 @@ export class Header extends Component {
 
     render() {
         const { classes, search, onMenuClick, username, logout, activeLanguage, languages, setActiveLanguage, translate } = this.props;
-        const { accountMenuShowing } = this.state
+        const { accountMenuShowing, editUserModalOpen } = this.state
 
         return (
             <div className={classes.root}>
@@ -179,6 +195,7 @@ export class Header extends Component {
                                 <SearchIcon />
                             </div>
                             <InputBase
+                            inputRef={ref => this._searchRef = ref}
                                 placeholder={translate("search")}
                                 value={search}
                                 onChange={this.handleSearchChange}
@@ -209,12 +226,18 @@ export class Header extends Component {
                                     style={{ transformOrigin: 'right top' }}
                                 >
                                     <ClickAwayListener onClickAway={this._handleClose}>
-                                        <Paper classes={{root: classes.highZIndex}}>
+                                        <Paper classes={{ root: classes.highZIndex }}>
                                             <MenuList>
-                                                <MenuItem onClick={this._handleClose}>
+                                                <MenuItem onClick={() => {
+                                                    this._handleClose()
+                                                    this.setState({
+                                                        editUserModalOpen: true
+                                                    })
+                                                }}
+                                                >
                                                     <Translate id="myAccount" />
                                                 </MenuItem>
-                                                <MenuItem>
+                                                <MenuItem classes={{ root: classes.largeItem }}>
                                                     <FormControl className={classes.formControl}>
                                                         <InputLabel>
                                                             <Translate id="language" />
@@ -246,6 +269,7 @@ export class Header extends Component {
                         </Popper>
                     </Toolbar>
                 </AppBar>
+                <EditSelfModal open={editUserModalOpen} onRequestClose={() => { this.setState({ editUserModalOpen: false }) }} />
             </div>
         );
     }
@@ -260,4 +284,4 @@ const mapStateToProps = state => ({
     username: state.authentication.username
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(Header)))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(hotkeys(Header))))

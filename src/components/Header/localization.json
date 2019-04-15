@@ -18,5 +18,21 @@
     "logout": [
         "Logout",
         "Sair"
+    ],
+    "changePassword": [
+        "Change Pasword",
+        "Alterar senha"
+    ],
+    "confirmPassword": [
+        "Confirm password",
+        "Confirme a senha"
+    ],
+    "badConfirm": [
+        "The two passwords don't match...",
+        "As duas senhas não são iguais..."
+    ],
+    "infoUpdated":[
+        "Information updated",
+        "Informações atualizadas"
     ]
 }

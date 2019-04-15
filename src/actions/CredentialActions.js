@@ -6,17 +6,18 @@ import { store } from '../App';
 
 const parse406Error = (error) => {
     const translate = getTranslate(store.getState().localize)
-    switch (error.response && error.response.status === 406 && error.response.data) {
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-            error.message = translate(`validationErrors.credential.${error.response.data}`);
-            break;
-        default:
+    if (error.response && error.response.status === 406)
+        switch (error.response.data) {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                error.message = translate(`validationErrors.credential.${error.response.data}`);
+                break;
+            default:
             // error.message = translate("validationErrors.default406") + JSON.stringify(error, null, 2);
-    }
+        }
 
     return Promise.reject(error);
 }
@@ -40,7 +41,7 @@ export const requestCredentialInfo = id => (dispatch, getState) => {
             ...response.data,
             password: networkDecode(response.data.password)
         }))
-        .catch (parse406Error)
+        .catch(parse406Error)
 }
 
 
@@ -95,7 +96,7 @@ export const requestCredentialInsertion = (credential, belongsTo) => (dispatch, 
     const { username, sessionKey } = getState().authentication;
 
     if (!belongsTo)
-        return Promise.reject({ message: "Attempted to create a credential in root"});
+        return Promise.reject({ message: "Attempted to create a credential in root" });
 
     var url = `${REST_BASE}credential/`;
     return axios(

@@ -2,8 +2,9 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { Zoom, Fab, Fade, Typography, Tooltip } from '@material-ui/core';
+import { Zoom, Fab, Fade, Typography, Tooltip, CircularProgress } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add'
+import { Scrollbars } from 'react-custom-scrollbars'
 import { Translate, withLocalize } from 'react-localize-redux'
 import { withSnackbar } from 'notistack'
 import { withStyles } from '@material-ui/core/styles'
@@ -38,6 +39,7 @@ export class FolderAdminView extends Component {
         addTranslation: PropTypes.func.isRequired,
         requestRootFolders: PropTypes.func.isRequired,
         enqueueSnackbar: PropTypes.func.isRequired,
+        isLoggedIn: PropTypes.bool.isRequired,
     }
 
     constructor(props) {
@@ -58,18 +60,35 @@ export class FolderAdminView extends Component {
     }
 
     componentDidMount() {
-        const { replaceSearchAction } = this.props;
+        const { replaceSearchAction, isLoggedIn } = this.props;
 
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
         replaceSearchAction(this.refreshView);
-        this.refreshView();
+
+        if (isLoggedIn)
+            this.refreshView();
+    }
+
+    componentDidUpdate(prevProps) {
+        const { isLoggedIn } = this.props;
+        if (isLoggedIn && prevProps.isLoggedIn) {
+            if (isLoggedIn)
+                this.reloadViewContents()
+            else
+                this._closeModal()
+        }
     }
 
     componentWillUnmount() {
         const { removeSearchAction } = this.props;
         removeSearchAction();
         window.removeEventListener('resize', this.updateWindowDimensions);
+    }
+
+    handleScroll = ({ target }) => {
+        const { scrollTop } = target;
+        this._list.scrollToPosition(scrollTop);
     }
 
     updateWindowDimensions() {
@@ -109,46 +128,62 @@ export class FolderAdminView extends Component {
         const { classes, translate } = this.props;
         const { width, height, isFetching, rootFolders, folderCreationModalOpen, openModals } = this.state;
 
+        const isSm = window.innerWidth <= 600
+
         return (
             <div>
                 <div style={{ flexDirection: "column", flex: 1, overflow: "hidden" }}>
+                    <Fade in={isFetching}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: height - 64, position: "absolute", width: width }}>
+                            <CircularProgress />
+                        </div>
+                    </Fade>
                     <Fade in={!isFetching}>
-                        <List
-                            rowCount={rootFolders.length}
-                            rowHeight={96}
-                            height={height - 64}
-                            width={width}
-                            style={{ outline: 'none' }}
-                            noRowsRenderer={() => (
-                                <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexGrow: "1 1 1" }}>
-                                    <Typography variant="h5" align="center"><Translate id="folderIntroduction" /></Typography>
-                                </div>
-                            )}
-                            rowRenderer={({ index, style }) => {
-                                const content = rootFolders[index];
-                                return (
-                                    <FolderListItem
-                                        style={{ paddingLeft: 64, paddingRight: 96, ...style }}
-                                        key={"folder-" + content.idFolders}
-                                        folder={content}
-                                        folderModalOpen={openModals.find(m => m.id == content.idFolders).open}
-                                        onClick={() => {
-                                            this.setState({
-                                                folderCreationModalOpen: false,
-                                                openModals: openModals
-                                                    .map(m => ({
-                                                        ...m,
-                                                        open: m.id == content.idFolders ? true : false
-                                                    }))
-                                            })
-                                        }}
-                                        closeModal={this._closeModal}
-                                        onRequestRefresh={this.refreshView}
-                                    />
-                                )
+                        <Scrollbars style={{ width, height: height - 64 }} onScroll={this.handleScroll}>
+                            <List
+                                rowCount={rootFolders.length}
+                                rowHeight={96}
+                                height={height - 64}
+                                width={width}
+                                ref={ref => (this._list = ref)}
+                                style={{
+                                    outline: 'none',
+                                    overflowX: false,
+                                    overflowY: false,
+                                }}
+                                noRowsRenderer={() => (
+                                    <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexGrow: "1 1 1" }}>
+                                        <Typography variant="h5" align="center"><Translate id="folderIntroduction" /></Typography>
+                                    </div>
+                                )}
+                                rowRenderer={({ index, style }) => {
+                                    const content = rootFolders[index];
+                                    return (
+                                        <FolderListItem
+                                            style={isSm ? style :
+                                                { paddingLeft: 64, paddingRight: 96, ...style }
+                                            }
+                                            key={"folder-" + content.idFolders}
+                                            folder={content}
+                                            folderModalOpen={openModals.find(m => m.id == content.idFolders).open}
+                                            onClick={() => {
+                                                this.setState({
+                                                    folderCreationModalOpen: false,
+                                                    openModals: openModals
+                                                        .map(m => ({
+                                                            ...m,
+                                                            open: m.id == content.idFolders ? true : false
+                                                        }))
+                                                })
+                                            }}
+                                            closeModal={this._closeModal}
+                                            onRequestRefresh={this.refreshView}
+                                        />
+                                    )
 
-                            }}
-                        />
+                                }}
+                            />
+                        </Scrollbars>
                     </Fade>
                 </div>
                 <Zoom in={!isFetching}>
@@ -183,8 +218,8 @@ export class FolderAdminView extends Component {
     }
 }
 
-const mapStateToProps = () => ({
-
+const mapStateToProps = (state) => ({
+    isLoggedIn: state.authentication.validity
 })
 
 const mapDispatchToProps = {

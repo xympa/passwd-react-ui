@@ -78,5 +78,17 @@
     "shareCredential": [
         "Share credential...",
         "Partilhar credencial..."
+    ],
+    "credentialCreated": [
+        "Credential created successfuly",
+        "Credencial criada com sucesso"
+    ],
+    "credentialUpdated": [
+        "Credential updated successfuly",
+        "Credencial actualizada com sucesso"
+    ],
+    "credentialDeleted": [
+        "Credential deleted successfuly",
+        "Credencial actualizada com sucesso"
     ]
 }

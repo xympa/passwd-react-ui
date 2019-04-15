@@ -5,7 +5,7 @@ import { PersistGate } from 'redux-persist/lib/integration/react';
 import { persistStore, persistReducer } from 'redux-persist';
 import { MuiPickersUtilsProvider } from 'material-ui-pickers';
 import { createStore, applyMiddleware } from "redux";
-import storage from 'redux-persist/lib/storage' 
+import storage from 'redux-persist/lib/storage'
 import thunk from 'redux-thunk';
 import { LocalizeProvider, getTranslate } from 'react-localize-redux';
 import { Provider } from "react-redux";
@@ -16,7 +16,8 @@ import axios from 'axios'
 // eslint-disable-next-line import/no-named-as-default
 import MainSwitch from './components/MainSwitch';
 import reducers from './reducers';
-import { useHashRouter } from './AppConfig'
+import { useHashRouter, routerPrefix } from './AppConfig'
+import { LOGOUT, CHECK_AUTH } from './actions/actionTypes';
 
 
 
@@ -94,6 +95,12 @@ axios.interceptors.response.use(function (response) {
     if (error.response) {
         switch (error.response.status) {
             case 401:
+                store.dispatch({
+                    type: CHECK_AUTH,
+                    payload: false
+                });
+                error.message = translate(`serverErrors.${error.response.status}`)
+                break;
             case 403:
             case 404:
             case 406:
@@ -109,7 +116,7 @@ axios.interceptors.response.use(function (response) {
         // The request was made but no response was received
         // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
         // http.ClientRequest in node.js
-        error.message = translate("serverErrors.conenctionCut")
+        error.message = translate("serverErrors.connectionCut")
     }
 
     return Promise.reject(error);
@@ -124,7 +131,7 @@ const App = () => (
                 <Provider store={store}>
                     <LocalizeProvider store={store}>
                         <PersistGate loading={(<div>LoadingState</div>)} persistor={persistor}>
-                            <Router>
+                            <Router basename={routerPrefix}>
                                 <MainSwitch />
                             </Router>
                         </PersistGate>

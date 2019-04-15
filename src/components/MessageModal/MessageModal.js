@@ -209,6 +209,11 @@ export class MessageModal extends Component {
                 },
                 targetFolder
             )
+                .then(() => {
+                    enqueueSnackbar(translate("messageSaved"), {
+                        variant: "success"
+                    })
+                })
                 .catch((error) => {
                     enqueueSnackbar(error.message, {
                         variant: "error"
@@ -246,6 +251,11 @@ export class MessageModal extends Component {
                     },
                     timeToDie
                 })
+                .then(() => {
+                    enqueueSnackbar(translate("messageSent"), {
+                        variant: "success"
+                    })
+                })
                 .catch((error) => {
                     enqueueSnackbar(error.message, {
                         variant: "error"
@@ -263,6 +273,11 @@ export class MessageModal extends Component {
         const { enqueueSnackbar, deleteMessage, messageInfo, translate } = this.props;
 
         deleteMessage(messageInfo.idMessages)
+            .then(() => {
+                enqueueSnackbar(translate("messageDeleted"), {
+                    variant: "success"
+                })
+            })
             .catch((error) => {
                 enqueueSnackbar(error.message, {
                     variant: "error"
@@ -313,7 +328,6 @@ export class MessageModal extends Component {
         const { isExternal, fields, timeToDie } = this.state;
         const { isFetching, isOpen, credential, isCreating, isEditing, users, classes, sendResult,
             folderTree, choosingCredentialLocation, moveToCredentialLocationStep, readonly, translate } = this.props;
-        console.log(this.props)
 
         return (
             <Dialog open={isOpen} maxWidth="lg" fullWidth TransitionComponent={Zoom}>

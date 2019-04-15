@@ -2,14 +2,15 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles'
 import { connect } from 'react-redux'
-import { Fade, Typography, Zoom, Fab, Divider, Tooltip } from '@material-ui/core'
+import { Scrollbars } from 'react-custom-scrollbars'
+import { Fade, Typography, Zoom, Fab, Divider, Tooltip, CircularProgress } from '@material-ui/core'
 import { List } from 'react-virtualized';
+import { withLocalize, Translate } from 'react-localize-redux'
 import CreateIcon from '@material-ui/icons/Create'
 import { fetchInbox, composeMessage } from '../../actions/MessageActions'
 import { replaceSearchAction, removeSearchAction } from '../../actions/SearchActions'
 import { measureElement } from '../../Utils'
 import MessageListItem from '../MessageListItem';
-import { withLocalize, Translate } from 'react-localize-redux'
 import localization from './localization.json'
 
 const styles = theme => ({
@@ -38,6 +39,7 @@ export class InboxView extends Component {
         composeMessage: PropTypes.func.isRequired,
         addTranslation: PropTypes.func.isRequired,
         translate: PropTypes.func.isRequired,
+        isLoggedIn: PropTypes.bool.isRequired,
     }
 
     constructor(props) {
@@ -58,16 +60,30 @@ export class InboxView extends Component {
     }
 
     componentDidMount() {
+        const { isLoggedIn } = this.props;
+
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
         // replaceSearchAction()
-        this.reloadViewContents()
+        if (isLoggedIn)
+            this.reloadViewContents()
+    }
+
+    componentDidUpdate(prevProps) {
+        const { isLoggedIn } = this.props;
+        if (isLoggedIn && prevProps.isLoggedIn !== isLoggedIn)
+            this.reloadViewContents()
     }
 
     componentWillUnmount() {
         const { removeSearchAction } = this.props;
         removeSearchAction();
         window.removeEventListener('resize', this.updateWindowDimensions);
+    }
+
+    handleScroll = ({ target }) => {
+        const { scrollTop } = target;
+        this._list.scrollToPosition(scrollTop);
     }
 
     updateWindowDimensions() {
@@ -99,6 +115,8 @@ export class InboxView extends Component {
 
         const { messages, classes, composeMessage, translate } = this.props;
 
+        const isSm = window.innerWidth <= 600
+
         return (
             <div>
                 <div style={{ flexDirection: "column", flex: 1, overflow: "hidden" }}>
@@ -108,28 +126,42 @@ export class InboxView extends Component {
                         </Typography>
                     </div>
                     <Divider />
+                    <Fade in={isFetching}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: height - 138, position: "absolute", width: width }}>
+                            <CircularProgress />
+                        </div>
+                    </Fade>
                     <Fade in={!isFetching}>
-                        <List
-                            rowCount={messages.length}
-                            rowHeight={96}
-                            height={height - 138}
-                            width={width}
-                            style={{ outline: 'none' }}
-                            noRowsRenderer={() => (
-                                <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexGrow: "1 1 1" }}>
-                                    <Typography variant="h5"><Translate id="noMessages" /></Typography>
-                                </div>
-                            )}
-                            rowRenderer={({ index, style }) => (
-                                <MessageListItem
-                                    {...messages[index]}
-                                    messageId={messages[index].idMessages}
-                                    style={{ paddingLeft: 64, paddingRight: 96, ...style }}
-                                    received
-                                    key={messages[index].idMessages + ''}
-                                />
-                            )}
-                        />
+                        <Scrollbars style={{ width, height: height - 138 }} onScroll={this.handleScroll}>
+                            <List
+                                rowCount={messages.length}
+                                rowHeight={96}
+                                height={height - 138}
+                                width={width}
+                                ref={ref => (this._list = ref)}
+                                style={{
+                                    outline: 'none',
+                                    overflowX: false,
+                                    overflowY: false,
+                                }}
+                                noRowsRenderer={() => (
+                                    <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexGrow: "1 1 1" }}>
+                                        <Typography variant="h5"><Translate id="noMessages" /></Typography>
+                                    </div>
+                                )}
+                                rowRenderer={({ index, style }) => (
+                                    <MessageListItem
+                                        {...messages[index]}
+                                        messageId={messages[index].idMessages}
+                                        style={isSm ? style :
+                                            { paddingLeft: 64, paddingRight: 96, ...style }
+                                        }
+                                        received
+                                        key={messages[index].idMessages + ''}
+                                    />
+                                )}
+                            />
+                        </Scrollbars>
                     </Fade>
                 </div>
                 <Zoom in>
@@ -145,7 +177,8 @@ export class InboxView extends Component {
 }
 
 const mapStateToProps = (state) => ({
-    messages: state.messages.inbox
+    messages: state.messages.inbox,
+    isLoggedIn: state.authentication.validity
 })
 
 const mapDispatchToProps = {

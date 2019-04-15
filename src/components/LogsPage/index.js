@@ -66,6 +66,7 @@ export class LogsPage extends Component {
         addTranslation: PropTypes.func.isRequired,
         translate: PropTypes.func.isRequired,
         requestLogs: PropTypes.func.isRequired,
+        isLoggedIn: PropTypes.bool.isRequired,
     }
 
     constructor(props) {
@@ -95,15 +96,22 @@ export class LogsPage extends Component {
     }
 
     componentDidMount() {
-        const { replaceSearchAction} = this.props
-        
+        const { replaceSearchAction, isLoggedIn } = this.props
+
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
         replaceSearchAction(_.throttle(this.reloadViewContents, 200, {
             trailing: true
         }))
-        this.reloadViewContents()
+        if (isLoggedIn)
+            this.reloadViewContents()
 
+    }
+
+    componentDidUpdate(prevProps) {
+        const { isLoggedIn } = this.props;
+        if (isLoggedIn && prevProps.isLoggedIn !== isLoggedIn)
+            this.reloadViewContents()
     }
 
     componentWillUnmount() {
@@ -135,7 +143,7 @@ export class LogsPage extends Component {
             ])
                 .then(([meta, logs]) => {
                     this.setState({
-                        logs:logs.map(l => ({
+                        logs: logs.map(l => ({
                             ...l,
                             inserted_timestamp: moment(l.inserted_timestamp * 1000).format("DD/MM/YYYY hh:mm:ss")
                         })),
@@ -377,6 +385,7 @@ export class LogsPage extends Component {
 }
 
 const mapStateToProps = (state) => ({
+    isLoggedIn: state.authentication.validity
     // meta: state.log.meta,
     // list: state.log.list
     //     .map(log => ({

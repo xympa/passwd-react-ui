@@ -2,7 +2,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { IconButton, Zoom, Fab, Fade, Divider, Typography, Tooltip } from '@material-ui/core';
+import { IconButton, Zoom, Fab, Fade, Divider, Typography, Tooltip, CircularProgress } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home'
 import UpArrowIcon from '@material-ui/icons/ArrowUpward'
 import LockOutlineIcon from '@material-ui/icons/LockOutlined'
@@ -14,6 +14,8 @@ import FolderIcon from '@material-ui/icons/Folder'
 import KeyIcon from '@material-ui/icons/VpnKey'
 import { withStyles } from '@material-ui/core/styles'
 import { List } from 'react-virtualized'
+import { Link } from 'react-router-dom'
+import { Scrollbars } from 'react-custom-scrollbars'
 import { requestFolderContents, requestFolderInfo, requestFolderPath } from '../../actions/FolderActions'
 import { replaceSearchAction, removeSearchAction } from '../../actions/SearchActions'
 import FolderListItem from '../FolderListItem';
@@ -22,15 +24,20 @@ import FolderBreadcrumbs from '../FolderBreadcrumbs'
 import PopupFab from '../PopupFab'
 import { measureElement } from '../../Utils'
 import localization from './localization.json'
-import CredentialModal from '../CredentialModal';
+import CredentialModal from '../CredentialModal'
 import FolderAdministrationModal from '../FolderAdministrationModal';
 
 const styles = (theme) => ({
     header: {
         display: "flex",
         height: 64,
-        paddingLeft: 64,
-        paddingRight: 64
+        paddingLeft: 0,
+        paddingRight: 0,
+        [theme.breakpoints.up('sm')]: {
+            paddingLeft: 64,
+            paddingRight: 64
+        },
+
     },
     fab: {
         position: 'absolute',
@@ -44,6 +51,7 @@ const INITIAL_STATE = {
     height: 0,
     isFetching: false,
     contents: [],
+    openModals: [],
     creationModalOpen: false,
     folderModalOpen: false,
     folderCreationModalOpen: false,
@@ -63,6 +71,7 @@ export class FolderPage extends Component {
         requestFolderInfo: PropTypes.func.isRequired,
         enqueueSnackbar: PropTypes.func.isRequired,
         requestFolderPath: PropTypes.func.isRequired,
+        isLoggedIn: PropTypes.bool.isRequired,
     }
 
     constructor(props) {
@@ -86,18 +95,23 @@ export class FolderPage extends Component {
     }
 
     componentDidMount() {
-        const { replaceSearchAction } = this.props;
+        const { replaceSearchAction, isLoggedIn } = this.props;
 
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
         replaceSearchAction(this.refreshView);
-        this.refreshView()
+        if (isLoggedIn)
+            this.refreshView()
     }
 
     componentDidUpdate(prevProps) {
-        const { match } = this.props;
-        if (prevProps.match.params.id != match.params.id)
-            this.refreshView()
+        const { match, isLoggedIn } = this.props;
+        if (isLoggedIn) {
+            if (prevProps.match.params.id != match.params.id || prevProps.isLoggedIn !== isLoggedIn)
+                this.refreshView()
+        }
+        else if ( prevProps.isLoggedIn !== isLoggedIn && isLoggedIn === false)
+            this._closeModal()
     }
 
     componentWillUnmount() {
@@ -105,6 +119,11 @@ export class FolderPage extends Component {
         removeSearchAction();
         window.removeEventListener('resize', this.updateWindowDimensions);
     }
+
+    handleScroll = ({ target }) => {
+        const { scrollTop } = target;
+        this._list.scrollToPosition(scrollTop);
+    };
 
     updateWindowDimensions() {
         this.setState({ width: measureElement(this).width, height: window.innerHeight });
@@ -188,9 +207,11 @@ export class FolderPage extends Component {
     }
 
     render() {
-        const { classes, history, match, translate } = this.props;
+        const { classes, match, translate } = this.props;
         const { width, height, contents, openModals, isFetching, creationModalOpen, path, folderModalOpen, folderCreationModalOpen, canAdminFolder } = this.state;
         const openFolderId = match.params.id
+
+        const isSm = window.innerWidth <= 600
 
         return (
             <div>
@@ -220,69 +241,87 @@ export class FolderPage extends Component {
                         />
                     </div>
                     <Divider />
+                    <Fade in={isFetching}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: height - 138, position: "absolute", width: width }}>
+                            <CircularProgress />
+                        </div>
+                    </Fade>
                     <Fade in={!isFetching}>
-                        <List
-                            rowCount={contents.length}
-                            rowHeight={96}
-                            height={height - 138}
-                            width={width}
-                            style={{ outline: 'none' }}
-                            noRowsRenderer={() => (
-                                <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexGrow: "1 1 1" }}>
-                                    <Typography variant="h5" align="center"><Translate id="emptyFolder" /></Typography>
-                                </div>
-                            )}
-                            rowRenderer={({ index, style }) => {
-                                const content = contents[index];
+                        <Scrollbars style={{ width, height: height - 138 }} onScroll={this.handleScroll}>
+                            <List
+                                rowCount={contents.length}
+                                rowHeight={96}
+                                height={height - 138}
+                                ref={ref => (this._list = ref)}
+                                width={width}
+                                style={{
+                                    outline: 'none',
+                                    overflowX: false,
+                                    overflowY: false,
+                                }}
+                                noRowsRenderer={() => (
+                                    <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexGrow: "1 1 1" }}>
+                                        <Typography variant="h5" align="center"><Translate id="emptyFolder" /></Typography>
+                                    </div>
+                                )}
+                                rowRenderer={({ index, style }) => {
+                                    const content = contents[index];
 
-                                if (content.idFolders)
-                                    return (
-                                        <FolderListItem
-                                            style={{ paddingLeft: 64, paddingRight: 96, ...style }}
-                                            key={"folder-" + content.idFolders}
-                                            folder={content}
-                                            onClick={() => { history.push('/home/' + content.idFolders) }}
-                                        />
-                                    )
-                                else
-                                    return (
-                                        <CredentialListItem
-                                            style={{ paddingLeft: 64, paddingRight: 96, ...style }}
-                                            key={"credential-" + content.idCredentials}
-                                            credential={content}
-                                            modalOpen={openModals.find(m => m.id == content.idCredentials).open}
-                                            onClick={() => {
-                                                this.setState({
-                                                    folderCreationModalOpen: false,
-                                                    folderModalOpen: false,
-                                                    creationModalOpen: true,
-                                                    openModals: openModals
-                                                        .map(m => ({
-                                                            ...m,
-                                                            open: false
-                                                        }))
-                                                })
-                                            }}
-                                            closeModal={this._closeModal}
-                                        />
-                                    )
-                            }}
-                        />
+                                    if (content.idFolders)
+                                        return (
+                                            <Link to={"/home/" + content.idFolders}>
+                                                <FolderListItem
+                                                    style={isSm ? style :
+                                                        { paddingLeft: 64, paddingRight: 96, ...style }
+                                                    }
+                                                    key={"folder-" + content.idFolders}
+                                                    folder={content}
+                                                    open={false}
+                                                />
+                                            </Link>
+                                        )
+                                    else
+                                        return (
+                                            <CredentialListItem
+                                                style={isSm ? style :
+                                                    { paddingLeft: 64, paddingRight: 96, ...style }
+                                                }
+                                                key={"credential-" + content.idCredentials}
+                                                credential={content}
+                                                modalOpen={openModals.find(m => m.id == content.idCredentials).open}
+                                                openCredential={() => {
+                                                    this.setState({
+                                                        folderCreationModalOpen: false,
+                                                        folderModalOpen: false,
+                                                        creationModalOpen: false,
+                                                        openModals: openModals
+                                                            .map(m => ({
+                                                                ...m,
+                                                                open: (m.id == content.idCredentials ? true : false)
+                                                            }))
+                                                    })
+                                                }}
+                                                closeModal={this._closeModal}
+                                            />
+                                        )
+                                }}
+                            />
+                        </Scrollbars>
                     </Fade>
                 </div>
                 <Zoom
-                    in={openFolderId !== null}
+                    in={match.params.id && !isFetching}
                     unmountOnExit
                 >
-                    {canAdminFolder ? (
+                    {!canAdminFolder ? (
                         <Fab
                             className={classes.fab}
                             color="primary"
                             onClick={() => {
                                 this.setState({
-                                    folderCreationModalOpen: true,
+                                    folderCreationModalOpen: false,
                                     folderModalOpen: false,
-                                    creationModalOpen: false,
+                                    creationModalOpen: true,
                                     openModals: openModals
                                         .map(m => ({
                                             ...m,
@@ -367,7 +406,8 @@ export class FolderPage extends Component {
     }
 }
 
-const mapStateToProps = () => ({
+const mapStateToProps = (state) => ({
+    isLoggedIn: state.authentication.validity
 })
 
 const mapDispatchToProps = {

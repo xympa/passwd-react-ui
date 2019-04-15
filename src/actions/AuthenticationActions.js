@@ -3,9 +3,11 @@ import { REST_BASE } from '../AppConfig'
 import { CHECK_AUTH, PERFORM_LOGIN, LOGOUT } from './actionTypes'
 
 export const checkAuthValidity = (username, sessionkey) => dispatch => {
-    if (!username || !sessionkey)
-        return dispatch({ type: CHECK_AUTH, payload: false });
-
+    if (!username || !sessionkey) {
+        dispatch({ type: CHECK_AUTH, payload: false });
+        return Promise.resolve(false)
+    }
+    
     var url = `${REST_BASE}validity/`;
     return axios(
         {
@@ -16,7 +18,7 @@ export const checkAuthValidity = (username, sessionkey) => dispatch => {
                 sessionkey: sessionkey
             }
         })
-        .then(({data}) => { dispatch({ type: CHECK_AUTH, payload: data == 1 }); return Promise.resolve(data == 1); })
+        .then(({ data }) => { dispatch({ type: CHECK_AUTH, payload: data == 1 }); return Promise.resolve(data == 1); })
         .catch(() => { dispatch({ type: CHECK_AUTH, payload: false }); return Promise.resolve(false); })
 };
 
@@ -35,7 +37,6 @@ export const performLogin = (username, password) => dispatch => {
                 type: PERFORM_LOGIN,
                 payload: payload
             });
-
             reject()
         });
 

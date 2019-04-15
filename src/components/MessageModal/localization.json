@@ -42,5 +42,17 @@
     "receiverNotMandatory": [
         "The sender must be a valid email or nothing at all to only generate a link...",
         "O destinatário tem de ser um e-mail válido, ou nada para apenas gerar um link..."
+    ],
+    "messageSent": [
+        "Message sent successfuly",
+        "Mensagem enviada com sucesso"
+    ],
+    "messageSaved": [
+        "Message saved successfuly",
+        "Mensgem guardada com sucesso"
+    ],
+    "messageDeleted": [
+        "Message deleted successfuly",
+        "Mensagem eliminada com sucesso"
     ]
 }

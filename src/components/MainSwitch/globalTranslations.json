@@ -103,6 +103,18 @@
         "Compose message...",
         "Compor mensagem..."
     ],
+    "badEmail": [
+        "This is not recognized as a valid email",
+        "O email não parece válido"
+    ],
+    "badPassword": [
+        "This password does not meet the security standards",
+        "Esta password não cumpre os requisitos minimos de segurança."
+    ],
+    "email": [
+        "Email",
+        "Email"
+    ],
     "serverErrors": {
         "401": [
             "Your session is not valid!",
