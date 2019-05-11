@@ -37,7 +37,6 @@ const styles = (theme) => ({
             paddingLeft: 64,
             paddingRight: 64
         },
-
     },
     fab: {
         position: 'absolute',
@@ -110,7 +109,7 @@ export class FolderPage extends Component {
             if (prevProps.match.params.id != match.params.id || prevProps.isLoggedIn !== isLoggedIn)
                 this.refreshView()
         }
-        else if ( prevProps.isLoggedIn !== isLoggedIn && isLoggedIn === false)
+        else if (prevProps.isLoggedIn !== isLoggedIn && isLoggedIn === false)
             this._closeModal()
     }
 
@@ -141,7 +140,7 @@ export class FolderPage extends Component {
     }
 
     refreshView(preOpenCred) {
-        const { match, requestFolderContents, enqueueSnackbar, requestFolderInfo, requestFolderPath } = this.props;
+        const { match, requestFolderContents, enqueueSnackbar, requestFolderInfo, requestFolderPath, history } = this.props;
 
         return new Promise((resolve, reject) => {
             this.setState({
@@ -168,10 +167,18 @@ export class FolderPage extends Component {
                     }
                 })
                     .catch((error) => {
-                        enqueueSnackbar(error.message, {
-                            variant: "error"
-                        })
-                        reject()
+                        const { parent } = this.state
+                        if (error.response.status == 404 && parent) {
+                            history.replace('/home/' + parent)
+                            resolve()
+                        }
+                        else {
+                            history.replace('/home');
+                            enqueueSnackbar(error.message, {
+                                variant: "error"
+                            })
+                            reject()
+                        }
                     })
                     .then(() => {
                         this.setState({ isFetching: false })
@@ -228,7 +235,7 @@ export class FolderPage extends Component {
                             </Tooltip>
                         </IconButton>
                         <FolderBreadcrumbs path={path} />
-                        <IconButton disabled={!openFolderId || canAdminFolder || isFetching} color="secondary" style={{ width: 64 }} onClick={this._openFolderModal}>
+                        <IconButton disabled={!openFolderId || !canAdminFolder || isFetching} color="secondary" style={{ width: 64 }} onClick={this._openFolderModal}>
                             <Tooltip title={translate("folderAdminTooltip")} enterDelay={400} placement="bottom-start">
                                 <SettingsIcon style={{ fontSize: 32 }} />
                             </Tooltip>
@@ -301,6 +308,7 @@ export class FolderPage extends Component {
                                                             }))
                                                     })
                                                 }}
+                                                onRequestRefresh={this.refreshView}
                                                 closeModal={this._closeModal}
                                             />
                                         )
@@ -390,9 +398,7 @@ export class FolderPage extends Component {
                     open={creationModalOpen}
                     belongsTo={openFolderId}
                     closeModal={this._closeModal}
-                    openCredential={id => {
-                        this.refreshView(id)
-                    }}
+                    onRequestRefresh={this.refreshView}
                 />
                 <FolderAdministrationModal
                     open={folderCreationModalOpen}

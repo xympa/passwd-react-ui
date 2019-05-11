@@ -41,8 +41,8 @@ export class CredentialModal extends Component {
         belongsTo: PropTypes.oneOfType([
             PropTypes.number,
             PropTypes.string
-        ]),
-        openCredential: PropTypes.func.isRequired,
+        ]).isRequired,
+        onRequestRefresh:PropTypes.func.isRequired,
     }
 
     static defaultProps = {
@@ -73,7 +73,7 @@ export class CredentialModal extends Component {
     }
 
     submitFormForUpdate() {
-        const { requestCredentialUpdate, enqueueSnackbar, translate } = this.props;
+        const { requestCredentialUpdate, enqueueSnackbar, translate, belongsTo, credentialId, onRequestRefresh } = this.props;
         const { form } = this.state;
 
         const valid = Object.keys(form).filter(field => !form[field].valid).length === 0
@@ -82,7 +82,7 @@ export class CredentialModal extends Component {
             this.setState({
                 isFetching: true
             }, () => {
-                requestCredentialUpdate({
+                requestCredentialUpdate(credentialId, belongsTo, {
                     description: form.description.sanitizedValue,
                     username: form.username.sanitizedValue,
                     title: form.title.sanitizedValue,
@@ -93,6 +93,7 @@ export class CredentialModal extends Component {
                         enqueueSnackbar(translate("credentialUpdated"), {
                             variant: "success"
                         })
+                        onRequestRefresh(credentialId)
                     })
                     .catch((error) => {
                         enqueueSnackbar(error.message, {
@@ -112,7 +113,7 @@ export class CredentialModal extends Component {
     }
 
     submitFormForInsert() {
-        const { requestCredentialInsertion, enqueueSnackbar, translate, belongsTo, openCredential } = this.props;
+        const { requestCredentialInsertion, enqueueSnackbar, translate, belongsTo, onRequestRefresh } = this.props;
         const { form } = this.state;
 
         const valid = Object.keys(form).filter(field => !form[field].valid).length === 0
@@ -132,7 +133,7 @@ export class CredentialModal extends Component {
                         enqueueSnackbar(translate("credentialCreated"), {
                             variant: "success"
                         })
-                        openCredential(newId)
+                        onRequestRefresh(newId)                        
                     })
                     .catch((error) => {
                         enqueueSnackbar(error.message, {
@@ -150,7 +151,7 @@ export class CredentialModal extends Component {
     }
 
     attemptDelete() {
-        const { requestCredentialDeletion, enqueueSnackbar, credentialId, translate } = this.props;
+        const { requestCredentialDeletion, enqueueSnackbar, credentialId, translate, onRequestRefresh } = this.props;
 
         this.setState({
             isFetching: true
@@ -160,6 +161,7 @@ export class CredentialModal extends Component {
                     enqueueSnackbar(translate("credentialDeleted"), {
                         variant: "success"
                     })
+                    onRequestRefresh()
                 })
                 .catch((error) => {
                     enqueueSnackbar(error.message, {
@@ -168,7 +170,7 @@ export class CredentialModal extends Component {
                 })
                 .then(() => {
                     this.setState({ isFetching: false })
-
+                    onRequestRefresh()
                 })
         })
 

@@ -1,9 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { ListItem, Avatar, ListItemText, Typography, Chip, Button, Fade } from '@material-ui/core';
+import { ListItem, Avatar, ListItemText, Typography, Button, Fade, ListItemIcon, MenuItem, Badge } from '@material-ui/core';
 import LockIcon from '@material-ui/icons/Lock'
-import GroupIcon from '@material-ui/icons/Group'
+import PersonIcon from '@material-ui/icons/Person'
+import CallMadeIcon from '@material-ui/icons/CallMade'
+import OpenInBrowserIcon from '@material-ui/icons/OpenInBrowser'
 import { withStyles } from '@material-ui/core/styles'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 import CopyIcon from '@material-ui/icons/FileCopyOutlined'
@@ -13,7 +15,8 @@ import Validator from 'validator'
 import { withLocalize, Translate } from 'react-localize-redux'
 import localization from './localization.json'
 import { openCredential } from '../../actions/CredentialActions'
-import CredentialModal from '../CredentialModal';
+import CredentialModal from '../CredentialModal'
+import ContextMenu from '../ContextMenu/index'
 
 const styles = theme => ({
     avatar: {
@@ -67,79 +70,145 @@ class CredentialListItem extends React.PureComponent {
 
 
     render() {
-        const { classes, credential, style, openCredential, enqueueSnackbar, translate, modalOpen, closeModal } = this.props;
+        const { classes, credential, style, openCredential, enqueueSnackbar, translate, modalOpen, closeModal, onRequestRefresh } = this.props;
         const { hovered } = this.state;
 
         return (
             <div>
-                <ListItem
-                    style={{ ...style }}
-                    button
-                    onClick={() => { openCredential(credential.idCredentials) }}
-                    onMouseEnter={() => { this.setState({ hovered: true }) }}
-                    onMouseLeave={() => { this.setState({ hovered: false }) }}
-                    selected={hovered}
+                <ContextMenu
+                    items={[
+                        <MenuItem onClick={() => { openCredential(credential.idCredentials) }} key="open">
+                            <ListItemIcon className={classes.icon}>
+                                <OpenInBrowserIcon color="primary" />
+                            </ListItemIcon>
+                            <ListItemText inset primary={translate("open") + " " + translate("credential")} />
+                        </MenuItem>,
+                        <CopyToClipboard
+                            key="copy-username"
+                            text={credential.username}
+                            onCopy={() => { enqueueSnackbar(translate("usernameCopied")) }}
+                        >
+                            <MenuItem>
+                                <ListItemIcon className={classes.icon}>
+                                    <Badge badgeContent={<PersonIcon color="primary" size="inherit" />}>
+                                        <CopyIcon color="primary" />
+                                    </Badge>
+                                </ListItemIcon>
+                                <ListItemText inset primary={translate("copy") + " " + translate("username")} />
+                            </MenuItem>
+                        </CopyToClipboard>,
+                        <CopyToClipboard
+                            key="copy-password"
+                            text={credential.password}
+                            onCopy={() => { enqueueSnackbar(translate("passwordCopied")) }}
+                        >
+                            <MenuItem>
+                                <ListItemIcon className={classes.icon}>
+                                    <Badge badgeContent={<LockIcon color="primary" size="inherit" />}>
+                                        <CopyIcon color="primary" />
+                                    </Badge>
+                                </ListItemIcon>
+                                <ListItemText inset primary={translate("copy") + " " + translate("password")} />
+                            </MenuItem>
+                        </CopyToClipboard>,
+                        <CopyToClipboard
+                            key="copy-password"
+                            text={credential.url}
+                            onCopy={() => { enqueueSnackbar(translate("urlCopied")) }}
+                        >
+                            <MenuItem disabled={!Validator.isURL(credential.url)} key="copy-url">
+                                <ListItemIcon className={classes.icon}>
+                                    <Badge badgeContent={<CallMadeIcon color="primary" size="inherit" />}>
+                                        <CopyIcon color="primary" />
+                                    </Badge>
+                                </ListItemIcon>
+                                <ListItemText inset primary={translate("copy") + " " + translate("url")} />
+                            </MenuItem>
+                        </CopyToClipboard>,
+                        <MenuItem disabled={!Validator.isURL(credential.url)} key="open-url" onClick={() => { window.open(credential.url, '_blank') }}>
+                            <ListItemIcon className={classes.icon}>
+                                <OpenIcon color="primary" />
+                            </ListItemIcon>
+                            <ListItemText inset primary={translate("open") + " " + translate("url")} />
+                        </MenuItem>
+                    ]}
                 >
-                    <Avatar className={classes.avatar}>
-                        <LockIcon style={{ height: 32, width: 32 }} />
-                    </Avatar>
-                    <ListItemText
-                        style={{ flex: 1 }}
-                        primary={<Typography>{credential.title}</Typography>}
-                        secondary={<Typography variant="caption" noWrap>{credential.description}</Typography>}
-                    />
+                    <ListItem
+                        style={{ ...style }}
+                        button
+                        onClick={() => { openCredential(credential.idCredentials) }}
+                        onMouseEnter={() => { this.setState({ hovered: true }) }}
+                        onMouseLeave={() => { this.setState({ hovered: false }) }}
+                        selected={hovered}
+                    >
+                        <Avatar className={classes.avatar}>
+                            <LockIcon style={{ height: 32, width: 32 }} />
+                        </Avatar>
+                        <ListItemText
+                            style={{ flex: 1 }}
+                            primary={<Typography>{credential.title}</Typography>}
+                            secondary={<Typography variant="caption" noWrap>{credential.description}</Typography>}
+                        />
 
-                    <div className={classes.sectionDesktop} style={{ flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
-                        <Fade in={hovered}>
-                            <div style={{ display: "flex", marginRight: 50 }}>
-                                <CopyToClipboard
-                                    text={credential.username}
-                                    onCopy={() => { enqueueSnackbar(translate("usernameCopied")) }}
-                                >
-                                    <Button color="secondary" onClick={(event) => { event.stopPropagation() }}>
+                        <div className={classes.sectionDesktop} style={{ flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
+                            <Fade in={hovered}>
+                                <div style={{ display: "flex", marginRight: 50 }}>
+                                    <CopyToClipboard
+                                        text={credential.username}
+                                        onCopy={() => { enqueueSnackbar(translate("usernameCopied")) }}
+                                    >
+                                        <Button color="secondary" onClick={(event) => { event.stopPropagation() }}>
+                                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                                <CopyIcon />
+                                                <Typography variant="caption" color="secondary">
+                                                    <Translate id="copy" />
+                                                </Typography>
+                                                <Typography variant="caption" color="secondary">
+                                                    <Translate id="username" />
+                                                </Typography>
+                                            </div>
+                                        </Button>
+                                    </CopyToClipboard>
+                                    <CopyToClipboard
+                                        text={credential.password}
+                                        onCopy={() => { enqueueSnackbar(translate("passwordCopied")) }}
+                                    >
+                                        <Button onClick={(event) => { event.stopPropagation() }}>
+                                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                                <CopyIcon />
+                                                <Typography variant="caption">
+                                                    <Translate id="copy" />
+                                                </Typography>
+                                                <Typography variant="caption">
+                                                    <Translate id="password" />
+                                                </Typography>
+                                            </div>
+                                        </Button>
+                                    </CopyToClipboard>
+                                    <Button disabled={!Validator.isURL(credential.url)} style={{ marginRight: 20 }} color="secondary" onClick={(event) => { event.stopPropagation(); window.open(credential.url, '_blank') }}>
                                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                            <CopyIcon />
-                                            <Typography variant="caption" color="secondary">
-                                                <Translate id="copy" />
+                                            <OpenIcon />
+                                            <Typography variant="caption" color="secondary" style={!Validator.isURL(credential.url) ? { color: "rgba(0, 0, 0, 0.26)" } : {}}>
+                                                <Translate id="open" />
                                             </Typography>
-                                            <Typography variant="caption" color="secondary">
-                                                <Translate id="username" />
+                                            <Typography variant="caption" color="secondary" style={!Validator.isURL(credential.url) ? { color: "rgba(0, 0, 0, 0.26)" } : {}}>
+                                                <Translate id="url" />
                                             </Typography>
                                         </div>
                                     </Button>
-                                </CopyToClipboard>
-                                <CopyToClipboard
-                                    text={credential.password}
-                                    onCopy={() => { enqueueSnackbar(translate("passwordCopied")) }}
-                                >
-                                    <Button onClick={(event) => { event.stopPropagation() }}>
-                                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                            <CopyIcon />
-                                            <Typography variant="caption">
-                                                <Translate id="copy" />
-                                            </Typography>
-                                            <Typography variant="caption">
-                                                <Translate id="password" />
-                                            </Typography>
-                                        </div>
-                                    </Button>
-                                </CopyToClipboard>
-                                <Button disabled={!Validator.isURL(credential.url)} style={{ marginRight: 20 }} color="secondary" onClick={(event) => { event.stopPropagation(); window.open(credential.url, '_blank') }}>
-                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                        <OpenIcon />
-                                        <Typography variant="caption" color="secondary" style={!Validator.isURL(credential.url) ? { color: "rgba(0, 0, 0, 0.26)" } : {}}>
-                                            <Translate id="open" />
-                                        </Typography>
-                                        <Typography variant="caption" color="secondary" style={!Validator.isURL(credential.url) ? { color: "rgba(0, 0, 0, 0.26)" } : {}}>
-                                            <Translate id="url" />
-                                        </Typography>
-                                    </div>
-                                </Button>
-                            </div>
-                        </Fade>
-                    </div>
-                </ListItem>
-                <CredentialModal credentialId={credential.idCredentials} open={modalOpen} openCredential={openCredential} closeModal={closeModal} />
+                                </div>
+                            </Fade>
+                        </div>
+                    </ListItem>
+                </ContextMenu>
+                <CredentialModal
+                    belongsTo={credential.belongsToFolder}
+                    credentialId={credential.idCredentials}
+                    open={modalOpen}
+                    openCredential={openCredential}
+                    closeModal={closeModal}
+                    onRequestRefresh={onRequestRefresh}
+                />
             </div>
         )
     }

@@ -72,9 +72,9 @@ export class FolderAdminView extends Component {
 
     componentDidUpdate(prevProps) {
         const { isLoggedIn } = this.props;
-        if (isLoggedIn && prevProps.isLoggedIn) {
+        if (isLoggedIn !== prevProps.isLoggedIn) {
             if (isLoggedIn)
-                this.reloadViewContents()
+                this.refreshView()
             else
                 this._closeModal()
         }

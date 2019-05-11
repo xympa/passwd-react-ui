@@ -47,8 +47,6 @@ export class FolderBreadcrumbs extends Component {
             <div className={classes.root}>
                 {(() => {
                     return path.map((element, iter) => {
-                        console.log(element.name, path[path.length - iter - 1].parent)
-
                         const button = (
                             <Button disabled={iter === path.length - 1}>
                                 {element.name}
@@ -58,7 +56,7 @@ export class FolderBreadcrumbs extends Component {
                         let renderContent = iter === path.length - 1 ? button : (
                             <Link
                                 style={{ textDecoration: "none" }}
-                                to={iter === path.length - 1 ? undefined : '/home/' + path[path.length - iter - 1].parent /*hehehe flip the array, we're looking at it from the wrong perspective*/}
+                                to={iter === path.length - 1 ? undefined : '/home/' + path[iter + 1].parent /*hehehe flip the array, we're looking at it from the wrong perspective*/}
                             >
                                 {button}
                             </Link>

@@ -37,7 +37,7 @@
     ],
     "credential": [
         "Credential",
-        "credencial"
+        "Credencial"
     ],
     "delete": [
         "Delete",
@@ -114,6 +114,10 @@
     "email": [
         "Email",
         "Email"
+    ],
+    "openInNewTab": [
+        "Open in new tab",
+        "Abrir numa nova aba"
     ],
     "serverErrors": {
         "401": [

@@ -45,9 +45,8 @@ export const requestCredentialInfo = id => (dispatch, getState) => {
 }
 
 
-export const requestCredentialUpdate = credential => (dispatch, getState) => {
+export const requestCredentialUpdate = (id, belongsTo, credential) => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
-    const { idCredentials, belongsToFolder, } = getState().credential.data
 
     var url = `${REST_BASE}credential/`;
     return axios(
@@ -59,8 +58,8 @@ export const requestCredentialUpdate = credential => (dispatch, getState) => {
                 sessionkey: sessionKey,
 
                 //Credential params
-                id: idCredentials,
-                belongsTo: belongsToFolder,
+                id,
+                belongsTo,
                 title: credential.title,
                 username: credential.username,
                 description: credential.description,
@@ -71,9 +70,8 @@ export const requestCredentialUpdate = credential => (dispatch, getState) => {
         .catch(parse406Error)
 }
 
-export const requestCredentialDeletion = () => (dispatch, getState) => {
+export const requestCredentialDeletion = (id) => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
-    const { idCredentials } = getState().credential.data
 
     var url = `${REST_BASE}credential/`;
     return axios(
@@ -85,7 +83,7 @@ export const requestCredentialDeletion = () => (dispatch, getState) => {
                 sessionkey: sessionKey,
 
                 //Credential params
-                credentialId: idCredentials
+                credentialId: id
             }
         })
         .catch(parse406Error)

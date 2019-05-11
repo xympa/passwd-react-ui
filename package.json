@@ -19,6 +19,7 @@
     "prop-types": "^15.6.2",
     "react": "^16.6.3",
     "react-animated-tree": "^1.0.10",
+    "react-contexify": "^4.1.0",
     "react-copy-to-clipboard": "^5.0.1",
     "react-custom-scrollbars": "^4.2.1",
     "react-dom": "^16.6.3",
