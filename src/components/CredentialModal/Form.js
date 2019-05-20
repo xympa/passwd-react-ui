@@ -168,7 +168,7 @@ export class Form extends Component {
             ...prevState,
             passwordGenerationOptions: {
                 ...prevState.passwordGenerationOptions,
-                [name]: (name === "length" ? event.target.value : checked),
+                [name]: (name === "length" ? (event.target.value < 9999 ? event.target.value : 9999  ) : checked),
             }
         }));
     }
@@ -286,7 +286,7 @@ export class Form extends Component {
                                 <TextField
                                     id="password-length"
                                     label={translate("length")}
-                                    type="text"
+                                    type="number"
                                     value={passwordGenerationOptions.length}
                                     onChange={this._handlePasswordGenerationChange('length')}
                                     margin="normal"
@@ -309,7 +309,7 @@ export class Form extends Component {
                         endAdornment={fields.url.valid && !Validator.isEmpty(fields.url.sanitizedValue) && (
                             <InputAdornment position="end">
                                 <Tooltip title={`${translate("open")} ${translate("url")}`}>
-                                    <IconButton aria-label={`${translate("open")} ${translate("url")}`}>
+                                    <IconButton aria-label={`${translate("open")} ${translate("url")}`} onClick={() => {window.open(fields.url.sanitizedValue, '_blank')}}>
                                         <OpenIcon color="primary" />
                                     </IconButton>
                                 </Tooltip>

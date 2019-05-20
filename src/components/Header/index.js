@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { Link} from 'react-router-dom'
 import { connect } from 'react-redux'
 import _ from 'lodash'
-import {hotkeys} from 'react-keyboard-shortcuts'
+import { hotkeys } from 'react-keyboard-shortcuts'
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
@@ -131,10 +132,10 @@ export class Header extends Component {
 
     hot_keys = {
         'alt+s': { // combo from mousetrap
-          priority: 1,
-          handler: this._focusAndSelectSearch.bind(this),
+            priority: 1,
+            handler: this._focusAndSelectSearch.bind(this),
         },
-      }
+    }
 
     constructor(props) {
         super(props);
@@ -143,26 +144,25 @@ export class Header extends Component {
             accountMenuShowing: false
         }
 
-        this._searchChanged = _.debounce(this._searchChanged.bind(this), 30);
+        this._searchChanged = /*_.debounce(*/this._searchChanged.bind(this)/*, 30)*/;
         this.handleSearchChange = this.handleSearchChange.bind(this)
         this._handleClose = this._handleClose.bind(this)
 
         const { addTranslation } = this.props
         addTranslation(localization)
-    }
+    }    
 
     handleSearchChange(event) {
-        event.persist();
-        this._searchChanged(event);
+        this._searchChanged(event.target.value);
     }
 
-    _focusAndSelectSearch(){
+    _focusAndSelectSearch() {
         this._searchRef.select()
     }
 
-    _searchChanged(event) {
+    _searchChanged(value) {
         const { changeSearch } = this.props;
-        changeSearch(event.target.value);
+        changeSearch(value);
     }
 
     _handleClose() {
@@ -172,8 +172,10 @@ export class Header extends Component {
     }
 
     render() {
-        const { classes, search, onMenuClick, username, logout, activeLanguage, languages, setActiveLanguage, translate } = this.props;
+        const { classes, onMenuClick, username, logout, activeLanguage, languages, setActiveLanguage, translate, changeSearch, search } = this.props;
         const { accountMenuShowing, editUserModalOpen } = this.state
+
+        console.log(search)
 
         return (
             <div className={classes.root}>
@@ -189,13 +191,15 @@ export class Header extends Component {
                                 <MenuIcon />
                             </IconButton>
                         </div>
-                        <img className={classes.title} src={require('../../assets/logo-branco.png')} alt="passwd logo" />
+                        <Link to='/home/' onClick={() => {changeSearch(''); this._searchRef.value = ''}}>
+                            <img className={classes.title} src={require('../../assets/logo-branco.png')} alt="passwd logo" />
+                        </Link>
                         <div className={classes.search}>
                             <div className={classes.searchIcon}>
                                 <SearchIcon />
                             </div>
                             <InputBase
-                            inputRef={ref => this._searchRef = ref}
+                                inputRef={ref => this._searchRef = ref}
                                 placeholder={translate("search")}
                                 value={search}
                                 onChange={this.handleSearchChange}
@@ -281,7 +285,8 @@ const mapDispatchToProps = {
 }
 
 const mapStateToProps = state => ({
-    username: state.authentication.username
+    username: state.authentication.username,
+    search: state.search.value
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(hotkeys(Header))))

@@ -5,7 +5,7 @@ const INITIAL_STATE = {
     action: undefined
 };
 
-const FolderReducer = (state = INITIAL_STATE, action) => {
+const SearchReducer = (state = INITIAL_STATE, action) => {
     switch (action.type) {
         case types.SEARCH_CHANGED:
             return {
@@ -27,4 +27,4 @@ const FolderReducer = (state = INITIAL_STATE, action) => {
     }
 };
 
-export default FolderReducer;
+export default SearchReducer;
