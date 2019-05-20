@@ -381,11 +381,11 @@ export class FolderAdministrationModal extends Component {
                 {!forCreation ? (
                     <Fade in={isEditing}>
                         <DialogActions>
-                            <Button variant="contained" onClick={this.attemptDelete}>
+                            <Button variant="contained" onClick={this.attemptDelete} disabled={!isEditing}>
                                 <Translate id="delete" />
                             </Button>
                             <div style={{ flex: 1 }} />
-                            <Button variant="contained" style={{ justifySelf: "flex-start" }} onClick={this.submitFormForUpdate} color="secondary">
+                            <Button variant="contained" style={{ justifySelf: "flex-start" }} onClick={this.submitFormForUpdate} color="secondary" disabled={!isEditing}>
                                 <Translate id="save" />
                             </Button>
                         </DialogActions>
@@ -393,7 +393,7 @@ export class FolderAdministrationModal extends Component {
                 ) : (
                         <Fade in={!isFetching}>
                             <DialogActions>
-                                <Button variant="contained" onClick={this.submitFormForInsert}>
+                                <Button variant="contained" onClick={this.submitFormForInsert} disabled={isFetching}>
                                     <Translate id="create" />
                                 </Button>
                             </DialogActions>

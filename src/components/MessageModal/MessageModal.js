@@ -454,7 +454,7 @@ export class MessageModal extends Component {
                         <Fade in={isEditing || readonly}>
                             <DialogActions>
                                 {(readonly || isEditing) && (
-                                    <Button variant="contained" onClick={this.attemptDelete}>
+                                    <Button variant="contained" onClick={this.attemptDelete} disabled >
                                         <Translate id="delete" />
                                     </Button>
                                 )
