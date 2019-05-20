@@ -134,7 +134,9 @@ export class Form extends Component {
                 valid = !Validator.isEmpty(sanitizedValue);
                 break;
             case 'url':
-                valid = Validator.isEmpty(sanitizedValue) || Validator.isURL(sanitizedValue);
+                valid = Validator.isEmpty(sanitizedValue) || Validator.isURL(sanitizedValue, {
+                    require_valid_protocol: false
+                });
                 break;
             default:
                 valid = false;
