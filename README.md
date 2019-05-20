@@ -19,6 +19,7 @@ Requires `nodejs` and `yarn` installed in your system.
 git clone https://github.com/xympa/passwd-react-ui.git #this repo
 cd passwd-react-ui
 #edit configuration variables, for useHashRouter see 'Apache Notes'
+cp ./src/AppConfig.sample.js ./src/AppConfig.js
 vim ./src/AppConfig.js
 yarn install && yarn build
 cd build
