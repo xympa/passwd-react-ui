@@ -322,7 +322,7 @@ export class FolderAdministrationModal extends Component {
         const { forCreation, classes, translate, open, closeModal } = this.props;
 
         return (
-            <StyledDialog open={open} maxWidth="md" TransitionComponent={Zoom} fullWidth style={{ overflow: "visible" }} disableRestoreFocus>
+            <StyledDialog open={open} maxWidth="md" TransitionComponent={Zoom} fullWidth style={{ overflow: "visible" }} disableRestoreFocus onBackdropClick={closeModal} onEscapeKeyDown={closeModal}>
                 <DialogTitle>
                     {!isFetching && (
                         <ModalHeader

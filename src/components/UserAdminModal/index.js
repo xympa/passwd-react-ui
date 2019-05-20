@@ -275,7 +275,7 @@ class UserAdminModal extends Component {
         const { forCreation, open, onRequestClose, classes, translate } = this.props
 
         return (
-            <Dialog open={open} maxWidth="md" fullWidth TransitionComponent={Zoom} disableRestoreFocus disableBackdropClick onEscapeKeyDown={onRequestClose}>
+            <Dialog open={open} maxWidth="md" fullWidth TransitionComponent={Zoom} disableRestoreFocus onBackdropClick={onRequestClose} onEscapeKeyDown={onRequestClose}>
                 <DialogTitle>
                     {!isFetching && (
                         <ModalHeader

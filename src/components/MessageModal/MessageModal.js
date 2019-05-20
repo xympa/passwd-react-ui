@@ -18,7 +18,7 @@ import localization from './localization.json'
 import CredentialForm from '../CredentialModal/Form'
 import ModalHeader from './Header'
 import UserAutoComplete from '../MaterialAutocomplete'
-import { sendMessage, setFetching, getFrontServerPath, moveToCredentialLocationStep, saveCredential, deleteMessage } from '../../actions/MessageActions'
+import { sendMessage, setFetching, getFrontServerPath, moveToCredentialLocationStep, saveCredential, deleteMessage, closeModal } from '../../actions/MessageActions'
 
 const timeToDieOptions = [
     {
@@ -85,6 +85,7 @@ export class MessageModal extends Component {
         addTranslation: PropTypes.func.isRequired,
         translate: PropTypes.func.isRequired,
         deleteMessage: PropTypes.func.isRequired,
+        closeModal: PropTypes.func.isRequired,
     }
 
     constructor(props) {
@@ -330,7 +331,7 @@ export class MessageModal extends Component {
             folderTree, choosingCredentialLocation, moveToCredentialLocationStep, readonly, translate } = this.props;
 
         return (
-            <Dialog open={isOpen} maxWidth="lg" fullWidth TransitionComponent={Zoom}>
+            <Dialog open={isOpen} maxWidth="lg" fullWidth TransitionComponent={Zoom} onBackDropclick={closeModal} onEscapeKeyDown={closeModal}>
                 <DialogTitle>
                     {!isFetching && <ModalHeader />}
                 </DialogTitle>
@@ -510,7 +511,8 @@ const mapDispatchToProps = {
     setFetching,
     moveToCredentialLocationStep,
     saveCredential,
-    deleteMessage
+    deleteMessage,
+    closeModal
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withSnackbar(withLocalize(MessageModal))))

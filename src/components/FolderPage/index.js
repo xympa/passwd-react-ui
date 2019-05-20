@@ -153,7 +153,10 @@ export class FolderPage extends Component {
                 ]).then(([contents, folderInfo, path]) => {
                     if (contents) {
                         this.setState({
-                            contents: [...contents.folders, ...contents.credentials],
+                            contents: [
+                                ...contents.folders.sort((a,b) => a.name.localeCompare(b.name)),
+                                ...contents.credentials.sort((a,b) => a.title.localeCompare(b.title))
+                            ],
                             openModals: contents.credentials.map(c => ({ id: c.idCredentials, open: preOpenCred == c.idCredentials ? true : false })),
                             parent: folderInfo.folderInfo.parent || null,
                             canAdminFolder: folderInfo.isCurrentUserAdmin,

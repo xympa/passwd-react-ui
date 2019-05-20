@@ -197,7 +197,7 @@ class EditSelfModal extends Component {
         const { form, isFetching } = this.state
 
         return (
-            <Dialog maxWidth="md" fullWidth open={open} classes={{ paper: classes.root }}>
+            <Dialog maxWidth="md" fullWidth open={open} classes={{ paper: classes.root }} onEscapeKeyDown={onRequestClose} onBackdropClick={onRequestClose}>
                 {isFetching ? <CircularProgress /> : [
                     <DialogTitle key="title">
                         <div style={{ display: "flex" }}>

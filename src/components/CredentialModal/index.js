@@ -208,7 +208,7 @@ export class CredentialModal extends Component {
         const { forCreation, open, closeModal, credentialId } = this.props;
 
         return (
-            <Dialog open={open} disableBackdropClick disableRestoreFocus maxWidth="lg" TransitionComponent={Zoom}>
+            <Dialog open={open} disableBackdropClick disableRestoreFocus maxWidth="lg" fullWidth TransitionComponent={Zoom} onBackdropClick={closeModal} onEscapeKeyDown={closeModal}>
                 <DialogTitle>
                     {!isFetching && (
                         <ModalHeader
