@@ -154,8 +154,8 @@ export class FolderPage extends Component {
                     if (contents) {
                         this.setState({
                             contents: [
-                                ...contents.folders.sort((a,b) => a.name.localeCompare(b.name)),
-                                ...contents.credentials.sort((a,b) => a.title.localeCompare(b.title))
+                                ...contents.folders.sort((a, b) => a.name.localeCompare(b.name)),
+                                ...contents.credentials.sort((a, b) => a.title.localeCompare(b.title))
                             ],
                             openModals: contents.credentials.map(c => ({ id: c.idCredentials, open: preOpenCred == c.idCredentials ? true : false })),
                             parent: folderInfo.folderInfo.parent || null,
@@ -222,16 +222,21 @@ export class FolderPage extends Component {
         const openFolderId = match.params.id
 
         const isSm = window.innerWidth <= 600
+        const isMd = window.innerWidth <= 992
 
         return (
             <div>
                 <div style={{ flexDirection: "column", flex: 1, overflow: "hidden" }}>
                     <div className={classes.header}>
-                        <IconButton disabled={!openFolderId || isFetching} color="secondary" style={{ width: 64 }} onClick={this._homeButtonHandle}>
-                            <Tooltip title={translate("homeTooltip")} enterDelay={400} placement="bottom-start">
-                                <HomeIcon style={{ fontSize: 32 }} />
-                            </Tooltip>
-                        </IconButton>
+                        {
+                            isMd && (
+                                <IconButton disabled={!openFolderId || isFetching} color="secondary" style={{ width: 64 }} onClick={this._homeButtonHandle}>
+                                    <Tooltip title={translate("homeTooltip")} enterDelay={400} placement="bottom-start">
+                                        <HomeIcon style={{ fontSize: 32 }} />
+                                    </Tooltip>
+                                </IconButton>
+                            )
+                        }
                         <IconButton disabled={!openFolderId || isFetching} color="secondary" style={{ width: 64 }} onClick={this._upButtonHandle}>
                             <Tooltip title={translate("parentTooltip")} enterDelay={400} placement="bottom-start">
                                 <UpArrowIcon style={{ fontSize: 32 }} />
