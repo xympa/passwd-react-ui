@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Divider, List, ListItem, ListItemIcon, ListItemText, Typography, Avatar, BottomNavigationAction } from '@material-ui/core'
+import { Divider, List, ListItem, ListItemIcon, ListItemText, Typography, Avatar, Collapse } from '@material-ui/core'
 import { connect } from 'react-redux'
 import { withRouter, Link } from 'react-router-dom'
 import { withStyles } from '@material-ui/core/styles'
@@ -9,6 +9,8 @@ import { List as VirtualList } from 'react-virtualized'
 import MailIcon from '@material-ui/icons/Mail'
 import InboxIcon from '@material-ui/icons/Inbox'
 import OutboxIcon from '@material-ui/icons/Send'
+import ExpandLess from '@material-ui/icons/ExpandLess';
+import ExpandMore from '@material-ui/icons/ExpandMore';
 import HomeIcon from '@material-ui/icons/Home'
 import AdministrationIcon from '@material-ui/icons/Build'
 import FolderManagementIcon from '@material-ui/icons/FolderShared'
@@ -50,6 +52,8 @@ class DrawerContent extends React.PureComponent {
 
         this.state = {
             rootFolderSectionHeight: 0,
+            adminSectionOpen: false,
+            messageSectionOpen: false,
             width: window.innerWidth,
             height: window.innerHeight,
         }
@@ -68,37 +72,36 @@ class DrawerContent extends React.PureComponent {
     componentWillUnmount() {
         window.removeEventListener('resize', this.updateWindowDimensions);
     }
-
-    updateWindowDimensions() {
-        this.setState({ width: measureElement(this).width, height: window.innerHeight });
-    }
-
-
-    calculateRootFolderHeight() {
-        const { rootFolders } = this.props
-        const { height } = this.state
-
-        const virtualRootFolderSectionHeight = 48 * rootFolders.length + 70
-        const messageSectionHeight = 170
-        const sysAdminSectionHeight = 216
-
-        const restSectionHeight = height - 66 - messageSectionHeight - sysAdminSectionHeight;
-
-        this.setState({
-            rootFolderSectionHeight: (virtualRootFolderSectionHeight < restSectionHeight ? virtualRootFolderSectionHeight : restSectionHeight - 20) - 70
-        })
-
-    }
-
+    
     handleScroll = ({ target }) => {
         const { scrollTop } = target;
         this._list.scrollToPosition(scrollTop);
     };
+    updateWindowDimensions() {
+        this.setState({ width: measureElement(this).width, height: window.innerHeight });
+    }
+
+    calculateRootFolderHeight() {
+        const { rootFolders, actions } = this.props
+        const { height, messageSectionOpen, adminSectionOpen } = this.state
+
+        const virtualRootFolderSectionHeight = 48 * rootFolders.length + 70
+        const messageSectionHeight = messageSectionOpen ? 170 : 78
+        const sysAdminSectionHeight = adminSectionOpen ?  216 : 78
+
+        const restSectionHeight = height - 66 - messageSectionHeight - ((actions || []).includes("accessSysAdminArea") ? sysAdminSectionHeight : 0);
+
+        this.setState({
+            rootFolderSectionHeight: (virtualRootFolderSectionHeight < restSectionHeight ? virtualRootFolderSectionHeight : restSectionHeight - 20) - 70
+        })
+    }
+
+
 
 
     render() {
         const { rootFolders, classes, history, actions } = this.props;
-        const { rootFolderSectionHeight } = this.state
+        const { rootFolderSectionHeight, adminSectionOpen, messageSectionOpen } = this.state
 
         return (
             <div>
@@ -135,49 +138,55 @@ class DrawerContent extends React.PureComponent {
                 </List>
                 <Divider />
                 <List>
-                    <ListItem>
+                    <ListItem button onClick={() => this.setState(prevState => ({ messageSectionOpen: !prevState.messageSectionOpen }))}>
                         <ListItemIcon><Avatar className={classes.orangeAvatar}><MailIcon /></Avatar></ListItemIcon>
                         <ListItemText primary={<Typography variant="body1"><Translate id="messages" /></Typography>} />
+                        {messageSectionOpen ? <ExpandLess /> : <ExpandMore />}
                     </ListItem>
-                    <Link to="/inbox" style={{ textDecoration: "none" }}>
-                        <HighlightableListItem className={classes.subListItem} button>
-                            <ListItemIcon><InboxIcon color="primary" /></ListItemIcon>
-                            <ListItemText primary={<Typography noWrap variant="body2"><Translate id="inbox" /></Typography>} />
-                        </HighlightableListItem>
-                    </Link>
-                    <Link to="/outbox" style={{ textDecoration: "none" }}>
-                        <HighlightableListItem className={classes.subListItem}>
-                            <ListItemIcon><OutboxIcon color="primary" /></ListItemIcon>
-                            <ListItemText primary={<Typography noWrap variant="body2"><Translate id="outbox" /></Typography>} />
-                        </HighlightableListItem>
-                    </Link>
+                    <Collapse in={messageSectionOpen}>
+                        <Link to="/inbox" style={{ textDecoration: "none" }}>
+                            <HighlightableListItem className={classes.subListItem} button>
+                                <ListItemIcon><InboxIcon color="primary" /></ListItemIcon>
+                                <ListItemText primary={<Typography noWrap variant="body2"><Translate id="inbox" /></Typography>} />
+                            </HighlightableListItem>
+                        </Link>
+                        <Link to="/outbox" style={{ textDecoration: "none" }}>
+                            <HighlightableListItem className={classes.subListItem}>
+                                <ListItemIcon><OutboxIcon color="primary" /></ListItemIcon>
+                                <ListItemText primary={<Typography noWrap variant="body2"><Translate id="outbox" /></Typography>} />
+                            </HighlightableListItem>
+                        </Link>
+                    </Collapse>
                 </List>
                 <Divider />
                 {
                     (actions || []).includes("accessSysAdminArea") && (
                         <List>
-                            <ListItem>
+                            <ListItem button onClick={() => this.setState(prevState => ({ adminSectionOpen: !prevState.adminSectionOpen }))}>
                                 <ListItemIcon><Avatar className={classes.orangeAvatar}><AdministrationIcon /></Avatar></ListItemIcon>
                                 <ListItemText primary={<Typography variant="body1"><Translate id="administration" /></Typography>} />
+                                {adminSectionOpen ? <ExpandLess /> : <ExpandMore />}
                             </ListItem>
-                            <Link to='/folder-administration' style={{ textDecoration: "none" }}>
-                                <HighlightableListItem className={classes.subListItem}>
-                                    <ListItemIcon><FolderManagementIcon color="primary" /></ListItemIcon>
-                                    <ListItemText primary={<Typography noWrap variant="body2"><Translate id="folderManagement" /></Typography>} />
-                                </HighlightableListItem>
-                            </Link>
-                            <Link to='/user-administration' style={{ textDecoration: "none" }}>
-                                <HighlightableListItem className={classes.subListItem}>
-                                    <ListItemIcon><UserManagementIcon color="primary" /></ListItemIcon>
-                                    <ListItemText primary={<Typography noWrap variant="body2"><Translate id="userManagement" /></Typography>} />
-                                </HighlightableListItem>
-                            </Link>
-                            <Link to='/logs' style={{ textDecoration: "none" }}>
-                                <HighlightableListItem className={classes.subListItem}>
-                                    <ListItemIcon><LogsIcon color="primary" /></ListItemIcon>
-                                    <ListItemText primary={<Typography noWrap variant="body2"><Translate id="logExplorer" /></Typography>} />
-                                </HighlightableListItem>
-                            </Link>
+                            <Collapse in={adminSectionOpen}>
+                                <Link to='/folder-administration' style={{ textDecoration: "none" }}>
+                                    <HighlightableListItem className={classes.subListItem}>
+                                        <ListItemIcon><FolderManagementIcon color="primary" /></ListItemIcon>
+                                        <ListItemText primary={<Typography noWrap variant="body2"><Translate id="folderManagement" /></Typography>} />
+                                    </HighlightableListItem>
+                                </Link>
+                                <Link to='/user-administration' style={{ textDecoration: "none" }}>
+                                    <HighlightableListItem className={classes.subListItem}>
+                                        <ListItemIcon><UserManagementIcon color="primary" /></ListItemIcon>
+                                        <ListItemText primary={<Typography noWrap variant="body2"><Translate id="userManagement" /></Typography>} />
+                                    </HighlightableListItem>
+                                </Link>
+                                <Link to='/logs' style={{ textDecoration: "none" }}>
+                                    <HighlightableListItem className={classes.subListItem}>
+                                        <ListItemIcon><LogsIcon color="primary" /></ListItemIcon>
+                                        <ListItemText primary={<Typography noWrap variant="body2"><Translate id="logExplorer" /></Typography>} />
+                                    </HighlightableListItem>
+                                </Link>
+                            </Collapse>
                         </List>
                     )
                 }

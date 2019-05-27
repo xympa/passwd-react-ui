@@ -9,7 +9,7 @@ const RootFolderReducer = (state = INITIAL_STATE, action) => {
         case types.SET_ROOT_FOLDERS:
             return {
                 ...state,
-                list: action.payload,
+                list: action.payload.sort((a,b) => a.name.localeCompare(b.name))
             };
         default:
             return state;
