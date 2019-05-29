@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Grow, Menu, Popover, ClickAwayListener } from '@material-ui/core/'
+import Popover from '@material-ui/core/Popover'
 
 export default class ContextMenu extends Component {
 

@@ -100,7 +100,6 @@ class LoginModal extends Component {
                 <div style={{ flexDirection: "column", display: "flex" }}>
                     <TextField
                         label={<Translate id="username" />}
-                        fullWidth
                         id="username"
                         value={username}
                         onChange={this._handleChange('username')}

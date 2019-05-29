@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link} from 'react-router-dom'
 import { connect } from 'react-redux'
-import _ from 'lodash'
 import { hotkeys } from 'react-keyboard-shortcuts'
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -18,7 +17,7 @@ import MenuList from '@material-ui/core/MenuList';
 import Paper from '@material-ui/core/Paper';
 import Grow from '@material-ui/core/Grow';
 import Button from '@material-ui/core/Button';
-import { Fab, Select } from '@material-ui/core'
+import Select from '@material-ui/core/Select'
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import { withStyles } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/Search';

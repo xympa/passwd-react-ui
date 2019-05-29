@@ -1,12 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
-import { ListItem, Avatar, ListItemText, Typography, Chip } from '@material-ui/core';
-import FolderIcon from '@material-ui/icons/Folder'
-import MessageIcon from '@material-ui/icons/Message'
+import { ListItem, Avatar, ListItemText, Typography } from '@material-ui/core';
 import PersonIcon from '@material-ui/icons/Person'
 import { withStyles } from '@material-ui/core/styles'
-import { openMessage } from '../../actions/MessageActions'
 import UserAdminModal from '../UserAdminModal';
 
 const styles = theme => ({
@@ -29,6 +25,10 @@ const styles = theme => ({
 });
 
 class UserListItem extends React.Component {
+
+    static propTypes = {
+        onRequestRefresh: PropTypes.func.isRequired,
+    }
 
     constructor(props) {
         super(props)

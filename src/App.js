@@ -17,7 +17,7 @@ import axios from 'axios'
 import MainSwitch from './components/MainSwitch';
 import reducers from './reducers';
 import { useHashRouter, routerPrefix } from './AppConfig'
-import { LOGOUT, CHECK_AUTH } from './actions/actionTypes'
+import { CHECK_AUTH } from './actions/actionTypes'
 import 'react-contexify/dist/ReactContexify.min.css';
 
 

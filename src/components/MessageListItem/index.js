@@ -1,12 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { ListItem, Avatar, ListItemText, Typography, Chip } from '@material-ui/core';
-import FolderIcon from '@material-ui/icons/Folder'
+import { ListItem, Avatar, ListItemText, Typography } from '@material-ui/core';
 import MessageIcon from '@material-ui/icons/Message'
-import GroupIcon from '@material-ui/icons/Group'
 import { withStyles } from '@material-ui/core/styles'
-import { withLocalize, Translate } from 'react-localize-redux'
+import { withLocalize } from 'react-localize-redux'
 import localization from './localization.json'
 import { openMessage } from '../../actions/MessageActions'
 

@@ -8,7 +8,7 @@ import {
 import { REST_BASE } from '../AppConfig'
 import { requestCredentialInfo } from './CredentialActions'
 import { requestUserList } from './UserActions'
-import { networkEncode, networkDecode } from '../EnsoSharedBridge'
+import { networkEncode } from '../EnsoSharedBridge'
 import { store } from '../App';
 
 

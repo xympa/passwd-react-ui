@@ -100,7 +100,7 @@ class DrawerContent extends React.PureComponent {
 
 
     render() {
-        const { rootFolders, classes, history, actions } = this.props;
+        const { rootFolders, classes, actions } = this.props;
         const { rootFolderSectionHeight, adminSectionOpen, messageSectionOpen } = this.state
 
         return (

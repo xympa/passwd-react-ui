@@ -1,12 +1,7 @@
-import React, { Children } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
-import { withRouter } from 'react-router-dom'
-import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
-import classNames from 'classnames'
-import { ListItem, ListItemIcon, ListItemText, Typography } from '@material-ui/core'
-import FolderIcon from '@material-ui/icons/Folder'
-import { openFolder } from '../../actions/FolderActions'
+import ListItem from '@material-ui/core/ListItem'
 
 class HighlightableListItem extends React.Component {
     static propTypes = {

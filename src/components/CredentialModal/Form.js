@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
-import { connect } from 'react-redux'
 import {
     IconButton, TextField, FormControl, Input, InputLabel, InputAdornment,
     FormControlLabel, Checkbox, ClickAwayListener, Collapse, FormHelperText, Grow,
@@ -47,6 +46,7 @@ export class Form extends Component {
         enqueueSnackbar: PropTypes.func.isRequired,
         isEditing: PropTypes.bool.isRequired,
         onFormChanged: PropTypes.func.isRequired,
+        translate: PropTypes.func.isRequired,
     }
 
     constructor(props) {

@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
 import { ListItem, Avatar, ListItemText, Typography, Button, Fade, ListItemIcon, MenuItem, Badge } from '@material-ui/core';
 import LockIcon from '@material-ui/icons/Lock'
 import PersonIcon from '@material-ui/icons/Person'
@@ -14,7 +13,6 @@ import { withSnackbar } from 'notistack'
 import Validator from 'validator'
 import { withLocalize, Translate } from 'react-localize-redux'
 import localization from './localization.json'
-import { openCredential } from '../../actions/CredentialActions'
 import CredentialModal from '../CredentialModal'
 import ContextMenu from '../ContextMenu/index'
 

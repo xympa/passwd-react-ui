@@ -136,7 +136,7 @@ export class MainSwitch extends Component {
     }
 
     render() {
-        const { classes, isLoggedIn, history, theme } = this.props;
+        const { classes, isLoggedIn, theme } = this.props;
         const { width, mobileOpen } = this.state;
 
         // if (!isLoggedIn)
