@@ -330,8 +330,18 @@ export class MessageModal extends Component {
         const { isFetching, isOpen, credential, isCreating, isEditing, users, classes, sendResult,
             folderTree, choosingCredentialLocation, moveToCredentialLocationStep, readonly, translate } = this.props;
 
+
+        const modalCloseFunction = isEditing ? () => { } : closeModal
+
         return (
-            <Dialog open={isOpen} maxWidth="lg" fullWidth TransitionComponent={Zoom} onBackDropclick={closeModal} onEscapeKeyDown={closeModal}>
+            <Dialog
+                open={isOpen}
+                maxWidth="lg"
+                fullWidth
+                TransitionComponent={Zoom}
+                onBackDropclick={modalCloseFunction}
+                onEscapeKeyDown={modalCloseFunction}
+            >
                 <DialogTitle>
                     {!isFetching && <ModalHeader />}
                 </DialogTitle>
@@ -351,7 +361,6 @@ export class MessageModal extends Component {
                                                 suggestions={users.map(user => ({ value: user.username, label: user.username }))}
                                                 disabled={!isEditing}
                                                 onSuggestionAccepted={({ value }) => {
-                                                    console.log(value)
                                                     this.setState(prevState => ({
                                                         ...prevState,
                                                         fields: {

@@ -321,8 +321,19 @@ export class FolderAdministrationModal extends Component {
         const { formPermissions, fields, isFetching, isEditing, userList } = this.state;
         const { forCreation, classes, translate, open, closeModal } = this.props;
 
+        const modalCloseFunction = isEditing ? () => { } : closeModal
+
         return (
-            <StyledDialog open={open} maxWidth="md" TransitionComponent={Zoom} fullWidth style={{ overflow: "visible" }} disableRestoreFocus onBackdropClick={closeModal} onEscapeKeyDown={closeModal}>
+            <StyledDialog
+                open={open}
+                maxWidth="md"
+                TransitionComponent={Zoom}
+                fullWidth
+                style={{ overflow: "visible" }}
+                disableRestoreFocus
+                onBackdropClick={modalCloseFunction}
+                onEscapeKeyDown={modalCloseFunction}
+            >
                 <DialogTitle>
                     {!isFetching && (
                         <ModalHeader

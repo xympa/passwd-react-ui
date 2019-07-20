@@ -42,7 +42,7 @@ export class CredentialModal extends Component {
             PropTypes.number,
             PropTypes.string
         ]).isRequired,
-        onRequestRefresh:PropTypes.func.isRequired,
+        onRequestRefresh: PropTypes.func.isRequired,
     }
 
     static defaultProps = {
@@ -133,7 +133,7 @@ export class CredentialModal extends Component {
                         enqueueSnackbar(translate("credentialCreated"), {
                             variant: "success"
                         })
-                        onRequestRefresh(newId)                        
+                        onRequestRefresh(newId)
                     })
                     .catch((error) => {
                         enqueueSnackbar(error.message, {
@@ -207,8 +207,19 @@ export class CredentialModal extends Component {
         const { credential, isFetching, isEditing } = this.state;
         const { forCreation, open, closeModal, credentialId } = this.props;
 
+        const modalCloseFunction = isEditing ? () => {} : closeModal
+
         return (
-            <Dialog open={open} disableBackdropClick disableRestoreFocus maxWidth="lg" fullWidth TransitionComponent={Zoom} onBackdropClick={closeModal} onEscapeKeyDown={closeModal}>
+            <Dialog
+                open={open}
+                disableBackdropClick
+                disableRestoreFocus
+                maxWidth="lg"
+                fullWidth
+                TransitionComponent={Zoom}
+                onBackdropClick={modalCloseFunction}
+                onEscapeKeyDown={modalCloseFunction}
+            >
                 <DialogTitle>
                     {!isFetching && (
                         <ModalHeader
