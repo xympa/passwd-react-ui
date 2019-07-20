@@ -29,6 +29,7 @@ import localization from './localization.json'
 import { logout } from '../../actions/AuthenticationActions'
 import { changeSearch } from '../../actions/SearchActions'
 import EditSelfModal from './EditSelfModal';
+import { drawerWidth } from '../MainSwitch/index.js';
 
 const styles = theme => ({
     root: {
@@ -190,8 +191,11 @@ export class Header extends Component {
                                 <MenuIcon />
                             </IconButton>
                         </div>
-                        <Link to='/home/' onClick={() => {changeSearch(''); this._searchRef.value = ''}}>
-                            <img className={classes.title} src={require('../../assets/logo-branco.png')} alt="passwd logo" />
+                        <Link to='/home/' style={{textDecoration: "none"}} onClick={() => {changeSearch(''); this._searchRef.value = ''}}>
+                            <div style={{display:"flex", alignItems: "center"}}>
+                                <img style={{maxHeight: 48, minHeight: 48, marginRight: "2em"}} className={classes.title} src={require('../../assets/passwd-logo.svg')} alt="passwd logo" />
+                            <Typography variant="h4" style={{color: "white", marginRight: "1em"}}>PASSWD</Typography>
+                            </div>
                         </Link>
                         <div className={classes.search}>
                             <div className={classes.searchIcon}>

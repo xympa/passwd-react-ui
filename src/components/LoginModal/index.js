@@ -4,14 +4,12 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Dialog from '@material-ui/core/Dialog';
 import TextField from '@material-ui/core/TextField';
-import LockOutlineIcon from '@material-ui/icons/LockOutlined'
-
 import Button from '@material-ui/core/Button';
+import Typography from '@material-ui/core/Typography';
 import { withSnackbar } from 'notistack';
 import { withLocalize, Translate } from 'react-localize-redux'
 import localization from './localization.json'
 import { performLogin } from '../../actions/AuthenticationActions'
-import { Avatar } from '@material-ui/core';
 
 const styles = theme => ({
     textField: {
@@ -90,13 +88,8 @@ class LoginModal extends Component {
 
         return (
             <Dialog maxWidth="xs" fullWidth open={open} classes={{ paper: classes.root }}>
-                
-                
-                    <Avatar color="primary" className={classes.avatar}>
-                        <LockOutlineIcon fontSize="large" />
-                    </Avatar>
-                    <img src={require("../../assets/logo-cor.png")} alt="enso logo" style={{ maxWidth: "70%", marginTop: 25, marginBottom: 25 }} />
-                
+                <img src={require("../../assets/passwd-logo.svg")} alt="enso logo" style={{ maxWidth: "30%", marginTop: 25, marginBottom: 25 }} />
+                <Typography variant="h4" style={{marginBottom: 25}}>PASSWD</Typography>
                 <div style={{ flexDirection: "column", display: "flex" }}>
                     <TextField
                         label={<Translate id="username" />}
