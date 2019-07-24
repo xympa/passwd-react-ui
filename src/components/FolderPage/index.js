@@ -17,7 +17,7 @@ import { List } from 'react-virtualized'
 import { Link } from 'react-router-dom'
 import { Scrollbars } from 'react-custom-scrollbars'
 import { requestFolderContents, requestFolderInfo, requestFolderPath } from '../../actions/FolderActions'
-import { replaceSearchAction, removeSearchAction } from '../../actions/SearchActions'
+import { replaceSearchAction, removeSearchAction, changeSearch } from '../../actions/SearchActions'
 import FolderListItem from '../FolderListItem';
 import CredentialListItem from '../CredentialListItem'
 import FolderBreadcrumbs from '../FolderBreadcrumbs'
@@ -217,8 +217,9 @@ export class FolderPage extends Component {
     }
 
     render() {
-        const { classes, match, translate } = this.props;
-        const { width, height, contents, openModals, isFetching, creationModalOpen, path, folderModalOpen, folderCreationModalOpen, canAdminFolder } = this.state;
+        const { classes, match, translate, changeSearch } = this.props;
+        const { width, height, contents, openModals, isFetching,
+            creationModalOpen, path, folderModalOpen, folderCreationModalOpen, canAdminFolder } = this.state;
         const openFolderId = match.params.id
 
         const isSm = window.innerWidth <= 600
@@ -284,7 +285,7 @@ export class FolderPage extends Component {
 
                                     if (content.idFolders)
                                         return (
-                                            <Link to={"/home/" + content.idFolders}>
+                                            <Link to={"/home/" + content.idFolders} onClick={() => { changeSearch('') }}>
                                                 <FolderListItem
                                                     style={isSm ? style :
                                                         { paddingLeft: 64, paddingRight: 96, ...style }
@@ -430,6 +431,7 @@ const mapDispatchToProps = {
     requestFolderContents,
     requestFolderInfo,
     requestFolderPath,
+    changeSearch
 }
 
 
