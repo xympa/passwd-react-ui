@@ -94,7 +94,6 @@ class UserAdminModal extends Component {
                 this.setState({ isFetching: true }, () => {
                     requestUser(username)
                         .then(({ data }) => {
-                            console.log(data)
                             this.setState({
                                 user: data,
                                 isFetching: false,

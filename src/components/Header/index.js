@@ -175,8 +175,6 @@ export class Header extends Component {
         const { classes, onMenuClick, username, logout, activeLanguage, languages, setActiveLanguage, translate, changeSearch, search } = this.props;
         const { accountMenuShowing, editUserModalOpen } = this.state
 
-        console.log(search)
-
         return (
             <div className={classes.root}>
                 <AppBar
