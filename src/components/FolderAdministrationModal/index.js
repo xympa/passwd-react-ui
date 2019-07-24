@@ -370,7 +370,7 @@ export class FolderAdministrationModal extends Component {
                             disabled={!isEditing}
                             placeholder={translate("username")}
                         />
-                        <List>
+                        <List style={{ maxHeight: "40vh", overflowY: "auto"}}>
                             {formPermissions && formPermissions.length > 0 &&
                                 formPermissions.map(perm => (
                                     <PermissionListItem
