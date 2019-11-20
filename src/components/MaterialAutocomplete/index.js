@@ -3,37 +3,39 @@ import PropTypes from 'prop-types';
 import TextField from '@material-ui/core/TextField';
 import Paper from '@material-ui/core/Paper';
 import MenuItem from '@material-ui/core/MenuItem';
-import { withStyles } from '@material-ui/core/styles'
+import {withStyles} from '@material-ui/core/styles';
 
 import classNames from 'classnames';
 import Select from 'react-select';
 import Typography from '@material-ui/core/Typography';
 import Chip from '@material-ui/core/Chip';
 import CancelIcon from '@material-ui/icons/Cancel';
-import { emphasize } from '@material-ui/core/styles/colorManipulator';
+import {emphasize} from '@material-ui/core/styles/colorManipulator';
 
 const styles = theme => ({
     root: {
-        flexGrow: 1,
-        flex: 0
+        // flexGrow: 1,
+        flex: 1,
     },
     input: {
-        display: 'flex',
-        padding: 0,
+        // display: "flex",
+        // padding: 0
     },
     valueContainer: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        flex: 1,
-        alignItems: 'center',
-        overflow: 'hidden',
+        // display: "flex",
+        // flexWrap: "wrap",
+        // flex: 1,
+        // alignItems: "center",
+        // overflow: "hidden"
     },
     chip: {
         margin: `${theme.spacing.unit / 2}px ${theme.spacing.unit / 4}px`,
     },
     chipFocused: {
         backgroundColor: emphasize(
-            theme.palette.type === 'light' ? theme.palette.grey[300] : theme.palette.grey[700],
+            theme.palette.type === 'light'
+                ? theme.palette.grey[300]
+                : theme.palette.grey[700],
             0.08,
         ),
     },
@@ -44,7 +46,7 @@ const styles = theme => ({
         fontSize: 16,
     },
     placeholder: {
-        position: 'absolute',
+        // position: "absolute",
         left: 2,
         fontSize: 16,
     },
@@ -57,32 +59,30 @@ const styles = theme => ({
     },
     divider: {
         height: theme.spacing.unit * 2,
-    }
-})
+    },
+});
 
 function NoOptionsMessage(props) {
     return (
         <Typography
             color="textSecondary"
             className={props.selectProps.classes.noOptionsMessage}
-            {...props.innerProps}
-        >
+            {...props.innerProps}>
             {props.children}
         </Typography>
     );
 }
 
-function inputComponent({ inputRef, ...props }) {
+function inputComponent({inputRef, ...props}) {
     return <div ref={inputRef} {...props} />;
 }
 
 function Control(props) {
-
     return (
         <TextField
             fullWidth
             InputLabelProps={{
-                shrink: !!props.selectProps.value || props.menuIsOpen
+                shrink: !!props.selectProps.value || props.menuIsOpen,
             }}
             label={props.selectProps.placeholder}
             InputProps={{
@@ -94,7 +94,7 @@ function Control(props) {
                     ...props.innerProps,
                 },
             }}
-        // {...props.selectProps.textFieldProps}
+            // {...props.selectProps.textFieldProps}
         />
     );
 }
@@ -108,8 +108,7 @@ function Option(props) {
             style={{
                 fontWeight: props.isSelected ? 500 : 400,
             }}
-            {...props.innerProps}
-        >
+            {...props.innerProps}>
             {props.children}
         </MenuItem>
     );
@@ -120,16 +119,21 @@ function Placeholder(props) {
 }
 
 function SingleValue(props) {
-
     return (
-        <Typography className={props.selectProps.classes.singleValue} {...props.innerProps}>
+        <Typography
+            className={props.selectProps.classes.singleValue}
+            {...props.innerProps}>
             {props.children}
         </Typography>
     );
 }
 
 function ValueContainer(props) {
-    return <div className={props.selectProps.classes.valueContainer}>{props.children}</div>;
+    return (
+        <div className={props.selectProps.classes.valueContainer}>
+            {props.children}
+        </div>
+    );
 }
 
 function MultiValue(props) {
@@ -148,7 +152,10 @@ function MultiValue(props) {
 
 function Menu(props) {
     return (
-        <Paper square className={props.selectProps.classes.paper} {...props.innerProps}>
+        <Paper
+            square
+            className={props.selectProps.classes.paper}
+            {...props.innerProps}>
             {props.children}
         </Paper>
     );
@@ -163,13 +170,10 @@ const components = {
     Placeholder,
     SingleValue,
     ValueContainer,
-    DropdownIndicator: null
+    DropdownIndicator: null,
 };
 
-
-
 class MaterialAutocomplete extends React.Component {
-
     static propTypes = {
         classes: PropTypes.object.isRequired,
         suggestions: PropTypes.array.isRequired,
@@ -178,36 +182,37 @@ class MaterialAutocomplete extends React.Component {
         value: PropTypes.any,
         disabled: PropTypes.bool,
         keepValue: PropTypes.bool,
-    }
+    };
 
     static defaultProps = {
-        keepValue: false
-    }
+        keepValue: false,
+    };
 
     constructor(props) {
-        super(props)
+        super(props);
 
         this.state = {
-            single: null
-        }
+            single: null,
+        };
 
-        this.handleChangeSingle = this.handleChangeSingle.bind(this)
+        this.handleChangeSingle = this.handleChangeSingle.bind(this);
     }
 
     handleChangeSingle(newValue) {
-        const { onSuggestionAccepted, keepValue } = this.props;
-        this.setState({
-            single: !keepValue ? null : newValue
-        }, () => {
-            if (onSuggestionAccepted) onSuggestionAccepted(newValue)
-        });
+        const {onSuggestionAccepted, keepValue} = this.props;
+        this.setState(
+            {
+                single: !keepValue ? null : newValue,
+            },
+            () => {
+                if (onSuggestionAccepted) onSuggestionAccepted(newValue);
+            },
+        );
     }
 
     render() {
-        const { classes, suggestions, placeholder, disabled } = this.props
-        const { single } = this.state
-
-
+        const {classes, suggestions, placeholder, disabled} = this.props;
+        const {single} = this.state;
 
         const selectStyles = {
             input: base => ({
@@ -216,7 +221,6 @@ class MaterialAutocomplete extends React.Component {
                 '& input': {
                     font: 'inherit',
                 },
-
             }),
         };
 
@@ -235,7 +239,6 @@ class MaterialAutocomplete extends React.Component {
             </div>
         );
     }
-
 }
 
 export default withStyles(styles)(MaterialAutocomplete);
