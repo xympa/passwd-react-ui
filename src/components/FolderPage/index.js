@@ -1,41 +1,58 @@
 /* eslint-disable import/no-named-as-default */
-import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
-import { IconButton, Zoom, Fab, Fade, Divider, Typography, Tooltip, CircularProgress } from '@material-ui/core';
-import HomeIcon from '@material-ui/icons/Home'
-import UpArrowIcon from '@material-ui/icons/ArrowUpward'
-import LockOutlineIcon from '@material-ui/icons/LockOutlined'
-import SettingsIcon from '@material-ui/icons/Settings'
-import AddIcon from '@material-ui/icons/Add'
-import { withLocalize, Translate } from 'react-localize-redux';
-import { withSnackbar } from 'notistack';
-import FolderIcon from '@material-ui/icons/Folder'
-import KeyIcon from '@material-ui/icons/VpnKey'
-import { withStyles } from '@material-ui/core/styles'
-import { List } from 'react-virtualized'
-import { Link } from 'react-router-dom'
-import { Scrollbars } from 'react-custom-scrollbars'
-import { requestFolderContents, requestFolderInfo, requestFolderPath } from '../../actions/FolderActions'
-import { replaceSearchAction, removeSearchAction, changeSearch } from '../../actions/SearchActions'
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import {connect} from 'react-redux';
+import {
+    IconButton,
+    Zoom,
+    Fab,
+    Fade,
+    Divider,
+    Typography,
+    Tooltip,
+    CircularProgress,
+} from '@material-ui/core';
+import HomeIcon from '@material-ui/icons/Home';
+import UpArrowIcon from '@material-ui/icons/ArrowUpward';
+import LockOutlineIcon from '@material-ui/icons/LockOutlined';
+import SettingsIcon from '@material-ui/icons/Settings';
+import AddIcon from '@material-ui/icons/Add';
+import {withLocalize, Translate} from 'react-localize-redux';
+import {withSnackbar} from 'notistack';
+import FolderIcon from '@material-ui/icons/Folder';
+import KeyIcon from '@material-ui/icons/VpnKey';
+import {withStyles} from '@material-ui/core/styles';
+import {List} from 'react-virtualized';
+import {Link} from 'react-router-dom';
+import {Scrollbars} from 'react-custom-scrollbars';
+import {
+    requestFolderContents,
+    requestFolderInfo,
+    requestFolderPath,
+} from '../../actions/FolderActions';
+import {
+    replaceSearchAction,
+    removeSearchAction,
+    changeSearch,
+} from '../../actions/SearchActions';
 import FolderListItem from '../FolderListItem';
-import CredentialListItem from '../CredentialListItem'
-import FolderBreadcrumbs from '../FolderBreadcrumbs'
-import PopupFab from '../PopupFab'
-import { measureElement } from '../../Utils'
-import localization from './localization.json'
-import CredentialModal from '../CredentialModal'
+import CredentialListItem from '../CredentialListItem';
+import FolderBreadcrumbs from '../FolderBreadcrumbs';
+import PopupFab from '../PopupFab';
+import {measureElement} from '../../Utils';
+import localization from './localization.json';
+import CredentialModal from '../CredentialModal';
 import FolderAdministrationModal from '../FolderAdministrationModal';
 
-const styles = (theme) => ({
+const styles = theme => ({
     header: {
-        display: "flex",
+        display: 'flex',
         height: 64,
         paddingLeft: 0,
         paddingRight: 0,
         [theme.breakpoints.up('sm')]: {
             paddingLeft: 64,
-            paddingRight: 64
+            paddingRight: 64,
         },
     },
     fab: {
@@ -54,8 +71,8 @@ const INITIAL_STATE = {
     creationModalOpen: false,
     folderModalOpen: false,
     folderCreationModalOpen: false,
-    path: []
-}
+    path: [],
+};
 
 export class FolderPage extends Component {
     static propTypes = {
@@ -71,123 +88,166 @@ export class FolderPage extends Component {
         enqueueSnackbar: PropTypes.func.isRequired,
         requestFolderPath: PropTypes.func.isRequired,
         isLoggedIn: PropTypes.bool.isRequired,
-    }
+    };
 
     constructor(props) {
-        super(props)
+        super(props);
 
         this.state = {
             ...INITIAL_STATE,
             width: window.innerWidth,
             height: window.innerHeight,
-        }
+        };
 
-        this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
-        this._upButtonHandle = this._upButtonHandle.bind(this)
-        this._homeButtonHandle = this._homeButtonHandle.bind(this)
-        this.refreshView = this.refreshView.bind(this)
-        this._closeModal = this._closeModal.bind(this)
-        this._openFolderModal = this._openFolderModal.bind(this)
+        this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
+        this._upButtonHandle = this._upButtonHandle.bind(this);
+        this._homeButtonHandle = this._homeButtonHandle.bind(this);
+        this.refreshView = this.refreshView.bind(this);
+        this._closeModal = this._closeModal.bind(this);
+        this._openFolderModal = this._openFolderModal.bind(this);
 
-        const { addTranslation } = this.props
-        addTranslation(localization)
+        const {addTranslation} = this.props;
+        addTranslation(localization);
     }
 
     componentDidMount() {
-        const { replaceSearchAction, isLoggedIn } = this.props;
+        const {replaceSearchAction, isLoggedIn} = this.props;
 
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
         replaceSearchAction(this.refreshView);
-        if (isLoggedIn)
-            this.refreshView()
+        if (isLoggedIn) this.refreshView();
     }
 
     componentDidUpdate(prevProps) {
-        const { match, isLoggedIn } = this.props;
+        const {match, isLoggedIn} = this.props;
+
         if (isLoggedIn) {
-            if (prevProps.match.params.id != match.params.id || prevProps.isLoggedIn !== isLoggedIn)
-                this.refreshView()
-        }
-        else if (prevProps.isLoggedIn !== isLoggedIn && isLoggedIn === false)
-            this._closeModal()
+            if (
+                prevProps.match.params.id !== match.params.id ||
+                prevProps.isLoggedIn !== isLoggedIn
+            )
+                this.refreshView();
+        } else if (prevProps.isLoggedIn !== isLoggedIn && isLoggedIn === false)
+            this._closeModal();
     }
 
     componentWillUnmount() {
-        const { removeSearchAction } = this.props;
+        const {removeSearchAction} = this.props;
         removeSearchAction();
         window.removeEventListener('resize', this.updateWindowDimensions);
     }
 
-    handleScroll = ({ target }) => {
-        const { scrollTop } = target;
+    handleScroll = ({target}) => {
+        const {scrollTop} = target;
         this._list.scrollToPosition(scrollTop);
     };
 
     updateWindowDimensions() {
-        this.setState({ width: measureElement(this).width, height: window.innerHeight });
+        this.setState({
+            width: measureElement(this).width,
+            height: window.innerHeight,
+        });
     }
 
     _homeButtonHandle() {
-        const { history } = this.props;
-        history.push('/home')
+        const {history} = this.props;
+        history.push('/home');
     }
 
     _upButtonHandle() {
-        const { history } = this.props
-        const { parent } = this.state
-        history.push(`/home/${parent || ''}`)
+        const {history} = this.props;
+        const {parent} = this.state;
+        history.push(`/home/${parent || ''}`);
     }
 
     refreshView(preOpenCred) {
-        const { match, requestFolderContents, enqueueSnackbar, requestFolderInfo, requestFolderPath, history } = this.props;
+        const {
+            match,
+            requestFolderContents,
+            enqueueSnackbar,
+            requestFolderInfo,
+            requestFolderPath,
+            history,
+        } = this.props;
 
         return new Promise((resolve, reject) => {
-            this.setState({
-                isFetching: true
-            }, () => {
-                Promise.all([
-                    requestFolderContents(match.params.id),
-                    requestFolderInfo(match.params.id),
-                    requestFolderPath(match.params.id)
-                ]).then(([contents, folderInfo, path]) => {
-                    if (contents) {
-                        this.setState({
-                            contents: [
-                                ...contents.folders.sort((a, b) => a.name.localeCompare(b.name)),
-                                ...contents.credentials.sort((a, b) => a.title.localeCompare(b.title))
-                            ],
-                            openModals: contents.credentials.map(c => ({ id: c.idCredentials, open: preOpenCred == c.idCredentials ? true : false })),
-                            parent: folderInfo.folderInfo.parent || null,
-                            canAdminFolder: folderInfo.isCurrentUserAdmin,
-                            creationModalOpen: false,
-                            folderModalOpen: false,
-                            folderCreationModalOpen: false,
-                            path
-                        }, () => {
-                            resolve()
+            this.setState(
+                {
+                    isFetching: true,
+                },
+                () => {
+                    Promise.all([
+                        requestFolderContents(match.params.id),
+                        requestFolderInfo(match.params.id),
+                        requestFolderPath(match.params.id),
+                    ])
+                        .then(([contents, folderInfo, path]) => {
+                            const {currentSearch, match} = this.props;
+                            if (
+                                contents &&
+                                contents.search === currentSearch && 
+                                (match.params.id === folderInfo.folderInfo.idFolders || (match.params.id === undefined && folderInfo.folderInfo.idFolders === null))
+                            ) {
+                                this.setState(
+                                    {
+                                        contents: [
+                                            ...contents.folders.sort((a, b) =>
+                                                a.name.localeCompare(b.name),
+                                            ),
+                                            ...contents.credentials.sort(
+                                                (a, b) =>
+                                                    a.title.localeCompare(
+                                                        b.title,
+                                                    ),
+                                            ),
+                                        ],
+                                        openModals: contents.credentials.map(
+                                            c => ({
+                                                id: c.idCredentials,
+                                                open:
+                                                    preOpenCred ==
+                                                    c.idCredentials
+                                                        ? true
+                                                        : false,
+                                            }),
+                                        ),
+                                        parent:
+                                            folderInfo.folderInfo.parent ||
+                                            null,
+                                        canAdminFolder:
+                                            folderInfo.isCurrentUserAdmin,
+                                        creationModalOpen: false,
+                                        folderModalOpen: false,
+                                        folderCreationModalOpen: false,
+                                        path,
+                                    },
+                                    () => {
+                                        resolve();
+                                    },
+                                );
+                            }
                         })
-                    }
-                })
-                    .catch((error) => {
-                        const { parent } = this.state
-                        if (error.response.status == 404 && parent) {
-                            history.replace('/home/' + parent)
-                            resolve()
-                        }
-                        else {
-                            history.replace('/home');
-                            enqueueSnackbar(error.message, {
-                                variant: "error"
-                            })
-                            reject()
-                        }
-                    })
-                    .then(() => {
-                        this.setState({ isFetching: false })
-                    })
-            })
-        })
+                        .catch(error => {
+                            const {parent} = this.state;
+                            console.log(error);
+                            if (error.response.status == 404 && parent) {
+                                history.replace('/home/' + parent);
+                                resolve();
+                            } else {
+                                history.replace('/home');
+                                enqueueSnackbar(error.message, {
+                                    variant: 'error',
+                                });
+                                reject();
+                            }
+                        })
+                        .then(() => {
+                            this.setState({isFetching: false});
+                        });
+                },
+            );
+        });
     }
 
     _closeModal() {
@@ -195,12 +255,11 @@ export class FolderPage extends Component {
             folderCreationModalOpen: false,
             folderModalOpen: false,
             creationModalOpen: false,
-            openModals: prevState.openModals
-                .map(m => ({
-                    ...m,
-                    open: false
-                }))
-        }))
+            openModals: prevState.openModals.map(m => ({
+                ...m,
+                open: false,
+            })),
+        }));
     }
 
     _openFolderModal() {
@@ -208,45 +267,80 @@ export class FolderPage extends Component {
             folderCreationModalOpen: false,
             folderModalOpen: true,
             creationModalOpen: false,
-            openModals: prevState.openModals
-                .map(m => ({
-                    ...m,
-                    open: false
-                }))
-        }))
+            openModals: prevState.openModals.map(m => ({
+                ...m,
+                open: false,
+            })),
+        }));
     }
 
     render() {
-        const { classes, match, translate, changeSearch } = this.props;
-        const { width, height, contents, openModals, isFetching,
-            creationModalOpen, path, folderModalOpen, folderCreationModalOpen, canAdminFolder } = this.state;
-        const openFolderId = match.params.id
+        const {classes, match, translate, changeSearch} = this.props;
+        const {
+            width,
+            height,
+            contents,
+            openModals,
+            isFetching,
+            creationModalOpen,
+            path,
+            folderModalOpen,
+            folderCreationModalOpen,
+            canAdminFolder,
+        } = this.state;
+        const openFolderId = match.params.id;
 
-        const isSm = window.innerWidth <= 600
-        const isMd = window.innerWidth <= 992
+        const isSm = window.innerWidth <= 600;
+        const isMd = window.innerWidth <= 992;
 
         return (
             <div>
-                <div style={{ flexDirection: "column", flex: 1, overflow: "hidden" }}>
+                <div
+                    style={{
+                        flexDirection: 'column',
+                        flex: 1,
+                        overflow: 'hidden',
+                    }}>
                     <div className={classes.header}>
-                        {
-                            isMd && (
-                                <IconButton disabled={!openFolderId || isFetching} color="secondary" style={{ width: 64 }} onClick={this._homeButtonHandle}>
-                                    <Tooltip title={translate("homeTooltip")} enterDelay={400} placement="bottom-start">
-                                        <HomeIcon style={{ fontSize: 32 }} />
-                                    </Tooltip>
-                                </IconButton>
-                            )
-                        }
-                        <IconButton disabled={!openFolderId || isFetching} color="secondary" style={{ width: 64 }} onClick={this._upButtonHandle}>
-                            <Tooltip title={translate("parentTooltip")} enterDelay={400} placement="bottom-start">
-                                <UpArrowIcon style={{ fontSize: 32 }} />
+                        {isMd && (
+                            <IconButton
+                                disabled={!openFolderId || isFetching}
+                                color="secondary"
+                                style={{width: 64}}
+                                onClick={this._homeButtonHandle}>
+                                <Tooltip
+                                    title={translate('homeTooltip')}
+                                    enterDelay={400}
+                                    placement="bottom-start">
+                                    <HomeIcon style={{fontSize: 32}} />
+                                </Tooltip>
+                            </IconButton>
+                        )}
+                        <IconButton
+                            disabled={!openFolderId || isFetching}
+                            color="secondary"
+                            style={{width: 64}}
+                            onClick={this._upButtonHandle}>
+                            <Tooltip
+                                title={translate('parentTooltip')}
+                                enterDelay={400}
+                                placement="bottom-start">
+                                <UpArrowIcon style={{fontSize: 32}} />
                             </Tooltip>
                         </IconButton>
                         <FolderBreadcrumbs path={path} />
-                        <IconButton disabled={!openFolderId || !canAdminFolder || isFetching} color="secondary" style={{ width: 64 }} onClick={this._openFolderModal}>
-                            <Tooltip title={translate("folderAdminTooltip")} enterDelay={400} placement="bottom-start">
-                                <SettingsIcon style={{ fontSize: 32 }} />
+                        <IconButton
+                            disabled={
+                                !openFolderId || !canAdminFolder || isFetching
+                            }
+                            color="secondary"
+                            style={{width: 64}}
+                            onClick={this._openFolderModal}>
+                            <Tooltip
+                                title={translate('folderAdminTooltip')}
+                                enterDelay={400}
+                                placement="bottom-start">
+                                <SettingsIcon style={{fontSize: 32}} />
                             </Tooltip>
                         </IconButton>
                         <FolderAdministrationModal
@@ -258,12 +352,22 @@ export class FolderPage extends Component {
                     </div>
                     <Divider />
                     <Fade in={isFetching}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: height - 138, position: "absolute", width: width }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                height: height - 138,
+                                position: 'absolute',
+                                width: width,
+                            }}>
                             <CircularProgress />
                         </div>
                     </Fade>
                     <Fade in={!isFetching}>
-                        <Scrollbars style={{ width, height: height - 138 }} onScroll={this.handleScroll}>
+                        <Scrollbars
+                            style={{width, height: height - 138}}
+                            onScroll={this.handleScroll}>
                             <List
                                 rowCount={contents.length}
                                 rowHeight={96}
@@ -276,60 +380,103 @@ export class FolderPage extends Component {
                                     overflowY: false,
                                 }}
                                 noRowsRenderer={() => (
-                                    <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexGrow: "1 1 1" }}>
-                                        <Typography variant="h5" align="center"><Translate id="emptyFolder" /></Typography>
+                                    <div
+                                        style={{
+                                            height: '100%',
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            flexGrow: '1 1 1',
+                                        }}>
+                                        <Typography variant="h5" align="center">
+                                            <Translate id="emptyFolder" />
+                                        </Typography>
                                     </div>
                                 )}
-                                rowRenderer={({ index, style }) => {
+                                rowRenderer={({index, style}) => {
                                     const content = contents[index];
 
                                     if (content.idFolders)
                                         return (
-                                            <Link to={"/home/" + content.idFolders} onClick={() => { changeSearch('') }}>
+                                            <Link
+                                                to={
+                                                    '/home/' + content.idFolders
+                                                }
+                                                onClick={() => {
+                                                    changeSearch('');
+                                                }}>
                                                 <FolderListItem
-                                                    style={isSm ? style :
-                                                        { paddingLeft: 64, paddingRight: 96, ...style }
+                                                    style={
+                                                        isSm
+                                                            ? style
+                                                            : {
+                                                                  paddingLeft: 64,
+                                                                  paddingRight: 96,
+                                                                  ...style,
+                                                              }
                                                     }
-                                                    key={"folder-" + content.idFolders}
+                                                    key={
+                                                        'folder-' +
+                                                        content.idFolders
+                                                    }
                                                     folder={content}
                                                     open={false}
                                                 />
                                             </Link>
-                                        )
+                                        );
                                     else
                                         return (
                                             <CredentialListItem
-                                                style={isSm ? style :
-                                                    { paddingLeft: 64, paddingRight: 96, ...style }
+                                                style={
+                                                    isSm
+                                                        ? style
+                                                        : {
+                                                              paddingLeft: 64,
+                                                              paddingRight: 96,
+                                                              ...style,
+                                                          }
                                                 }
-                                                key={"credential-" + content.idCredentials}
+                                                key={
+                                                    'credential-' +
+                                                    content.idCredentials
+                                                }
                                                 credential={content}
-                                                modalOpen={openModals.find(m => m.id == content.idCredentials).open}
+                                                modalOpen={
+                                                    openModals.find(
+                                                        m =>
+                                                            m.id ==
+                                                            content.idCredentials,
+                                                    ).open
+                                                }
                                                 openCredential={() => {
                                                     this.setState({
                                                         folderCreationModalOpen: false,
                                                         folderModalOpen: false,
                                                         creationModalOpen: false,
-                                                        openModals: openModals
-                                                            .map(m => ({
+                                                        openModals: openModals.map(
+                                                            m => ({
                                                                 ...m,
-                                                                open: (m.id == content.idCredentials ? true : false)
-                                                            }))
-                                                    })
+                                                                open:
+                                                                    m.id ==
+                                                                    content.idCredentials
+                                                                        ? true
+                                                                        : false,
+                                                            }),
+                                                        ),
+                                                    });
                                                 }}
-                                                onRequestRefresh={this.refreshView}
+                                                onRequestRefresh={
+                                                    this.refreshView
+                                                }
                                                 closeModal={this._closeModal}
                                             />
-                                        )
+                                        );
                                 }}
                             />
                         </Scrollbars>
                     </Fade>
                 </div>
-                <Zoom
-                    in={match.params.id && !isFetching}
-                    unmountOnExit
-                >
+                <Zoom in={match.params.id && !isFetching} unmountOnExit>
                     {!canAdminFolder ? (
                         <Fab
                             className={classes.fab}
@@ -339,68 +486,69 @@ export class FolderPage extends Component {
                                     folderCreationModalOpen: false,
                                     folderModalOpen: false,
                                     creationModalOpen: true,
-                                    openModals: openModals
-                                        .map(m => ({
-                                            ...m,
-                                            open: false
-                                        }))
-                                })
-                            }}
-                        >
+                                    openModals: openModals.map(m => ({
+                                        ...m,
+                                        open: false,
+                                    })),
+                                });
+                            }}>
                             <LockOutlineIcon />
                         </Fab>
                     ) : (
-                            <PopupFab mainFab={(
-                                <Tooltip title={translate("addContent")} placement="left">
+                        <PopupFab
+                            mainFab={
+                                <Tooltip
+                                    title={translate('addContent')}
+                                    placement="left">
                                     <Fab color="primary">
                                         <AddIcon />
                                     </Fab>
                                 </Tooltip>
-                            )}
-                            >
-                                <Tooltip key="folder-add" title={translate("addFolder")} placement="left">
-                                    <Fab
-                                        size="small"
-                                        color="secondary"
-                                        onClick={() => {
-                                            this.setState({
-                                                folderCreationModalOpen: true,
-                                                folderModalOpen: false,
-                                                creationModalOpen: false,
-                                                openModals: openModals
-                                                    .map(m => ({
-                                                        ...m,
-                                                        open: false
-                                                    }))
-                                            })
-                                        }}
-                                    >
-                                        <FolderIcon />
-                                    </Fab>
-                                </Tooltip>
-                                <Tooltip key="credential-add" title={translate("addCredential")} placement="left">
-                                    <Fab
-                                        size="small"
-                                        color="secondary"
-                                        onClick={() => {
-                                            this.setState({
-                                                folderCreationModalOpen: false,
-                                                folderModalOpen: false,
-                                                creationModalOpen: true,
-                                                openModals: openModals
-                                                    .map(m => ({
-                                                        ...m,
-                                                        open: false
-                                                    }))
-                                            })
-                                        }}
-                                    >
-                                        <KeyIcon />
-                                    </Fab>
-                                </Tooltip>
-                            </PopupFab>
-                        )
-                    }
+                            }>
+                            <Tooltip
+                                key="folder-add"
+                                title={translate('addFolder')}
+                                placement="left">
+                                <Fab
+                                    size="small"
+                                    color="secondary"
+                                    onClick={() => {
+                                        this.setState({
+                                            folderCreationModalOpen: true,
+                                            folderModalOpen: false,
+                                            creationModalOpen: false,
+                                            openModals: openModals.map(m => ({
+                                                ...m,
+                                                open: false,
+                                            })),
+                                        });
+                                    }}>
+                                    <FolderIcon />
+                                </Fab>
+                            </Tooltip>
+                            <Tooltip
+                                key="credential-add"
+                                title={translate('addCredential')}
+                                placement="left">
+                                <Fab
+                                    size="small"
+                                    color="secondary"
+                                    onClick={() => {
+                                        this.setState({
+                                            folderCreationModalOpen: false,
+                                            folderModalOpen: false,
+                                            creationModalOpen: true,
+                                            openModals: openModals.map(m => ({
+                                                ...m,
+                                                open: false,
+                                            })),
+                                        });
+                                    }}>
+                                    <KeyIcon />
+                                </Fab>
+                            </Tooltip>
+                        </PopupFab>
+                    )}
                 </Zoom>
                 <CredentialModal
                     forCreation
@@ -417,13 +565,14 @@ export class FolderPage extends Component {
                     forCreation
                 />
             </div>
-        )
+        );
     }
 }
 
-const mapStateToProps = (state) => ({
-    isLoggedIn: state.authentication.validity
-})
+const mapStateToProps = state => ({
+    isLoggedIn: state.authentication.validity,
+    currentSearch: state.search.value,
+});
 
 const mapDispatchToProps = {
     removeSearchAction,
@@ -431,8 +580,10 @@ const mapDispatchToProps = {
     requestFolderContents,
     requestFolderInfo,
     requestFolderPath,
-    changeSearch
-}
+    changeSearch,
+};
 
-
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(withSnackbar(FolderPage))))
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps,
+)(withStyles(styles)(withLocalize(withSnackbar(FolderPage))));
