@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link} from 'react-router-dom'
 import { connect } from 'react-redux'
-import { hotkeys } from 'react-keyboard-shortcuts'
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
@@ -130,13 +129,6 @@ export class Header extends Component {
         translate: PropTypes.func.isRequired,
     }
 
-    hot_keys = {
-        'alt+s': { // combo from mousetrap
-            priority: 1,
-            handler: this._focusAndSelectSearch.bind(this),
-        },
-    }
-
     constructor(props) {
         super(props);
 
@@ -154,10 +146,6 @@ export class Header extends Component {
 
     handleSearchChange(event) {
         this._searchChanged(event.target.value);
-    }
-
-    _focusAndSelectSearch() {
-        this._searchRef.select()
     }
 
     _searchChanged(value) {
@@ -290,4 +278,4 @@ const mapStateToProps = state => ({
     search: state.search.value
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(hotkeys(Header))))
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withLocalize(Header)))
