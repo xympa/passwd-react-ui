@@ -254,6 +254,9 @@ export class FolderAdministrationModal extends Component {
             }, this._parsePermissions())
                 .then(() => {
                     onRequestRefresh()
+                    this.setState({
+                        isEditing: false
+                    })
                     enqueueSnackbar(translate("folderUpdated"), {
                         variant: "success"
                     })
@@ -264,7 +267,7 @@ export class FolderAdministrationModal extends Component {
                     })
 
                 })
-                .then(() => {
+                .finally(() => {
                     this.setState({
                         isFetching: false
                     })

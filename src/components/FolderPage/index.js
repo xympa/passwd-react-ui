@@ -275,7 +275,7 @@ export class FolderPage extends Component {
     }
 
     render() {
-        const {classes, match, translate, changeSearch} = this.props;
+        const {classes, match, translate, changeSearch, history} = this.props;
         const {
             width,
             height,
@@ -427,6 +427,7 @@ export class FolderPage extends Component {
                                     else
                                         return (
                                             <CredentialListItem
+                                            history={history}
                                                 style={
                                                     isSm
                                                         ? style

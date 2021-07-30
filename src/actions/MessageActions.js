@@ -169,7 +169,7 @@ const requestMessageInfo = id => (dispatch, getState) => {
 }
 
 
-const requestFolderTree = () => (dispatch, getState) => {
+export const requestFolderTree = () => (dispatch, getState) => {
     const { username, sessionKey } = getState().authentication;
 
     var url = `${REST_BASE}folderTreeView/`;
@@ -278,7 +278,7 @@ const setSendResult = result => ({
     payload: result
 })
 
-const setFolderTree = tree => ({
+export const setFolderTree = tree => ({
     type: SET_FOLDER_TREE,
     payload: tree
 })

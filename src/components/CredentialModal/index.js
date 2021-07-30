@@ -9,11 +9,13 @@ import { withSnackbar } from 'notistack';
 import CredentialForm from './Form'
 import ModalHeader from './Header'
 import { requestCredentialInfo, requestCredentialDeletion, requestCredentialInsertion, requestCredentialUpdate } from '../../actions/CredentialActions'
+import MoveModal from './MoveModal';
 
 
 const INITIAL_STATE = {
     isEditing: false,
     isFetching: true,
+    isMoving: false,
     form: {
 
     }
@@ -58,6 +60,8 @@ export class CredentialModal extends Component {
         this.submitFormForInsert = this.submitFormForInsert.bind(this)
         this.attemptDelete = this.attemptDelete.bind(this)
         this._handleCredentialLoad = this._handleCredentialLoad.bind(this)
+        this.startMoving = this.startMoving.bind(this)
+        this.cancelMoving = this.cancelMoving.bind(this)
     }
 
     componentDidMount() {
@@ -70,6 +74,14 @@ export class CredentialModal extends Component {
         if (prevProps.open !== open) {
             this._handleCredentialLoad()
         }
+    }
+
+    startMoving(){
+        this.setState({isMoving: true})
+    }
+
+    cancelMoving(){
+        this.setState({isMoving: false})
     }
 
     submitFormForUpdate() {
@@ -93,16 +105,19 @@ export class CredentialModal extends Component {
                         enqueueSnackbar(translate("credentialUpdated"), {
                             variant: "success"
                         })
-                        onRequestRefresh(credentialId)
+                        onRequestRefresh(credentialId);
+                        this.setState({ isEditing: false})
+
                     })
                     .catch((error) => {
                         enqueueSnackbar(error.message, {
                             variant: "error"
                         })
                     })
-                    .then(() => {
-                        this.setState({ isFetching: false })
+                    .finally(() => {
+                        this.setState({ isFetching: false});
                     })
+           
             })
         }
         else {
@@ -133,7 +148,7 @@ export class CredentialModal extends Component {
                         enqueueSnackbar(translate("credentialCreated"), {
                             variant: "success"
                         })
-                        onRequestRefresh(newId)
+                        onRequestRefresh(newId);
                     })
                     .catch((error) => {
                         enqueueSnackbar(error.message, {
@@ -204,14 +219,18 @@ export class CredentialModal extends Component {
     }
 
     render() {
-        const { credential, isFetching, isEditing } = this.state;
-        const { forCreation, open, closeModal, credentialId } = this.props;
+        const { credential, isFetching, isEditing, isMoving } = this.state;
+        const { forCreation, open, closeModal, credentialId, history, belongsTo } = this.props;
 
         const modalCloseFunction = isEditing ? () => {} : closeModal
 
+
+
         return (
+            <React.Fragment>
+                 <MoveModal currentFolder={belongsTo} history={history} credentialId={credentialId} cancel={this.cancelMoving} visible={isMoving} />
             <Dialog
-                open={open}
+                open={open && !isMoving}
                 disableBackdropClick
                 disableRestoreFocus
                 maxWidth="lg"
@@ -229,6 +248,7 @@ export class CredentialModal extends Component {
                             toggleEditMode={() => {
                                 this.setState(prevState => ({ isEditing: !prevState.isEditing }))
                             }}
+                            moveCredential={this.startMoving}
                             credentialId={credentialId}
                         />
                     )}
@@ -261,6 +281,7 @@ export class CredentialModal extends Component {
                         </Fade>
                     )}
             </Dialog>
+            </React.Fragment>
         )
     }
 }

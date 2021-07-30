@@ -39,6 +39,11 @@ const styles = theme => ({
             display: 'flex',
         },
     },
+    itemWithTextAligned: {
+        '& p':{
+            textAlign: 'right'
+        }
+    }
 });
 
 class CredentialListItem extends React.PureComponent {
@@ -68,8 +73,10 @@ class CredentialListItem extends React.PureComponent {
 
 
     render() {
-        const { classes, credential, style, openCredential, enqueueSnackbar, translate, modalOpen, closeModal, onRequestRefresh } = this.props;
+        const { classes, credential, style, openCredential, enqueueSnackbar, translate, modalOpen, closeModal, onRequestRefresh, history } = this.props;
         const { hovered } = this.state;
+
+        console.log(credential)
 
         return (
             <div>
@@ -81,6 +88,7 @@ class CredentialListItem extends React.PureComponent {
                             </ListItemIcon>
                             <ListItemText inset primary={translate("open") + " " + translate("credential")} />
                         </MenuItem>,
+                    
                         <CopyToClipboard
                             key="copy-username"
                             text={credential.username}
@@ -144,9 +152,10 @@ class CredentialListItem extends React.PureComponent {
                         </Avatar>
                         <ListItemText
                             style={{ flex: 1 }}
-                            primary={<Typography>{credential.title}</Typography>}
+                            primary={<Typography>{ (credential.path ? (credential.path && credential.path[0] && credential.path[0].name ? credential.path[0].name : 'Raiz') + ' / ' : '') + credential.title}</Typography>}
                             secondary={<Typography variant="caption" noWrap>{credential.description}</Typography>}
                         />
+  
 
                         <div className={classes.sectionDesktop} style={{ flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
                             <Fade in={hovered}>
@@ -200,6 +209,7 @@ class CredentialListItem extends React.PureComponent {
                     </ListItem>
                 </ContextMenu>
                 <CredentialModal
+                history={history}
                     belongsTo={credential.belongsToFolder}
                     credentialId={credential.idCredentials}
                     open={modalOpen}

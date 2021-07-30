@@ -90,5 +90,17 @@
     "credentialDeleted": [
         "Credential deleted successfuly",
         "Credencial actualizada com sucesso"
+    ],
+    "moveCredential": [
+        "Move credential",
+        "Mover credencial"
+    ],
+    "move": [
+        "Move",
+        "Mover"
+    ],
+    "movedSuccessfully": [
+        "Credential moved successfuly",
+        "A credencial foi movida com sucesso"
     ]
 }

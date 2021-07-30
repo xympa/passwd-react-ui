@@ -4,7 +4,7 @@ import { REST_BASE } from '../AppConfig'
 import { networkDecode, networkEncode } from '../EnsoSharedBridge';
 import { store } from '../App';
 
-const parse406Error = (error) => {
+export const parse406Error = (error) => {
     const translate = getTranslate(store.getState().localize)
     if (error.response && error.response.status === 406)
         switch (error.response.data) {

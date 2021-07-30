@@ -5,6 +5,7 @@ import CloseIcon from '@material-ui/icons/Close'
 import ShareIcon from '@material-ui/icons/Share'
 import LockIcon from '@material-ui/icons/Lock'
 import OpenLockIcon from '@material-ui/icons/LockOpen'
+import ReplyIcon from '@material-ui/icons/Reply'
 import { IconButton, Typography, Tooltip } from '@material-ui/core'
 import { withStyles } from '@material-ui/core/styles'
 import { Translate, withLocalize } from 'react-localize-redux'
@@ -18,7 +19,7 @@ const styles = theme => ({
 })
 
 const Header = (props) => {
-    const { closeCredential, isEditing, classes, toggleEditMode, isCreating, credentialId, composeMessage, translate } = props;
+    const { closeCredential, isEditing, classes, toggleEditMode, isCreating, credentialId, composeMessage, translate, moveCredential } = props;
 
     return (
         <div style={{ display: "flex", flex: 0, flexWrap: "nowrap" }}>
@@ -32,6 +33,11 @@ const Header = (props) => {
                     <Tooltip title={translate("shareCredential")}>
                         <IconButton aria-label={translate("shareCredential")} className={classes.margin} onClick={() => { composeMessage(credentialId) }}>
                             <ShareIcon color="secondary" />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title={translate("moveCredential")}>
+                        <IconButton aria-label={translate("moveCredential")} className={classes.margin} onClick={moveCredential}>
+                            <ReplyIcon color="secondary" />
                         </IconButton>
                     </Tooltip>
                 </div>

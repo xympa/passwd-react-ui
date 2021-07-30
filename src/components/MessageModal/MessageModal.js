@@ -64,7 +64,7 @@ const timeToDieOptions = [
     },
 ];
 
-const styles = theme => ({
+const styles = (theme) => ({
     margin: {
         margin: theme.spacing.unit,
     },
@@ -159,7 +159,7 @@ export class MessageModal extends Component {
             this.updateFormToMatchStore();
     }
 
-    _fieldsFromMessage = message => {
+    _fieldsFromMessage = (message) => {
         if (message == null)
             message = {
                 message: '',
@@ -172,7 +172,7 @@ export class MessageModal extends Component {
         };
     };
 
-    _handleChange = (name, rawValue) => event => {
+    _handleChange = (name, rawValue) => (event) => {
         let value;
 
         if (event) value = event.target.value;
@@ -196,7 +196,7 @@ export class MessageModal extends Component {
         }
 
         if (event)
-            this.setState(prevState => ({
+            this.setState((prevState) => ({
                 ...prevState,
                 fields: {
                     ...prevState.fields,
@@ -233,7 +233,7 @@ export class MessageModal extends Component {
 
         const valid =
             Object.keys(credentialForm).filter(
-                field => !credentialForm[field].valid,
+                (field) => !credentialForm[field].valid,
             ).length === 0;
 
         if (valid)
@@ -253,7 +253,7 @@ export class MessageModal extends Component {
                         variant: 'success',
                     });
                 })
-                .catch(error => {
+                .catch((error) => {
                     enqueueSnackbar(error.message, {
                         variant: 'error',
                     });
@@ -277,10 +277,10 @@ export class MessageModal extends Component {
         const {fields, credentialForm, isExternal, timeToDie} = this.state;
 
         const valid =
-            Object.keys(fields).filter(field => !fields[field].valid).length ===
-                0 ||
+            Object.keys(fields).filter((field) => !fields[field].valid)
+                .length === 0 ||
             Object.keys(credentialForm).filter(
-                field => !credentialForm[field].valid,
+                (field) => !credentialForm[field].valid,
             ).length === 0;
 
         if (valid)
@@ -309,7 +309,7 @@ export class MessageModal extends Component {
                         variant: 'success',
                     });
                 })
-                .catch(error => {
+                .catch((error) => {
                     enqueueSnackbar(error.message, {
                         variant: 'error',
                     });
@@ -336,7 +336,7 @@ export class MessageModal extends Component {
                     variant: 'success',
                 });
             })
-            .catch(error => {
+            .catch((error) => {
                 enqueueSnackbar(error.message, {
                     variant: 'error',
                 });
@@ -351,13 +351,18 @@ export class MessageModal extends Component {
         if (inital)
             return (
                 <Tree content="/" open>
-                    {this.renderFolderTree(node[0])}
+                      {node.length > 0
+                        ? node.map((folder) =>
+                              this.renderFolderTree(folder),
+                          )
+                        : null}
                 </Tree>
             );
         else
             return (
                 <Tree
                     open
+                    key={node.id}
                     content={node.name}
                     type={
                         <Radio
@@ -375,7 +380,7 @@ export class MessageModal extends Component {
                         />
                     }>
                     {node.childFolders.length > 0
-                        ? node.childFolders.map(folder =>
+                        ? node.childFolders.map((folder) =>
                               this.renderFolderTree(folder),
                           )
                         : null}
@@ -384,7 +389,7 @@ export class MessageModal extends Component {
     }
 
     render() {
-        const {isExternal, fields, timeToDie} = this.state;
+        const {isExternal, fields, timeToDie, targetFolder} = this.state;
         const {
             isFetching,
             isOpen,
@@ -452,13 +457,13 @@ export class MessageModal extends Component {
                                             placeholder={translate('receiver')}
                                             keepValue
                                             value={fields.receiver.value}
-                                            suggestions={users.map(user => ({
+                                            suggestions={users.map((user) => ({
                                                 value: user.username,
                                                 label: user.username,
                                             }))}
                                             disabled={!isEditing}
                                             onSuggestionAccepted={({value}) => {
-                                                this.setState(prevState => ({
+                                                this.setState((prevState) => ({
                                                     ...prevState,
                                                     fields: {
                                                         ...prevState.fields,
@@ -513,7 +518,7 @@ export class MessageModal extends Component {
                                         </InputLabel>
                                         <Select
                                             value={timeToDie}
-                                            onChange={event => {
+                                            onChange={(event) => {
                                                 this.setState({
                                                     timeToDie:
                                                         event.target.value,
@@ -526,7 +531,7 @@ export class MessageModal extends Component {
                                                 />
                                             }
                                             name="time-to-die">
-                                            {timeToDieOptions.map(option => (
+                                            {timeToDieOptions.map((option) => (
                                                 <MenuItem
                                                     key={option.value}
                                                     value={option.value}>
@@ -560,7 +565,7 @@ export class MessageModal extends Component {
                                     isEditing && isCreating && !credential
                                 }
                                 credential={credential}
-                                onFormChanged={form => {
+                                onFormChanged={(form) => {
                                     this.setState({credentialForm: form});
                                 }}
                             />
@@ -654,6 +659,7 @@ export class MessageModal extends Component {
                                         onClick={() => {
                                             this.saveMessageCredential();
                                         }}
+                                        disabled={!targetFolder}
                                         color="secondary">
                                         <Translate id="save" />{' '}
                                         <Translate id="credential" />
@@ -677,7 +683,7 @@ export class MessageModal extends Component {
     }
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
     credential: state.messages.modal.baseCredentialInfo,
     isOpen: state.messages.modal.open,
     isFetching: state.messages.modal.isFetching,
